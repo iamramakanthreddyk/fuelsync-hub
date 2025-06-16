@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import config from '../config/environment';
 import type { SignOptions } from 'jsonwebtoken';
+import { randomUUID } from 'crypto';
 
 export const createUser = async (
   schemaName: string, 
@@ -43,7 +44,7 @@ export const authenticateUser = async (email: string, password: string) => {
       const token = jwt.sign(
         { id: adminUser.id, email: adminUser.email, role: adminUser.role, isAdmin: true },
         config.jwtSecret,
-        { expiresIn: config.jwtExpiresIn }  as SignOptions
+        { expiresIn: typeof config.jwtExpiresIn === 'string' ? config.jwtExpiresIn : String(config.jwtExpiresIn) }
       );
       return {
         token,
@@ -57,22 +58,10 @@ export const authenticateUser = async (email: string, password: string) => {
     }
   }
 
-  const tenantResult = await pool.query(
-    `SELECT t.id, t.schema_name 
-     FROM tenants t 
-     JOIN users u ON u.email = $1
-     WHERE t.active = true`,
-    [email]
-  );
-
-  if (tenantResult.rows.length === 0) {
-    throw new Error('User not found');
-  }
-
-  const tenant = tenantResult.rows[0];
+  // Single-tenant/public schema: authenticate against public.users
   const client = await pool.connect();
   try {
-    await client.query(`SET search_path TO ${tenant.schema_name}`);
+    await client.query(`SET search_path TO public`);
     const userResult = await client.query(
       'SELECT * FROM users WHERE email = $1 AND active = true',
       [email]
@@ -80,37 +69,32 @@ export const authenticateUser = async (email: string, password: string) => {
     if (userResult.rows.length === 0) {
       throw new Error('User not found');
     }
-
     const user = userResult.rows[0];
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       throw new Error('Invalid password');
     }
-
     await client.query(
       'UPDATE users SET last_login = NOW() WHERE id = $1',
       [user.id]
     );
-
+    // Insert user session with UUID id
     await client.query(
-      `INSERT INTO user_sessions (user_id, ip_address, user_agent)
-       VALUES ($1, $2, $3)`,
-      [user.id, 'IP_ADDRESS', 'USER_AGENT']
+      `INSERT INTO user_sessions (id, user_id, ip_address, user_agent)
+       VALUES ($1, $2, $3, $4)`,
+      [randomUUID(), user.id, 'IP_ADDRESS', 'USER_AGENT']
     );
-
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role, tenantId: tenant.id, isAdmin: false },
+      { id: user.id, email: user.email, role: user.role, isAdmin: false },
       config.jwtSecret,
-      { expiresIn: config.jwtExpiresIn }
+      { expiresIn: typeof config.jwtExpiresIn === 'string' ? config.jwtExpiresIn : String(config.jwtExpiresIn) }
     );
-
     return {
       token,
       user: {
         id: user.id,
         email: user.email,
         role: user.role,
-        tenantId: tenant.id,
         isAdmin: false
       }
     };

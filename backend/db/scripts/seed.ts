@@ -1,11 +1,15 @@
+// backend/scripts/seed.ts
 import dotenv from 'dotenv';
 import { Pool } from 'pg';
 import bcrypt from 'bcrypt';
-import { generateUUID } from '../../src/utils/uuid';
+import { randomUUID } from 'crypto'; // Using Node's built-in UUID generator
 import fs from 'fs';
 import path from 'path';
 
 dotenv.config();
+
+// Helper function to generate UUID
+const generateUUID = () => randomUUID();
 
 const pool = new Pool({
   host: process.env.DB_HOST || 'fuelsync-server.postgres.database.azure.com',
@@ -26,59 +30,16 @@ async function seed() {
   const client = await pool.connect();
   try {
     console.log('Starting seed process...');
-    
-    // Create a test tenant
-    const tenantId = generateUUID();
-    const schemaName = 'test_tenant';
-    const tenantName = 'Test Fuel Company';
-    
-    console.log(`Creating tenant "${tenantName}" with schema "${schemaName}"...`);
-    
-    // Check if schema exists
-    const schemaCheck = await client.query(
-      "SELECT schema_name FROM information_schema.schemata WHERE schema_name = $1",
-      [schemaName]
-    );
+    await client.query('SET search_path TO public');
 
-    if (schemaCheck.rows.length > 0) {
-      console.log(`Schema "${schemaName}" already exists, dropping it...`);
-      await client.query(`DROP SCHEMA IF EXISTS "${schemaName}" CASCADE`);
-    }
+    // Optionally clean tables for a fresh start
+    await client.query('TRUNCATE TABLE user_sessions, sales, nozzles, pumps, stations, user_stations, creditors, credit_payments, fuel_prices, day_reconciliations, users RESTART IDENTITY CASCADE');
 
-    // Create tenant record
-    await client.query(`
-      INSERT INTO tenants (id, name, plan_type, schema_name, active)
-      VALUES ($1, $2, 'enterprise', $3, true)
-    `, [tenantId, tenantName, schemaName]);
-
-    // Create schema
-    await client.query(`CREATE SCHEMA "${schemaName}"`);
-
-    // Apply tenant schema template
-    let templateSQL = '';
-    try {
-      templateSQL = fs.readFileSync(
-        path.join(__dirname, '../migrations/02_tenant_schema_template.sql'),
-        'utf8'
-      );
-    } catch (err) {
-      console.error('Could not read tenant schema template:', err);
-      throw err;
-    }
-
-    await client.query(`SET search_path TO "${schemaName}"`);
-    await client.query(templateSQL);
-    
     // Create users
     console.log('Creating users...');
-    interface User {
-      id: string;
-      email: string;
-      role: string;
-      name: string;
-    }
-    const users: User[] = [];
-    
+    type UserSeed = { id: string; email: string; role: string; name: string };
+    const users: UserSeed[] = [];
+
     // Owner
     const ownerPassword = await bcrypt.hash('owner123', 10);
     const ownerId = generateUUID();
@@ -87,7 +48,7 @@ async function seed() {
       VALUES ($1, 'owner@test.com', $2, 'owner', 'John', 'Owner', '555-1234', true)
     `, [ownerId, ownerPassword]);
     users.push({ id: ownerId, email: 'owner@test.com', role: 'owner', name: 'John Owner' });
-    
+
     // Manager
     const managerPassword = await bcrypt.hash('manager123', 10);
     const managerId = generateUUID();
@@ -96,9 +57,9 @@ async function seed() {
       VALUES ($1, 'manager@test.com', $2, 'manager', 'Jane', 'Manager', '555-2345', true)
     `, [managerId, managerPassword]);
     users.push({ id: managerId, email: 'manager@test.com', role: 'manager', name: 'Jane Manager' });
-    
-    // Employees
-    const employees: { id: string; email: string; name: string }[] = [];
+
+    type EmployeeSeed = { id: string; email: string; name: string };
+    const employees: EmployeeSeed[] = [];
     for (let i = 1; i <= 3; i++) {
       const employeeId = generateUUID();
       const employeePassword = await bcrypt.hash(`employee${i}`, 10);
@@ -106,8 +67,8 @@ async function seed() {
         INSERT INTO users (id, email, password_hash, role, first_name, last_name, phone, active)
         VALUES ($1, $2, $3, 'employee', $4, 'Employee', $5, true)
       `, [
-        employeeId, 
-        `employee${i}@test.com`, 
+        employeeId,
+        `employee${i}@test.com`,
         employeePassword,
         `Employee${i}`,
         `555-${3000 + i}`
@@ -139,7 +100,8 @@ async function seed() {
     
     // Create stations
     console.log('Creating stations...');
-    const stations: { id: string; name: string }[] = [];
+    type StationSeed = { id: string; name: string };
+    const stations: StationSeed[] = [];
     
     const stationNames = [
       'Main Street Station',
@@ -260,12 +222,8 @@ async function seed() {
     
     // Create creditors
     console.log('Creating creditors...');
-    interface Creditor {
-      id: string;
-      stationId: string;
-      name: string;
-    }
-    const creditors: Creditor[] = [];
+    type CreditorSeed = { id: string; stationId: string; name: string };
+    const creditors: CreditorSeed[] = [];
     
     for (const station of stations) {
       // Each station gets 2-3 creditors
@@ -365,17 +323,16 @@ async function seed() {
           saleDate.setSeconds(Math.floor(Math.random() * 60));
           
           // Sale volume between 5 and 50 liters
-          const saleVolume = 5 + Math.random() * 45;
+          const saleVolume = parseFloat((5 + Math.random() * 45).toFixed(2));
           
           // Get fuel price
           const priceKey = `${station.id}_${nozzle.fuel_type}`;
-          const fuelPrice = fuelPrices[priceKey] || 3.5; // Default if not found
+          const fuelPrice = parseFloat((fuelPrices[priceKey] || 3.5).toFixed(2));
           
-          // Calculate amount
-          const amount = saleVolume * fuelPrice;
+          // Calculate amount (precise 2 decimal calculation)
+          const amount = parseFloat((saleVolume * fuelPrice).toFixed(2));
           
           // Determine payment method
-          // 70% cash, 15% credit, 10% card, 5% UPI
           let paymentMethod = 'cash';
           let cashReceived = amount;
           let creditGiven = 0;
@@ -397,105 +354,149 @@ async function seed() {
           } else if (paymentRoll > 0.60 && stationCreditors.length > 0) {
             // Mixed payment (cash + credit)
             paymentMethod = 'mixed';
-            // Split between cash and credit
-            const creditPortion = 0.3 + Math.random() * 0.4; // 30-70% on credit
-            creditGiven = amount * creditPortion;
-            cashReceived = amount - creditGiven;
+            // Split between cash and credit - ensure exact amount
+            const creditRatio = 0.3 + Math.random() * 0.4; // 30-70% on credit
+            creditGiven = parseFloat((amount * creditRatio).toFixed(2));
+            cashReceived = parseFloat((amount - creditGiven).toFixed(2));
+            
             // Assign to a random creditor
             creditPartyId = stationCreditors[Math.floor(Math.random() * stationCreditors.length)].id;
           }
           
-          // Create the sale record
-          const saleId = generateUUID();
-          await client.query(`
-            INSERT INTO sales (
-              id, station_id, nozzle_id, user_id, recorded_at, sale_volume, 
-              cumulative_reading, previous_reading, fuel_price, amount, 
-              cash_received, credit_given, payment_method, credit_party_id, status
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'posted')
-          `, [
-            saleId,
-            station.id,
-            nozzle.id,
-            employeeId,
-            saleDate.toISOString(),
-            saleVolume.toFixed(2),
-            (parseFloat(nozzle.current_reading) + saleVolume).toFixed(2),
-            nozzle.current_reading,
-            fuelPrice.toFixed(2),
-            amount.toFixed(2),
-            cashReceived.toFixed(2),
-            creditGiven.toFixed(2),
-            paymentMethod,
-            creditPartyId
-          ]);
-          
-          // Update nozzle reading
-          await client.query(`
-            UPDATE nozzles
-            SET current_reading = $1
-            WHERE id = $2
-          `, [
-            (parseFloat(nozzle.current_reading) + saleVolume).toFixed(2),
-            nozzle.id
-          ]);
-          
-          // Update nozzle's current_reading for future sales
-          nozzle.current_reading = (parseFloat(nozzle.current_reading) + saleVolume).toFixed(2);
-          
-          // If credit was given, update creditor balance
-          if (creditGiven > 0 && creditPartyId) {
+          try {
+            // Verify the constraint before inserting
+            if (Math.abs((cashReceived + creditGiven) - amount) > 0.001) {
+              console.log(`Fixing payment amounts: ${cashReceived} + ${creditGiven} ≠ ${amount}`);
+              // Fix the amounts to ensure they add up
+              cashReceived = parseFloat((amount - creditGiven).toFixed(2));
+            }
+            
+            // Create the sale record
+            const saleId = generateUUID();
             await client.query(`
-              UPDATE creditors
-              SET running_balance = running_balance + $1, last_updated_at = NOW()
+              INSERT INTO sales (
+                id, station_id, nozzle_id, user_id, recorded_at, sale_volume, 
+                cumulative_reading, previous_reading, fuel_price, amount, 
+                cash_received, credit_given, payment_method, credit_party_id, status
+              )
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'posted')
+            `, [
+              saleId,
+              station.id,
+              nozzle.id,
+              employeeId,
+              saleDate.toISOString(),
+              saleVolume.toFixed(2),
+              (parseFloat(nozzle.current_reading) + saleVolume).toFixed(2),
+              nozzle.current_reading,
+              fuelPrice.toFixed(2),
+              amount.toFixed(2),
+              cashReceived.toFixed(2),
+              creditGiven.toFixed(2),
+              paymentMethod,
+              creditPartyId
+            ]);
+            
+            // Update nozzle reading
+            await client.query(`
+              UPDATE nozzles
+              SET current_reading = $1
               WHERE id = $2
-            `, [creditGiven.toFixed(2), creditPartyId]);
+            `, [
+              (parseFloat(nozzle.current_reading) + saleVolume).toFixed(2),
+              nozzle.id
+            ]);
+            
+            // Update nozzle's current_reading for future sales
+            nozzle.current_reading = (parseFloat(nozzle.current_reading) + saleVolume).toFixed(2);
+            
+            // If credit was given, update creditor balance
+            if (creditGiven > 0 && creditPartyId) {
+              await client.query(`
+                UPDATE creditors
+                SET running_balance = running_balance + $1, last_updated_at = NOW()
+                WHERE id = $2
+              `, [creditGiven.toFixed(2), creditPartyId]);
+            }
+          } catch (error) {
+            const err = error as Error;
+            console.error('Error creating sale:', err.message);
+            console.log('Sale data:', {
+              stationId: station.id,
+              nozzleId: nozzle.id,
+              saleVolume,
+              fuelPrice,
+              amount,
+              cashReceived,
+              creditGiven,
+              paymentMethod,
+              creditPartyId,
+              check: parseFloat((cashReceived + creditGiven).toFixed(2)) === amount
+            });
+            // Continue with other sales
           }
         }
         
         // Create day reconciliation for days before today
         if (date < today) {
-          // Get sales totals for the day
-          const totalsResult = await client.query(`
-            SELECT 
-              COALESCE(SUM(amount), 0) as total_sales,
-              COALESCE(SUM(cash_received), 0) as cash_total,
-              COALESCE(SUM(credit_given), 0) as credit_total
-            FROM sales
-            WHERE station_id = $1 
-              AND DATE(recorded_at) = $2
-              AND status = 'posted'
-          `, [station.id, date.toISOString().split('T')[0]]);
-          
-          const totals = totalsResult.rows[0];
-          
-          // Only create reconciliation if there were sales
-          if (parseFloat(totals.total_sales) > 0) {
-            // Calculate card and UPI totals (for simplicity, we'll use percentages)
-            // 15% card, 5% UPI of total non-cash, non-credit
-            const nonCashCredit = parseFloat(totals.total_sales) - parseFloat(totals.cash_total) - parseFloat(totals.credit_total);
-            const cardTotal = nonCashCredit * 0.75;
-            const upiTotal = nonCashCredit * 0.25;
+          try {
+            // Get sales totals for the day
+            const totalsResult = await client.query(`
+              SELECT 
+                COALESCE(SUM(amount), 0) as total_sales,
+                COALESCE(SUM(cash_received), 0) as cash_total,
+                COALESCE(SUM(credit_given), 0) as credit_total
+              FROM sales
+              WHERE station_id = $1 
+                AND DATE(recorded_at) = $2
+                AND status = 'posted'
+            `, [station.id, date.toISOString().split('T')[0]]);
             
-            const reconciliationId = generateUUID();
-            await client.query(`
-              INSERT INTO day_reconciliations (
-                id, station_id, date, total_sales, cash_total, credit_total,
-                card_total, upi_total, finalized, created_by
-              )
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, $9)
-            `, [
-              reconciliationId,
-              station.id,
-              date.toISOString().split('T')[0],
-              totals.total_sales,
-              totals.cash_total,
-              totals.credit_total,
-              cardTotal.toFixed(2),
-              upiTotal.toFixed(2),
-              managerId // Manager did the reconciliation
-            ]);
+            const totals = totalsResult.rows[0];
+            
+            // Only create reconciliation if there were sales
+            if (parseFloat(totals.total_sales) > 0) {
+              // Calculate card and UPI totals
+              const totalSales = parseFloat(totals.total_sales);
+              const cashTotal = parseFloat(totals.cash_total);
+              const creditTotal = parseFloat(totals.credit_total);
+              
+              // Remainder for card and UPI
+              const remainder = parseFloat((totalSales - cashTotal - creditTotal).toFixed(2));
+              
+              // Split between card (75%) and UPI (25%)
+              let cardTotal = parseFloat((remainder * 0.75).toFixed(2));
+              let upiTotal = parseFloat((remainder * 0.25).toFixed(2));
+              
+              // Ensure exact totals (handle any floating-point issues)
+              if (Math.abs((cashTotal + creditTotal + cardTotal + upiTotal) - totalSales) > 0.001) {
+                // Adjust card total to ensure exact match
+                cardTotal = parseFloat((totalSales - cashTotal - creditTotal - upiTotal).toFixed(2));
+              }
+              
+              const reconciliationId = generateUUID();
+              await client.query(`
+                INSERT INTO day_reconciliations (
+                  id, station_id, date, total_sales, cash_total, credit_total,
+                  card_total, upi_total, finalized, created_by
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, $9)
+              `, [
+                reconciliationId,
+                station.id,
+                date.toISOString().split('T')[0],
+                totalSales.toFixed(2),
+                cashTotal.toFixed(2),
+                creditTotal.toFixed(2),
+                cardTotal.toFixed(2),
+                upiTotal.toFixed(2),
+                managerId // Manager did the reconciliation
+              ]);
+            }
+          } catch (error) {
+            const err = error as Error;
+            console.error('Error creating reconciliation:', err.message);
+            // Continue with other days
           }
         }
       }
@@ -518,7 +519,7 @@ async function seed() {
         
         // Pay between 20% and 100% of balance
         const paymentPercentage = 0.2 + Math.random() * 0.8;
-        const paymentAmount = balance * paymentPercentage;
+        const paymentAmount = parseFloat((balance * paymentPercentage).toFixed(2));
         
         // Random payment date in the last 7 days
         const paymentDate = new Date();
@@ -538,30 +539,35 @@ async function seed() {
         `, [creditor.station_id]);
         
         if (userResult.rows.length > 0) {
-          const receivedBy = userResult.rows[0].user_id;
-          
-          // Create payment record
-          const paymentId = generateUUID();
-          await client.query(`
-            INSERT INTO credit_payments (
-              id, creditor_id, amount, paid_at, payment_method, received_by
-            )
-            VALUES ($1, $2, $3, $4, $5, $6)
-          `, [
-            paymentId,
-            creditor.id,
-            paymentAmount.toFixed(2),
-            paymentDate.toISOString(),
-            paymentMethod,
-            receivedBy
-          ]);
-          
-          // Update creditor balance
-          await client.query(`
-            UPDATE creditors
-            SET running_balance = running_balance - $1, last_updated_at = NOW()
-            WHERE id = $2
-          `, [paymentAmount.toFixed(2), creditor.id]);
+          try {
+            const receivedBy = userResult.rows[0].user_id;
+            
+            // Create payment record
+            const paymentId = generateUUID();
+            await client.query(`
+              INSERT INTO credit_payments (
+                id, creditor_id, amount, paid_at, payment_method, received_by
+              )
+              VALUES ($1, $2, $3, $4, $5, $6)
+            `, [
+              paymentId,
+              creditor.id,
+              paymentAmount.toFixed(2),
+              paymentDate.toISOString(),
+              paymentMethod,
+              receivedBy
+            ]);
+            
+            // Update creditor balance
+            await client.query(`
+              UPDATE creditors
+              SET running_balance = running_balance - $1, last_updated_at = NOW()
+              WHERE id = $2
+            `, [paymentAmount.toFixed(2), creditor.id]);
+          } catch (error) {
+            const err = error as Error;
+            console.error('Error creating credit payment:', err.message);
+          }
         }
       }
     }

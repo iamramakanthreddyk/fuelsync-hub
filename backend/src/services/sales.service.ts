@@ -190,3 +190,81 @@ export const getSales = async (
     client.release();
   }
 };
+
+export async function getDailySalesTotals(schemaName: string, arg1: string, arg2: string) {
+  const client = await pool.connect();
+  
+  try {
+    // Set search path to tenant schema
+    await client.query(`SET search_path TO ${schemaName}`);
+    
+    const query = `
+      SELECT 
+        DATE(recorded_at) as sale_date,
+        SUM(amount) as total_amount,
+        SUM(sale_volume) as total_volume,
+        COUNT(*) as total_sales
+      FROM sales
+      WHERE station_id = $1 AND DATE(recorded_at) = $2
+      GROUP BY sale_date
+      ORDER BY sale_date DESC
+    `;
+    
+    return client.query(query, [arg1, arg2]);
+  } catch (error) {
+    console.error('Error getting daily sales totals:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export const voidSale = async (schemaName: string, saleId: string, userId: string, reason: string) => {
+  const client = await pool.connect();
+  
+  try {
+    await client.query('BEGIN');
+    
+    // Set search path to tenant schema
+    await client.query(`SET search_path TO ${schemaName}`);
+    
+    // Get sale details
+    const saleResult = await client.query(
+      `SELECT * FROM sales WHERE id = $1 AND status = 'posted'`,
+      [saleId]
+    );
+    
+    if (saleResult.rows.length === 0) {
+      throw new Error('Sale not found or already voided');
+    }
+    
+    const sale = saleResult.rows[0];
+    
+    // Update sale status to voided
+    await client.query(
+      `UPDATE sales SET status = 'voided', voided_by = $1, voided_at = NOW(), void_reason = $2
+       WHERE id = $3`,
+      [userId, reason, saleId]
+    );
+    
+    // If credit was given, update creditor balance
+    if (sale.credit_given > 0 && sale.credit_party_id) {
+      await client.query(
+        `UPDATE creditors
+         SET running_balance = running_balance - $1, last_updated_at = NOW()
+         WHERE id = $2`,
+        [sale.credit_given, sale.credit_party_id]
+      );
+    }
+    
+    await client.query('COMMIT');
+    
+    return { message: 'Sale voided successfully' };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error voiding sale:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}

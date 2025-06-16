@@ -1,6 +1,8 @@
 import request from 'supertest';
 import app from '../server';
 import pool from '../config/database';
+import { describe, it } from 'node:test';
+import { afterAll, beforeAll, expect } from '@jest/globals';
 
 // Mock data
 let authToken: string;
@@ -129,3 +131,6 @@ describe('Station API', () => {
     });
   });
 });
+// Remove these function stubs; they are not needed when using a proper test runner
+
+

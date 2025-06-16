@@ -1,0 +1,77 @@
+@startuml FuelSync Hub Data Flow
+!theme plain
+
+' Actors
+actor "Owner" as owner
+actor "Manager" as manager
+actor "Employee" as employee
+actor "Customer" as customer
+
+' Systems
+rectangle "Frontend (Next.js)" as frontend
+rectangle "Backend (Express.js)" as backend
+database "PostgreSQL Database" as db
+
+' Data Flows - Authentication
+owner --> frontend: Register/Login
+manager --> frontend: Login
+employee --> frontend: Login
+frontend --> backend: Authentication Request
+backend --> db: Verify Credentials
+db --> backend: User Data
+backend --> frontend: JWT Token
+frontend --> frontend: Store Token
+
+' Data Flows - Station Management
+owner --> frontend: Create/Edit Station
+frontend --> backend: Station API Request
+backend --> db: Create/Update Station
+db --> backend: Station Data
+backend --> frontend: Station Info
+
+' Data Flows - Pump/Nozzle Management
+owner --> frontend: Add Pumps/Nozzles
+frontend --> backend: Pump/Nozzle API Request
+backend --> db: Store Pump/Nozzle Data
+db --> backend: Confirmation
+backend --> frontend: Updated Inventory
+
+' Data Flows - Fuel Price Management
+owner --> frontend: Set Fuel Prices
+frontend --> backend: Fuel Price API Request
+backend --> db: Store Price Data
+db --> backend: Confirmation
+backend --> frontend: Updated Prices
+
+' Data Flows - Sales Recording
+customer --> employee: Purchase Fuel
+employee --> frontend: Record Sale
+frontend --> backend: Sales API Request
+backend --> db: Get Previous Reading
+db --> backend: Reading Data
+backend --> db: Store Sale Record
+db --> backend: Confirmation
+backend --> frontend: Sale Confirmation
+frontend --> employee: Receipt
+
+' Data Flows - Reconciliation
+manager --> frontend: Daily Reconciliation
+frontend --> backend: Get Daily Sales
+backend --> db: Query Sales Data
+db --> backend: Sales Summary
+backend --> frontend: Daily Totals
+manager --> frontend: Input Card/UPI Totals
+frontend --> backend: Reconciliation Request
+backend --> db: Store Reconciliation
+db --> backend: Confirmation
+backend --> frontend: Reconciliation Complete
+
+' Data Flows - Reporting
+owner --> frontend: Request Report
+frontend --> backend: Report API Request
+backend --> db: Query Sales/Inventory Data
+db --> backend: Aggregated Data
+backend --> frontend: Formatted Report
+frontend --> owner: Visual Dashboard
+
+@enduml
