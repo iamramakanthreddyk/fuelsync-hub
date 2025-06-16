@@ -1,0 +1,349 @@
+@startuml FuelSync Hub Database Schema
+
+' Styling
+skinparam linetype ortho
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam dpi 300
+
+' Public schema
+package "Public Schema" {
+  entity "tenants" {
+    * id: UUID <<PK>>
+    --
+    * name: TEXT
+    * plan_type: TEXT
+    * schema_name: TEXT <<unique>>
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+    * active: BOOLEAN
+    contact_email: TEXT
+    contact_phone: TEXT
+    address: JSONB
+  }
+
+  entity "plans" {
+    * id: UUID <<PK>>
+    --
+    * name: TEXT <<unique>>
+    * max_stations: INTEGER
+    * max_employees: INTEGER
+    * price_monthly: NUMERIC(10,2)
+    * price_yearly: NUMERIC(10,2)
+    * features: JSONB
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+    * active: BOOLEAN
+  }
+
+  entity "plan_features" {
+    * plan_type: TEXT <<PK>> <<FK>>
+    --
+    * max_stations: INTEGER
+    * max_employees: INTEGER
+    * enable_creditors: BOOLEAN
+    * enable_reports: BOOLEAN
+    * enable_analytics: BOOLEAN
+    * enable_api_access: BOOLEAN
+    * support_level: TEXT
+  }
+
+  entity "admin_users" {
+    * id: UUID <<PK>>
+    --
+    * email: TEXT <<unique>>
+    * password_hash: TEXT
+    * first_name: TEXT
+    * last_name: TEXT
+    * role: TEXT
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+    * last_login: TIMESTAMP
+    * active: BOOLEAN
+  }
+
+  entity "admin_activity_logs" {
+    * id: UUID <<PK>>
+    --
+    * admin_id: UUID <<FK>>
+    * tenant_id: UUID <<FK>>
+    * action: TEXT
+    * metadata: JSONB
+    * created_at: TIMESTAMP
+  }
+}
+
+' Tenant schema
+package "Tenant Schema (per-tenant)" {
+  entity "users" {
+    * id: UUID <<PK>>
+    --
+    * email: TEXT <<unique>>
+    * password_hash: TEXT
+    * role: TEXT
+    * first_name: TEXT
+    * last_name: TEXT
+    phone: TEXT
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+    last_login: TIMESTAMP
+    * active: BOOLEAN
+    deleted_at: TIMESTAMP
+  }
+
+  entity "user_sessions" {
+    * id: UUID <<PK>>
+    --
+    * user_id: UUID <<FK>>
+    * login_time: TIMESTAMP
+    logout_time: TIMESTAMP
+    ip_address: TEXT
+    user_agent: TEXT
+    device_info: JSONB
+  }
+
+  entity "activity_logs" {
+    * id: UUID <<PK>>
+    --
+    * user_id: UUID <<FK>>
+    * action: TEXT
+    * entity_type: TEXT
+    * entity_id: UUID
+    * metadata: JSONB
+    * created_at: TIMESTAMP
+  }
+
+  entity "tenant_settings" {
+    * id: UUID <<PK>>
+    --
+    timezone: TEXT
+    currency: TEXT
+    date_format: TEXT
+    theme: TEXT
+    branding: JSONB
+    invoice_footer: TEXT
+    tax_rate: NUMERIC(5,2)
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+  }
+
+  entity "subscription" {
+    * id: UUID <<PK>>
+    --
+    * plan_id: TEXT
+    * subscribed_at: TIMESTAMP
+    expires_at: TIMESTAMP
+    is_trial: BOOLEAN
+    auto_renew: BOOLEAN
+    payment_method: TEXT
+    payment_details: JSONB
+    * status: TEXT
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+  }
+
+  entity "stations" {
+    * id: UUID <<PK>>
+    --
+    * name: TEXT
+    address: TEXT
+    city: TEXT
+    state: TEXT
+    zip: TEXT
+    contact_phone: TEXT
+    location: JSONB
+    operating_hours: JSONB
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+    * active: BOOLEAN
+    deleted_at: TIMESTAMP
+  }
+
+  entity "user_stations" {
+    * id: UUID <<PK>>
+    --
+    * user_id: UUID <<FK>>
+    * station_id: UUID <<FK>>
+    role: TEXT
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+    * active: BOOLEAN
+  }
+
+  entity "pumps" {
+    * id: UUID <<PK>>
+    --
+    * station_id: UUID <<FK>>
+    * name: TEXT
+    serial_number: TEXT
+    installation_date: DATE
+    last_maintenance_date: DATE
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+    * active: BOOLEAN
+    deleted_at: TIMESTAMP
+  }
+
+  entity "nozzles" {
+    * id: UUID <<PK>>
+    --
+    * pump_id: UUID <<FK>>
+    * fuel_type: TEXT
+    * initial_reading: NUMERIC(12,3)
+    * current_reading: NUMERIC(12,3)
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+    * active: BOOLEAN
+    deleted_at: TIMESTAMP
+  }
+
+  entity "nozzle_readings" {
+    * id: UUID <<PK>>
+    --
+    * nozzle_id: UUID <<FK>>
+    * reading: NUMERIC(12,3)
+    * recorded_at: TIMESTAMP
+    * recorded_by: UUID <<FK>>
+    notes: TEXT
+  }
+
+  entity "fuel_prices" {
+    * id: UUID <<PK>>
+    --
+    * station_id: UUID <<FK>>
+    * fuel_type: TEXT
+    * price_per_unit: NUMERIC(10,2)
+    * effective_from: TIMESTAMP
+    effective_to: TIMESTAMP
+    * created_by: UUID <<FK>>
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+  }
+
+  entity "creditors" {
+    * id: UUID <<PK>>
+    --
+    * station_id: UUID <<FK>>
+    * party_name: TEXT
+    party_contact: TEXT
+    * running_balance: NUMERIC(10,2)
+    credit_limit: NUMERIC(10,2)
+    * last_updated_at: TIMESTAMP
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+    * active: BOOLEAN
+    deleted_at: TIMESTAMP
+  }
+
+  entity "sales" {
+    * id: UUID <<PK>>
+    --
+    * station_id: UUID <<FK>>
+    * nozzle_id: UUID <<FK>>
+    * user_id: UUID <<FK>>
+    * recorded_at: TIMESTAMP
+    * sale_volume: NUMERIC(12,3)
+    * cumulative_reading: NUMERIC(12,3)
+    * previous_reading: NUMERIC(12,3)
+    * fuel_price: NUMERIC(10,2)
+    * amount: NUMERIC(10,2)
+    * cash_received: NUMERIC(10,2)
+    * credit_given: NUMERIC(10,2)
+    * payment_method: TEXT
+    credit_party_id: UUID <<FK>>
+    * status: TEXT
+    notes: TEXT
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+  }
+
+  entity "credit_payments" {
+    * id: UUID <<PK>>
+    --
+    * creditor_id: UUID <<FK>>
+    * amount: NUMERIC(10,2)
+    * paid_at: TIMESTAMP
+    * payment_method: TEXT
+    * received_by: UUID <<FK>>
+    notes: TEXT
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+  }
+
+  entity "day_reconciliations" {
+    * id: UUID <<PK>>
+    --
+    * station_id: UUID <<FK>>
+    * date: DATE
+    * total_sales: NUMERIC(12,2)
+    * cash_total: NUMERIC(12,2)
+    * credit_total: NUMERIC(12,2)
+    * card_total: NUMERIC(12,2)
+    * upi_total: NUMERIC(12,2)
+    * finalized: BOOLEAN
+    * created_by: UUID <<FK>>
+    notes: TEXT
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+  }
+
+  entity "fuel_inventory" {
+    * id: UUID <<PK>>
+    --
+    * station_id: UUID <<FK>>
+    * fuel_type: TEXT
+    * current_volume: NUMERIC(12,3)
+    * capacity: NUMERIC(12,3)
+    * last_updated_at: TIMESTAMP
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+  }
+
+  entity "fuel_deliveries" {
+    * id: UUID <<PK>>
+    --
+    * station_id: UUID <<FK>>
+    * fuel_type: TEXT
+    * volume: NUMERIC(12,3)
+    * price_per_unit: NUMERIC(10,2)
+    * total_amount: NUMERIC(12,2)
+    * delivery_date: TIMESTAMP
+    supplier: TEXT
+    invoice_number: TEXT
+    * received_by: UUID <<FK>>
+    notes: TEXT
+    * created_at: TIMESTAMP
+    * updated_at: TIMESTAMP
+  }
+}
+
+' Relationships
+plan_features }o--|| plans
+admin_activity_logs }o--|| admin_users
+admin_activity_logs }o--|| tenants
+
+user_sessions }o--|| users
+activity_logs }o--|| users
+user_stations }o--|| users
+user_stations }o--|| stations
+pumps }o--|| stations
+nozzles }o--|| pumps
+nozzle_readings }o--|| nozzles
+nozzle_readings }o--|| users
+fuel_prices }o--|| stations
+fuel_prices }o--|| users
+creditors }o--|| stations
+sales }o--|| stations
+sales }o--|| nozzles
+sales }o--|| users
+sales }o--o| creditors
+credit_payments }o--|| creditors
+credit_payments }o--|| users
+day_reconciliations }o--|| stations
+day_reconciliations }o--|| users
+fuel_inventory }o--|| stations
+fuel_deliveries }o--|| stations
+fuel_deliveries }o--|| users
+
+@enduml

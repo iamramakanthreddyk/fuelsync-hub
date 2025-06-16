@@ -1,4 +1,3 @@
-# openapi.yaml
 openapi: 3.0.0
 info:
   title: FuelSync Hub API
@@ -13,7 +12,7 @@ servers:
     description: Production server
   - url: https://api-staging.fuelsync.com/v1
     description: Staging server
-  - url: http://localhost:3000/api/v1
+  - url: http://localhost:3001/api
     description: Local development
 
 components:
@@ -260,7 +259,7 @@ components:
           format: uuid
         notes:
           type: string
-
+    
     DayReconciliation:
       type: object
       properties:
@@ -309,7 +308,7 @@ components:
         password:
           type: string
           format: password
-
+    
     LoginResponse:
       type: object
       properties:
@@ -317,7 +316,7 @@ components:
           type: string
         user:
           $ref: '#/components/schemas/User'
-
+    
     RegisterTenantRequest:
       type: object
       required:
@@ -337,7 +336,7 @@ components:
         planType:
           type: string
           enum: [basic, premium, enterprise]
-
+    
     CreateUserRequest:
       type: object
       required:
@@ -362,7 +361,7 @@ components:
           type: string
         phone:
           type: string
-
+    
     CreateStationRequest:
       type: object
       required:
@@ -389,7 +388,7 @@ components:
               type: number
         operatingHours:
           type: object
-
+    
     CreatePumpRequest:
       type: object
       required:
@@ -406,7 +405,7 @@ components:
         installationDate:
           type: string
           format: date
-
+    
     CreateNozzleRequest:
       type: object
       required:
@@ -423,7 +422,7 @@ components:
         initialReading:
           type: number
           format: float
-
+    
     CreateSaleRequest:
       type: object
       required:
@@ -456,7 +455,7 @@ components:
           format: uuid
         notes:
           type: string
-
+    
     ReconciliationRequest:
       type: object
       required:
@@ -510,7 +509,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
+  
   /auth/register:
     post:
       summary: Register a new tenant and owner
@@ -542,7 +541,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
+  
   /users:
     get:
       summary: Get all users
@@ -576,7 +575,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-
+  
   /users/{id}:
     parameters:
       - name: id
@@ -632,7 +631,7 @@ paths:
       responses:
         '204':
           description: User deleted successfully
-
+  
   /stations:
     get:
       summary: Get all stations
@@ -666,7 +665,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Station'
-
+  
   /stations/{id}:
     parameters:
       - name: id
@@ -728,7 +727,7 @@ paths:
       responses:
         '204':
           description: Station deleted successfully
-
+  
   /stations/{stationId}/pumps:
     parameters:
       - name: stationId
@@ -769,7 +768,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Pump'
-
+  
   /pumps/{pumpId}/nozzles:
     parameters:
       - name: pumpId
@@ -810,7 +809,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Nozzle'
-
+  
   /sales:
     get:
       summary: Get all sales
@@ -865,7 +864,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Sale'
-
+  
   /reconciliations:
     get:
       summary: Get all reconciliations
@@ -915,3 +914,92 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DayReconciliation'
+  
+  /reports/sales-summary:
+    get:
+      summary: Get sales summary
+      description: Get a summary of sales for a specified time period
+      tags:
+        - Reports
+      parameters:
+        - name: stationId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Sales summary data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalSales:
+                    type: number
+                  totalVolume:
+                    type: number
+                  salesByFuelType:
+                    type: object
+                  salesByPaymentMethod:
+                    type: object
+                  dailySales:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        amount:
+                          type: number
+                        volume:
+                          type: number
+  
+  /reports/sales-detail:
+    get:
+      summary: Get detailed sales data
+      description: Get detailed sales data for a specified time period
+      tags:
+        - Reports
+      parameters:
+        - name: stationId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Detailed sales data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sale'

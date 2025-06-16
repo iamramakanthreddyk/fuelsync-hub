@@ -1,9 +1,8 @@
--- db/migrations/02_tenant_schema_template.sql
 -- Template for new tenant schemas
 
 -- User management
 CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   role TEXT NOT NULL CHECK (role IN ('owner', 'manager', 'employee')),
@@ -19,7 +18,7 @@ CREATE TABLE users (
 
 -- User sessions for audit
 CREATE TABLE user_sessions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   login_time TIMESTAMP NOT NULL DEFAULT now(),
   logout_time TIMESTAMP,
@@ -30,7 +29,7 @@ CREATE TABLE user_sessions (
 
 -- Activity logs
 CREATE TABLE activity_logs (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   action TEXT NOT NULL,
   entity_type TEXT NOT NULL,
@@ -41,7 +40,7 @@ CREATE TABLE activity_logs (
 
 -- Tenant settings
 CREATE TABLE tenant_settings (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   timezone TEXT DEFAULT 'UTC',
   currency TEXT DEFAULT 'USD',
   date_format TEXT DEFAULT 'YYYY-MM-DD',
@@ -55,7 +54,7 @@ CREATE TABLE tenant_settings (
 
 -- Plan subscription details
 CREATE TABLE subscription (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   plan_id TEXT NOT NULL,
   subscribed_at TIMESTAMP DEFAULT now(),
   expires_at TIMESTAMP,
@@ -70,7 +69,7 @@ CREATE TABLE subscription (
 
 -- Stations
 CREATE TABLE stations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   name TEXT NOT NULL,
   address TEXT,
   city TEXT,
@@ -87,7 +86,7 @@ CREATE TABLE stations (
 
 -- User station assignments with roles
 CREATE TABLE user_stations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   station_id UUID REFERENCES stations(id),
   role TEXT CHECK (role IN ('manager', 'cashier', 'attendant')),
@@ -99,7 +98,7 @@ CREATE TABLE user_stations (
 
 -- Pumps
 CREATE TABLE pumps (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   station_id UUID REFERENCES stations(id),
   name TEXT NOT NULL,
   serial_number TEXT,
@@ -113,7 +112,7 @@ CREATE TABLE pumps (
 
 -- Nozzles
 CREATE TABLE nozzles (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   pump_id UUID REFERENCES pumps(id),
   fuel_type TEXT NOT NULL CHECK (fuel_type IN ('petrol', 'diesel', 'premium', 'super', 'cng', 'lpg')),
   initial_reading NUMERIC(12,3) NOT NULL,
@@ -126,7 +125,7 @@ CREATE TABLE nozzles (
 
 -- Nozzle readings history
 CREATE TABLE nozzle_readings (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   nozzle_id UUID REFERENCES nozzles(id),
   reading NUMERIC(12,3) NOT NULL,
   recorded_at TIMESTAMP DEFAULT now(),
@@ -136,7 +135,7 @@ CREATE TABLE nozzle_readings (
 
 -- Fuel prices
 CREATE TABLE fuel_prices (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   station_id UUID REFERENCES stations(id),
   fuel_type TEXT NOT NULL CHECK (fuel_type IN ('petrol', 'diesel', 'premium', 'super', 'cng', 'lpg')),
   price_per_unit NUMERIC(10,2) NOT NULL,
@@ -150,7 +149,7 @@ CREATE TABLE fuel_prices (
 
 -- Creditors
 CREATE TABLE creditors (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   station_id UUID REFERENCES stations(id),
   party_name TEXT NOT NULL,
   party_contact TEXT,
@@ -165,7 +164,7 @@ CREATE TABLE creditors (
 
 -- Sales
 CREATE TABLE sales (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   station_id UUID REFERENCES stations(id),
   nozzle_id UUID REFERENCES nozzles(id),
   user_id UUID REFERENCES users(id),
@@ -188,7 +187,7 @@ CREATE TABLE sales (
 
 -- Credit payments
 CREATE TABLE credit_payments (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   creditor_id UUID REFERENCES creditors(id),
   amount NUMERIC(10,2) NOT NULL CHECK (amount > 0),
   paid_at TIMESTAMP NOT NULL DEFAULT now(),
@@ -201,7 +200,7 @@ CREATE TABLE credit_payments (
 
 -- Daily reconciliations
 CREATE TABLE day_reconciliations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   station_id UUID REFERENCES stations(id),
   date DATE NOT NULL,
   total_sales NUMERIC(12,2) NOT NULL,
@@ -219,7 +218,7 @@ CREATE TABLE day_reconciliations (
 
 -- Inventory tracking
 CREATE TABLE fuel_inventory (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   station_id UUID REFERENCES stations(id),
   fuel_type TEXT NOT NULL CHECK (fuel_type IN ('petrol', 'diesel', 'premium', 'super', 'cng', 'lpg')),
   current_volume NUMERIC(12,3) NOT NULL,
@@ -231,7 +230,7 @@ CREATE TABLE fuel_inventory (
 
 -- Fuel deliveries
 CREATE TABLE fuel_deliveries (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY,
   station_id UUID REFERENCES stations(id),
   fuel_type TEXT NOT NULL CHECK (fuel_type IN ('petrol', 'diesel', 'premium', 'super', 'cng', 'lpg')),
   volume NUMERIC(12,3) NOT NULL,
@@ -246,6 +245,4 @@ CREATE TABLE fuel_deliveries (
   updated_at TIMESTAMP DEFAULT now()
 );
 
--- Insert default tenant settings
-INSERT INTO tenant_settings (timezone, currency, date_format, theme)
-VALUES ('UTC', 'USD', 'YYYY-MM-DD', 'light');
+-- We'll handle tenant settings insert in JavaScript

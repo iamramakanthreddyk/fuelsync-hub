@@ -6,6 +6,7 @@ import nozzleRoutes from './nozzle.routes';
 import saleRoutes from './sale.routes';
 import reconciliationRoutes from './reconciliation.routes';
 import reportRoutes from './report.routes';
+import docsRoutes from './docs.routes';
 
 const router = Router();
 
@@ -17,5 +18,6 @@ router.use('/nozzles', nozzleRoutes);
 router.use('/sales', saleRoutes);
 router.use('/reconciliations', reconciliationRoutes);
 router.use('/reports', reportRoutes);
+router.use('/docs', docsRoutes);
 
 export default router;
