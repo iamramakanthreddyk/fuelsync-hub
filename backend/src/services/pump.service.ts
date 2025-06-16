@@ -1,4 +1,3 @@
-// src/services/pump.service.ts
 import pool from '../config/database';
 
 export const createPump = async (
