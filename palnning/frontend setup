@@ -1,0 +1,26 @@
+/frontend
+├── public/
+├── src/
+│   ├── components/           # Reusable UI components
+│   │   ├── layout/           # Layout components
+│   │   ├── forms/            # Form components
+│   │   ├── dashboard/        # Dashboard widgets
+│   │   ├── station/          # Station management
+│   │   └── sales/            # Sales recording
+│   ├── context/              # React context providers
+│   ├── hooks/                # Custom React hooks
+│   ├── pages/                # Next.js pages
+│   │   ├── auth/             # Authentication pages
+│   │   ├── dashboard/        # Dashboard pages
+│   │   ├── stations/         # Station management
+│   │   ├── pumps/            # Pump management
+│   │   ├── sales/            # Sales recording
+│   │   ├── reports/          # Reporting pages
+│   │   └── settings/         # Settings pages
+│   ├── services/             # API client services
+│   ├── styles/               # CSS styles
+│   └── utils/                # Utility functions
+├── package.json
+└── next.config.js
+
+

@@ -1,0 +1,20 @@
+/backend
+├── src/
+│   ├── config/               # Configuration files
+│   ├── middlewares/          # Express middlewares
+│   │   ├── auth.ts           # Authentication middleware
+│   │   ├── tenant.ts         # Multi-tenant middleware
+│   │   └── validation.ts     # Request validation
+│   ├── services/             # Business logic
+│   │   ├── tenant.service.ts # Tenant management
+│   │   ├── user.service.ts   # User management
+│   │   ├── station.service.ts# Station management
+│   │   ├── sales.service.ts  # Sales operations
+│   │   └── reports.service.ts# Reporting functionality
+│   ├── controllers/          # API controllers
+│   ├── routes/               # API routes
+│   ├── models/               # Data models & DB interaction
+│   ├── utils/                # Utility functions
+│   └── server.ts             # Express app setup
+├── package.json
+└── tsconfig.json

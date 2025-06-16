@@ -1,0 +1,37 @@
+# Clone your repository if you haven't already
+git clone https://github.com/ramakanthreddyk/fuelsync-hub.git
+cd fuelsync-hub
+
+# Create backend structure
+mkdir -p backend/src/config backend/src/middlewares backend/src/services backend/src/controllers backend/src/routes backend/src/models backend/src/utils
+mkdir -p backend/db/migrations backend/db/scripts
+
+# Create frontend structure
+mkdir -p frontend/src/components/layout frontend/src/pages/auth frontend/src/pages/dashboard frontend/src/pages/stations frontend/src/pages/sales frontend/src/pages/reports frontend/src/styles frontend/src/utils
+
+# Initialize backend
+cd backend
+npm init -y
+npm install express pg bcrypt jsonwebtoken dotenv cors helmet
+npm install -D typescript ts-node @types/express @types/pg @types/bcrypt @types/jsonwebtoken @types/cors
+
+# Create tsconfig.json
+echo '{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.test.ts"]
+}' > tsconfig.json
+
+# Initialize frontend
+cd ../frontend
+npx create-next-app@latest . --typescript --eslint
+npm install @mui/material @mui/icons-material @emotion/react @emotion/styled axios
