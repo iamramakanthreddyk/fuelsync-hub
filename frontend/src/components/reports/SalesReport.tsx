@@ -111,7 +111,7 @@ const SalesReport: React.FC<SalesReportProps> = ({
                   Total Sales
                 </Typography>
                 <Typography variant="h5" fontWeight="bold">
-                  ${data.totalSales.toFixed(2)}
+                  ${data.totalSales?.toFixed(2)}
                 </Typography>
               </Grid>
               <Grid item xs={6}>
@@ -119,7 +119,7 @@ const SalesReport: React.FC<SalesReportProps> = ({
                   Total Volume
                 </Typography>
                 <Typography variant="h5" fontWeight="bold">
-                  {data.totalVolume.toFixed(2)} L
+                  {data.totalVolume?.toFixed(2)} L
                 </Typography>
               </Grid>
             </Grid>
@@ -148,9 +148,9 @@ const SalesReport: React.FC<SalesReportProps> = ({
                       <TableCell>
                         {method.charAt(0).toUpperCase() + method.slice(1)}
                       </TableCell>
-                      <TableCell align="right">${amount.toFixed(2)}</TableCell>
+                      <TableCell align="right">${amount?.toFixed(2)}</TableCell>
                       <TableCell align="right">
-                        {((amount / data.totalSales) * 100).toFixed(1)}%
+                        {((amount / data.totalSales) * 100)?.toFixed(1)}%
                       </TableCell>
                     </TableRow>
                   ))}
@@ -182,13 +182,13 @@ const SalesReport: React.FC<SalesReportProps> = ({
                   {Object.entries(data.salesByFuelType).map(([fuelType, data]) => (
                     <TableRow key={fuelType}>
                       <TableCell>{fuelType.toUpperCase()}</TableCell>
-                      <TableCell align="right">{data.volume.toFixed(2)}</TableCell>
-                      <TableCell align="right">${data.amount.toFixed(2)}</TableCell>
+                      <TableCell align="right">{data.volume?.toFixed(2)}</TableCell>
+                      <TableCell align="right">${data.amount?.toFixed(2)}</TableCell>
                       <TableCell align="right">
-                        ${(data.amount / data.volume).toFixed(2)}
+                        ${(data.amount / data.volume)?.toFixed(2)}
                       </TableCell>
                       <TableCell align="right">
-                        {((data.amount / data.totalSales) * 100).toFixed(1)}%
+                        {((data.amount / data.totalSales) * 100)?.toFixed(1)}%
                       </TableCell>
                     </TableRow>
                   ))}
@@ -220,8 +220,8 @@ const SalesReport: React.FC<SalesReportProps> = ({
                       <TableCell>
                         {new Date(day.date).toLocaleDateString()}
                       </TableCell>
-                      <TableCell align="right">{day.volume.toFixed(2)}</TableCell>
-                      <TableCell align="right">${day.amount.toFixed(2)}</TableCell>
+                      <TableCell align="right">{day.volume?.toFixed(2)}</TableCell>
+                      <TableCell align="right">${day.amount?.toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

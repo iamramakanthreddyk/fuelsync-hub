@@ -2,6 +2,7 @@ import '../styles/globals.css';
 import type { AppProps } from 'next/app';
 import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
 import { useEffect } from 'react';
+import NavigationGuard from '../components/auth/NavigationGuard';
 
 // Create a theme instance
 const theme = createTheme({
@@ -44,7 +45,9 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Component {...pageProps} />
+      <NavigationGuard>
+        <Component {...pageProps} />
+      </NavigationGuard>
     </ThemeProvider>
   );
 }

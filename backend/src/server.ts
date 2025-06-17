@@ -1,43 +1,52 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import swaggerUi from 'swagger-ui-express';
-import YAML from 'yamljs';
-import path from 'path';
-import routes from './routes';
-import config from './config/environment';
+// src/server.ts
+import { Server } from 'http';
+import app from './app';
+import { config } from './config/environment';
+import pool from './config/database';
 
-// Initialize Express app
-const app = express();
+let server: Server;
 
-// Apply middleware
-app.use(cors());
-app.use(helmet());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Load OpenAPI document
-const swaggerDocument = YAML.load(path.join(__dirname, '../openapi.yaml'));
-
-// Swagger documentation
-app.use('/api-docs', swaggerUi.serve);
-app.get('/api-docs', swaggerUi.setup(swaggerDocument));
-
-// Apply routes
-app.use('/api', routes);
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
-});
-
-// Start server
-if (process.env.NODE_ENV !== 'test') {
-  const PORT = config.port;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`API Documentation available at http://localhost:${PORT}/api-docs`);
+const startServer = () => {
+  server = app.listen(config.port, () => {
+    console.log(`Server running on port ${config.port}`);
+    console.log(`API docs → http://localhost:${config.port}/api-docs`);
   });
-}
 
-export default app;
+  // Handle unhandled promise rejections
+  process.on('unhandledRejection', (err: Error) => {
+    console.error('Unhandled Rejection:', err);
+    // Close server & exit process
+    if (server) {
+      server.close(() => process.exit(1));
+    } else {
+      process.exit(1);
+    }
+  });
+
+  // Handle uncaught exceptions
+  process.on('uncaughtException', (err: Error) => {
+    console.error('Uncaught Exception:', err);
+    // Close server & exit process
+    if (server) {
+      server.close(() => process.exit(1));
+    } else {
+      process.exit(1);
+    }
+  });
+
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received. Shutting down gracefully...');
+    if (server) {
+      server.close(async () => {
+        console.log('Server closed.');
+        await pool.end();
+        process.exit(0);
+      });
+    } else {
+      process.exit(0);
+    }
+  });
+};
+
+startServer();

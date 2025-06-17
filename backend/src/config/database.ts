@@ -4,25 +4,21 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Create a connection pool
+// Database configuration
 const pool = new Pool({
-  host: process.env.DB_HOST || 'fuelsync-server.postgres.database.azure.com',
+  host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT || '5432'),
-  user: process.env.DB_USER || 'fueladmin',
-  password: process.env.DB_PASSWORD || 'Th1nkpad!2304',
-  database: process.env.DB_NAME || 'fuelsync_db',
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   ssl: {
     rejectUnauthorized: false
   }
 });
 
-// Test the connection
-pool.query('SELECT NOW()', (err) => {
-  if (err) {
-    console.error('Database connection error:', err);
-  } else {
-    console.log('Database connected successfully');
-  }
-});
+// Test connection and export pool
+pool.connect()
+  .then(() => console.log('Database connected successfully'))
+  .catch(err => console.error('Database connection error:', err));
 
 export default pool;

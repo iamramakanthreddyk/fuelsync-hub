@@ -82,7 +82,7 @@ export default function Reports() {
   });
   const [salesData, setSalesData] = useState<any[]>([]);
   const [reportLoading, setReportLoading] = useState(false);
-  
+
   useEffect(() => {
     // Verify authentication
     const token = localStorage.getItem('token');
@@ -90,7 +90,7 @@ export default function Reports() {
       router.push('/login');
       return;
     }
-    
+
     const fetchStations = async () => {
       try {
         const response = await fetch('/api/stations', {
@@ -98,14 +98,14 @@ export default function Reports() {
             'Authorization': `Bearer ${token}`
           }
         });
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch stations');
         }
-        
+
         const data = await response.json();
         setStations(data);
-        
+
         // If we have stations, set the first one as default
         if (data.length > 0) {
           setFilters(prev => ({
@@ -119,21 +119,21 @@ export default function Reports() {
         setLoading(false);
       }
     };
-    
+
     fetchStations();
   }, [router]);
-  
+
   useEffect(() => {
     // Load initial report if we have a station selected
     if (filters.stationId) {
       fetchSalesReport();
     }
   }, [filters.stationId]);
-  
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
-  
+
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
     const { name, value } = e.target;
     setFilters(prev => ({
@@ -141,16 +141,16 @@ export default function Reports() {
       [name as string]: value
     }));
   };
-  
+
   const fetchSalesReport = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
       router.push('/login');
       return;
     }
-    
+
     setReportLoading(true);
-    
+
     try {
       // Fetch sales summary
       const summaryResponse = await fetch(
@@ -161,14 +161,14 @@ export default function Reports() {
           }
         }
       );
-      
+
       if (!summaryResponse.ok) {
         throw new Error('Failed to fetch sales summary');
       }
-      
+
       const summaryData = await summaryResponse.json();
       setSalesSummary(summaryData);
-      
+
       // Fetch detailed sales data
       const salesResponse = await fetch(
         `/api/reports/sales-detail?stationId=${filters.stationId}&startDate=${filters.startDate}&endDate=${filters.endDate}`,
@@ -178,11 +178,11 @@ export default function Reports() {
           }
         }
       );
-      
+
       if (!salesResponse.ok) {
         throw new Error('Failed to fetch sales details');
       }
-      
+
       const salesDetailData = await salesResponse.json();
       setSalesData(salesDetailData);
     } catch (error) {
@@ -191,20 +191,20 @@ export default function Reports() {
       setReportLoading(false);
     }
   };
-  
+
   const exportToCsv = () => {
     if (salesData.length === 0) return;
-    
+
     // Create CSV content
     const headers = Object.keys(salesData[0]).join(',');
-    const rows = salesData.map(row => 
-      Object.values(row).map(value => 
+    const rows = salesData.map(row =>
+      Object.values(row).map(value =>
         typeof value === 'string' && value.includes(',') ? `"${value}"` : value
       ).join(',')
     ).join('\n');
-    
+
     const csvContent = `${headers}\n${rows}`;
-    
+
     // Create download link
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -215,7 +215,7 @@ export default function Reports() {
     link.click();
     document.body.removeChild(link);
   };
-  
+
   if (loading) {
     return (
       <DashboardLayout title="Reports">
@@ -225,7 +225,7 @@ export default function Reports() {
       </DashboardLayout>
     );
   }
-  
+
   return (
     <DashboardLayout title="Reports">
       <Paper sx={{ mb: 3 }}>
@@ -236,7 +236,7 @@ export default function Reports() {
             <Tab label="Credit Report" id="tab-2" aria-controls="tabpanel-2" />
           </Tabs>
         </Box>
-        
+
         {/* Sales Report Tab */}
         <TabPanel value={tabValue} index={0}>
           <Grid container spacing={3}>
@@ -293,8 +293,8 @@ export default function Reports() {
                     />
                   </Grid>
                   <Grid item xs={12} sm={2} sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Button 
-                      variant="contained" 
+                    <Button
+                      variant="contained"
                       fullWidth
                       onClick={fetchSalesReport}
                     >
@@ -304,7 +304,7 @@ export default function Reports() {
                 </Grid>
               </Paper>
             </Grid>
-            
+
             {reportLoading ? (
               <Grid item xs={12}>
                 <Box display="flex" justifyContent="center" py={4}>
@@ -321,12 +321,12 @@ export default function Reports() {
                         Total Sales
                       </Typography>
                       <Typography variant="h4" component="div">
-                        ${salesSummary.totalSales.toFixed(2)}
+                        ${salesSummary.totalSales?.toFixed(2)}
                       </Typography>
                     </CardContent>
                   </Card>
                 </Grid>
-                
+
                 <Grid item xs={12} sm={6} md={3}>
                   <Card>
                     <CardContent>
@@ -334,12 +334,12 @@ export default function Reports() {
                         Total Volume
                       </Typography>
                       <Typography variant="h4" component="div">
-                        {salesSummary.totalVolume.toFixed(2)} L
+                        {salesSummary.totalVolume?.toFixed(2)} L
                       </Typography>
                     </CardContent>
                   </Card>
                 </Grid>
-                
+
                 <Grid item xs={12} sm={6} md={3}>
                   <Card>
                     <CardContent>
@@ -347,12 +347,12 @@ export default function Reports() {
                         Cash Sales
                       </Typography>
                       <Typography variant="h4" component="div">
-                        ${(salesSummary.salesByPaymentMethod.cash || 0).toFixed(2)}
+                        ${(salesSummary.salesByPaymentMethod.cash || 0)?.toFixed(2)}
                       </Typography>
                     </CardContent>
                   </Card>
                 </Grid>
-                
+
                 <Grid item xs={12} sm={6} md={3}>
                   <Card>
                     <CardContent>
@@ -360,12 +360,12 @@ export default function Reports() {
                         Credit Given
                       </Typography>
                       <Typography variant="h4" component="div">
-                        ${(salesSummary.salesByPaymentMethod.credit || 0).toFixed(2)}
+                        ${(salesSummary.salesByPaymentMethod.credit || 0)?.toFixed(2)}
                       </Typography>
                     </CardContent>
                   </Card>
                 </Grid>
-                
+
                 {/* Sales by Fuel Type */}
                 <Grid item xs={12} md={6}>
                   <Card>
@@ -386,9 +386,9 @@ export default function Reports() {
                           <TableBody>
                             {Object.entries(salesSummary.salesByFuelType).map(([fuelType, data]) => (
                               <TableRow key={fuelType}>
-                                <TableCell>{fuelType.toUpperCase()}</TableCell>
-                                <TableCell align="right">{data.volume.toFixed(2)}</TableCell>
-                                <TableCell align="right">${data.amount.toFixed(2)}</TableCell>
+                                <TableCell>{fuelType?.toUpperCase()}</TableCell>
+                                <TableCell align="right">{data.volume?.toFixed(2)}</TableCell>
+                                <TableCell align="right">${data.amount?.toFixed(2)}</TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
@@ -397,7 +397,7 @@ export default function Reports() {
                     </CardContent>
                   </Card>
                 </Grid>
-                
+
                 {/* Sales by Payment Method */}
                 <Grid item xs={12} md={6}>
                   <Card>
@@ -418,11 +418,11 @@ export default function Reports() {
                           <TableBody>
                             {Object.entries(salesSummary.salesByPaymentMethod).map(([method, amount]) => (
                               <TableRow key={method}>
-                                <TableCell>{method.charAt(0).toUpperCase() + method.slice(1)}</TableCell>
-                                <TableCell align="right">${amount.toFixed(2)}</TableCell>
+                                <TableCell>{method.charAt(0)?.toUpperCase() + method.slice(1)}</TableCell>
+                                <TableCell align="right">${amount?.toFixed(2)}</TableCell>
                                 <TableCell align="right">
-                                  {salesSummary.totalSales > 0 
-                                    ? `${((amount / salesSummary.totalSales) * 100).toFixed(1)}%` 
+                                  {salesSummary.totalSales > 0
+                                    ? `${((amount / salesSummary.totalSales) * 100)?.toFixed(1)}%`
                                     : '0%'
                                   }
                                 </TableCell>
@@ -434,7 +434,7 @@ export default function Reports() {
                     </CardContent>
                   </Card>
                 </Grid>
-                
+
                 {/* Detailed Sales Data */}
                 <Grid item xs={12}>
                   <Card>
@@ -443,8 +443,8 @@ export default function Reports() {
                         <Typography variant="h6">
                           Detailed Sales Data
                         </Typography>
-                        <Button 
-                          variant="outlined" 
+                        <Button
+                          variant="outlined"
                           startIcon={<DownloadIcon />}
                           onClick={exportToCsv}
                           disabled={salesData.length === 0}
@@ -453,7 +453,7 @@ export default function Reports() {
                         </Button>
                       </Box>
                       <Divider sx={{ mb: 2 }} />
-                      
+
                       <TableContainer sx={{ maxHeight: 400 }}>
                         <Table stickyHeader size="small">
                           <TableHead>
@@ -476,10 +476,10 @@ export default function Reports() {
                               salesData.map((sale) => (
                                 <TableRow key={sale.id}>
                                   <TableCell>{new Date(sale.recordedAt).toLocaleString()}</TableCell>
-                                  <TableCell>{sale.fuelType.toUpperCase()}</TableCell>
-                                  <TableCell align="right">{sale.saleVolume.toFixed(2)}</TableCell>
-                                  <TableCell align="right">${sale.fuelPrice.toFixed(2)}</TableCell>
-                                  <TableCell align="right">${sale.amount.toFixed(2)}</TableCell>
+                                  <TableCell>{sale.fuelType?.toUpperCase()}</TableCell>
+                                  <TableCell align="right">{sale.saleVolume?.toFixed(2)}</TableCell>
+                                  <TableCell align="right">${sale.fuelPrice?.toFixed(2)}</TableCell>
+                                  <TableCell align="right">${sale.amount?.toFixed(2)}</TableCell>
                                   <TableCell>{sale.paymentMethod}</TableCell>
                                   <TableCell>{sale.employeeName}</TableCell>
                                 </TableRow>
@@ -495,7 +495,7 @@ export default function Reports() {
             )}
           </Grid>
         </TabPanel>
-        
+
         {/* Inventory Report Tab */}
         <TabPanel value={tabValue} index={1}>
           <Typography variant="h6" gutterBottom>
@@ -505,7 +505,7 @@ export default function Reports() {
             Inventory reporting functionality will be available in a future update.
           </Typography>
         </TabPanel>
-        
+
         {/* Credit Report Tab */}
         <TabPanel value={tabValue} index={2}>
           <Typography variant="h6" gutterBottom>

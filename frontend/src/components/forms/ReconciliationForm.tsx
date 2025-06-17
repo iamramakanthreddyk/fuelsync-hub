@@ -233,7 +233,7 @@ const ReconciliationForm: React.FC<ReconciliationFormProps> = ({
                   fullWidth
                   disabled
                   label="Total Sales"
-                  value={`$${dailyTotals.totalSales.toFixed(2)}`}
+                  value={`$${dailyTotals.totalSales?.toFixed(2)}`}
                 />
               </Grid>
               <Grid item xs={12} sm={4}>
@@ -241,7 +241,7 @@ const ReconciliationForm: React.FC<ReconciliationFormProps> = ({
                   fullWidth
                   disabled
                   label="Cash Received"
-                  value={`$${dailyTotals.cashTotal.toFixed(2)}`}
+                  value={`$${dailyTotals.cashTotal?.toFixed(2)}`}
                 />
               </Grid>
               <Grid item xs={12} sm={4}>
@@ -249,7 +249,7 @@ const ReconciliationForm: React.FC<ReconciliationFormProps> = ({
                   fullWidth
                   disabled
                   label="Credit Given"
-                  value={`$${dailyTotals.creditTotal.toFixed(2)}`}
+                  value={`$${dailyTotals.creditTotal?.toFixed(2)}`}
                 />
               </Grid>
             </Grid>
@@ -307,7 +307,7 @@ const ReconciliationForm: React.FC<ReconciliationFormProps> = ({
                   fullWidth
                   disabled
                   label="Total Sales"
-                  value={`$${dailyTotals.totalSales.toFixed(2)}`}
+                  value={`$${dailyTotals.totalSales?.toFixed(2)}`}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -315,7 +315,7 @@ const ReconciliationForm: React.FC<ReconciliationFormProps> = ({
                   fullWidth
                   disabled
                   label="Total Payments"
-                  value={`$${totalPayments.toFixed(2)}`}
+                  value={`$${totalPayments?.toFixed(2)}`}
                 />
               </Grid>
               {dailyTotals.totalSales > 0 && (

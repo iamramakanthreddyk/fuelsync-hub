@@ -1,22 +1,15 @@
 import { useEffect, useState } from 'react';
 import {
-  Grid,
-  Paper,
-  Typography,
-  Box,
-  CircularProgress,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions
+  Grid, Paper, Typography, Box, CircularProgress, Button, 
+  Dialog, DialogTitle, DialogContent, Select, MenuItem
 } from '@mui/material';
+import { Line, Pie } from '@ant-design/charts';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import StatCard from '../../components/dashboard/StatCard';
 import RecentSales from '../../components/dashboard/RecentSales';
 import SaleForm from '../../components/forms/SaleForm';
 import { apiGet, apiPost } from '../../utils/api';
-import { useAuth } from '../../utils/auth';
+import ProtectedRoute from '../../components/auth/ProtectedRoute';
 import {
   LocalGasStation as StationIcon,
   LocalGasStation as PumpIcon,
@@ -25,35 +18,72 @@ import {
   Add as AddIcon
 } from '@mui/icons-material';
 
+interface Station {
+  id: string;
+  name: string;
+}
+
 interface DashboardStats {
   totalStations: number;
   totalPumps: number;
   todaySales: number;
   totalCredit: number;
   recentSales: any[];
+  prices: { fuel_type: string; price: number; }[];
+  sales: { total_amount: number; total_volume: number; };
+  creditors: { customer_name: string; outstanding: number; last_sale: string; }[];
+  trend: { sale_date: string; total_amount: number; }[];
+  payments: { payment_method: string; total: number; }[];
 }
 
-export default function Dashboard() {
-  const { loading: authLoading, user } = useAuth();
+function DashboardContent() {
   const [loading, setLoading] = useState(true);
+  const [selectedStation, setSelectedStation] = useState<string>('');
+  const [stations, setStations] = useState<Station[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
     totalStations: 0,
     totalPumps: 0,
     todaySales: 0,
     totalCredit: 0,
-    recentSales: []
+    recentSales: [],
+    prices: [],
+    sales: { total_amount: 0, total_volume: 0 },
+    creditors: [],
+    trend: [],
+    payments: []
   });
   const [saleDialogOpen, setSaleDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   
   useEffect(() => {
-    if (authLoading) return;
+    const fetchStations = async () => {
+      try {
+        const response = await apiGet<ApiResponse<Station[]>>('/stations');
+        if (response.status === 'success' && response.data) {
+          const stationsData = response.data;
+          setStations(stationsData);
+          if (stationsData.length > 0) {
+            setSelectedStation(stationsData[0].id);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching stations:', error);
+      }
+    };
+
+    fetchStations();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedStation) return;
     
     const fetchDashboardData = async () => {
       try {
-        const data = await apiGet<DashboardStats>('/dashboard/stats');
-        setStats(data);
+        const response = await apiGet<ApiResponse<DashboardStats>>(`/dashboard/stats?stationId=${selectedStation}`);
+        if (response.status === 'success' && response.data) {
+          setStats(response.data);
+        }
       } catch (error) {
         console.error('Error fetching dashboard stats:', error);
       } finally {
@@ -62,7 +92,7 @@ export default function Dashboard() {
     };
     
     fetchDashboardData();
-  }, [authLoading]);
+  }, [selectedStation]);
   
   const handleOpenSaleDialog = () => {
     setSaleDialogOpen(true);
@@ -78,22 +108,27 @@ export default function Dashboard() {
     setSubmitError('');
     
     try {
-      await apiPost('/sales', formData);
+      const response = await apiPost<ApiResponse<any>>('/sales', formData);
+      if (response.status !== 'success') {
+        throw new Error(response.message || 'Failed to record sale');
+      }
       
       // Refresh dashboard data
-      const newStats = await apiGet<DashboardStats>('/dashboard/stats');
-      setStats(newStats);
+      const statsResponse = await apiGet<ApiResponse<DashboardStats>>('/dashboard/stats');
+      if (statsResponse.status === 'success' && statsResponse.data) {
+        setStats(statsResponse.data);
+      }
       
       handleCloseSaleDialog();
     } catch (error: any) {
       console.error('Error recording sale:', error);
-      setSubmitError(error.response?.data?.message || 'Failed to record sale');
+      setSubmitError(error.message || 'Failed to record sale');
     } finally {
       setSubmitting(false);
     }
   };
   
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <DashboardLayout title="Dashboard">
         <Box display="flex" justifyContent="center" alignItems="center" height="60vh">
@@ -106,21 +141,30 @@ export default function Dashboard() {
   return (
     <DashboardLayout title="Dashboard">
       <Grid container spacing={3}>
-        {/* Quick Action Button */}
-        {user?.role !== 'owner' && (
-          <Grid item xs={12}>
-            <Box display="flex" justifyContent="flex-end">
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleOpenSaleDialog}
-              >
-                Record Sale
-              </Button>
-            </Box>
-          </Grid>
-        )}
-        
+        {/* Station Selector */}
+        <Grid item xs={12}>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Select
+              value={selectedStation}
+              onChange={(e) => setSelectedStation(e.target.value)}
+              sx={{ minWidth: 200 }}
+            >
+              {stations.map((station) => (
+                <MenuItem key={station.id} value={station.id}>
+                  {station.name}
+                </MenuItem>
+              ))}
+            </Select>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleOpenSaleDialog}
+            >
+              Record Sale
+            </Button>
+          </Box>
+        </Grid>
+
         {/* Stats Cards */}
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
@@ -143,7 +187,7 @@ export default function Dashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Today's Sales"
-            value={`$${stats.todaySales.toFixed(2)}`}
+            value={`$${stats.todaySales?.toFixed(2)}`}
             icon={<SalesIcon />}
             color="#2e7d32"
             subtitle="Total sales today"
@@ -153,7 +197,7 @@ export default function Dashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Outstanding Credit"
-            value={`$${stats.totalCredit.toFixed(2)}`}
+            value={`$${stats.totalCredit?.toFixed(2)}`}
             icon={<CreditIcon />}
             color="#ed6c02"
             subtitle="Total credit given"
@@ -196,6 +240,45 @@ export default function Dashboard() {
             </Typography>
           </Paper>
         </Grid>
+
+        {/* Charts Section */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>7-Day Sales Trend</Typography>
+            {stats.trend.length > 0 ? (
+              <Line
+                data={stats.trend}
+                xField="sale_date"
+                yField="total_amount"
+                point={{ size: 4 }}
+                color="#1890ff"
+                height={220}
+                autoFit
+              />
+            ) : (
+              <Typography>No sales data available</Typography>
+            )}
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>Payment Breakdown</Typography>
+            {stats.payments.length > 0 ? (
+              <Pie
+                data={stats.payments}
+                angleField="total"
+                colorField="payment_method"
+                radius={0.9}
+                label={{ type: 'outer', content: '{name}: {percentage}' }}
+                height={220}
+                autoFit
+              />
+            ) : (
+              <Typography>No payment data available</Typography>
+            )}
+          </Paper>
+        </Grid>
       </Grid>
 
       {/* Sale Dialog */}
@@ -216,5 +299,14 @@ export default function Dashboard() {
         </DialogContent>
       </Dialog>
     </DashboardLayout>
+  );
+}
+
+// Wrap the dashboard content with the protected route component
+export default function Dashboard() {
+  return (
+    <ProtectedRoute>
+      <DashboardContent />
+    </ProtectedRoute>
   );
 }

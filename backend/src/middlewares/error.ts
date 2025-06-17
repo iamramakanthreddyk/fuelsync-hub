@@ -23,3 +23,11 @@ export const errorHandler = (
     error: process.env.NODE_ENV === 'development' ? err : undefined
   });
 };
+
+// Standardized error response helper
+export function sendError(res: Response, status: number, message: string, details?: any) {
+  return res.status(status).json({
+    message,
+    ...(details ? { details } : {})
+  });
+}

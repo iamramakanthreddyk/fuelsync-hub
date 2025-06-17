@@ -1,0 +1,35 @@
+@startuml
+!include database-schema.puml
+
+' Data flow for daily nozzle reading and dashboard
+actor Employee as E
+actor Manager as M
+actor Owner as O
+participant "Frontend UI" as UI
+participant "Backend API" as API
+participant "DB (Tenant Schema)" as DB
+
+E -> UI : Open Nozzle Entry Page
+UI -> API : GET /stations/{stationId}/nozzle-readings/previous
+API -> DB : Fetch previous readings
+DB --> API : Previous readings
+API --> UI : JSON readings
+
+UI -> API : GET /stations/{stationId}/fuel-prices
+API -> DB : Fetch fuel prices
+DB --> API : Fuel prices
+API --> UI : JSON prices
+
+E -> UI : Enter readings
+UI : Auto-calculate sold/amount
+UI -> API : POST /stations/{stationId}/nozzle-readings
+API -> DB : Validate, store readings, create sales
+DB --> API : OK
+API --> UI : Success
+
+O -> UI : Open Dashboard
+UI -> API : GET /dashboard?stationId={stationId}
+API -> DB : Fetch KPIs, trends, payments, creditors
+DB --> API : Dashboard data
+API --> UI : JSON dashboard
+@enduml

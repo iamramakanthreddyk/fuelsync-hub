@@ -1,0 +1,98 @@
+openapi: 3.0.3
+info:
+  title: FuelSync Hub API
+  version: 1.0.0
+  description: |
+    API documentation for FuelSync Hub, a multi-tenant SaaS platform for fuel station management.
+    
+    - JWT authentication (role-based)
+    - Multi-tenant schema isolation
+    - Plan-based feature enforcement
+    - Audit logging
+    - Stripe billing integration (planned)
+servers:
+  - url: /api
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string }
+        role: { type: string, enum: [owner, manager, employee, superadmin] }
+        first_name: { type: string }
+        last_name: { type: string }
+        active: { type: boolean }
+    Station:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        ...
+    Sale:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        station_id: { type: string, format: uuid }
+        ...
+paths:
+  /auth/login:
+    post:
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid credentials
+  /stations:
+    get:
+      summary: List stations
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of stations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Station'
+    post:
+      summary: Create station
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Station'
+      responses:
+        '201':
+          description: Station created
+  # ...more endpoints for pumps, nozzles, sales, reconciliation, admin, etc.

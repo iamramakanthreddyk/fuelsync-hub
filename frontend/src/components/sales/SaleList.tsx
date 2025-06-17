@@ -283,9 +283,9 @@ const SaleList: React.FC<SaleListProps> = ({
                 </TableCell>
                 <TableCell>{sale.stationName}</TableCell>
                 <TableCell>{sale.fuelType.toUpperCase()}</TableCell>
-                <TableCell align="right">{sale.saleVolume.toFixed(2)}</TableCell>
-                <TableCell align="right">${sale.fuelPrice.toFixed(2)}</TableCell>
-                <TableCell align="right">${sale.amount.toFixed(2)}</TableCell>
+                <TableCell align="right">{sale.saleVolume?.toFixed(2)}</TableCell>
+                <TableCell align="right">${sale.fuelPrice?.toFixed(2)}</TableCell>
+                <TableCell align="right">${sale.amount?.toFixed(2)}</TableCell>
                 <TableCell>
                   <Chip
                     label={sale.paymentMethod}

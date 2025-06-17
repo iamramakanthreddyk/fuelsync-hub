@@ -1,5 +1,5 @@
 // frontend/src/components/layout/DashboardLayout.tsx
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import {
   AppBar,
@@ -42,10 +42,21 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [user, setUser] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
 
-  // Get user from localStorage (would be better with a context or Redux)
-  const userJson = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-  const user = userJson ? JSON.parse(userJson) : null;
+  // Fix hydration mismatch by only rendering user-dependent parts after mounting
+  useEffect(() => {
+    setMounted(true);
+    // Get user from localStorage after component mounts (client-side only)
+    const userJson = localStorage.getItem('user');
+    if (userJson) {
+      setUser(JSON.parse(userJson));
+    } else {
+      // Redirect to login if no user found
+      router.push('/login');
+    }
+  }, [router]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -103,6 +114,24 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
       </List>
     </div>
   );
+
+  // Return a loading state or simplified layout until client-side rendering is ready
+  if (!mounted) {
+    return (
+      <Box sx={{ display: 'flex' }}>
+        <CssBaseline />
+        <Box
+          component="main"
+          sx={{ flexGrow: 1, p: 3 }}
+        >
+          <Toolbar />
+          <Typography variant="h6">{title}</Typography>
+          {/* Render a simplified version of children that doesn't depend on user data */}
+          {children}
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ display: 'flex' }}>

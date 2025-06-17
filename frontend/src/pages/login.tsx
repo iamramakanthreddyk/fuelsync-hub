@@ -1,7 +1,7 @@
-// frontend/src/pages/login.tsx
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { TextField, Button, Paper, Typography, Box, Container, Alert } from '@mui/material';
+import { TextField, Button, Paper, Typography, Box, Container, Alert, CircularProgress } from '@mui/material';
+import { login } from '../utils/auth';
 
 export default function Login() {
   const router = useRouter();
@@ -16,28 +16,13 @@ export default function Login() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-
-      // Store token in localStorage
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-
+      // Use the updated login function from auth utility
+      const result = await login(email, password);
+      
       // Redirect to dashboard
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Login failed. Please check your credentials and try again.');
     } finally {
       setLoading(false);
     }
@@ -50,9 +35,9 @@ export default function Login() {
           <Typography component="h1" variant="h5" align="center" gutterBottom>
             FuelSync Hub Login
           </Typography>
-          
+
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          
+
           <Box component="form" onSubmit={handleSubmit} noValidate>
             <TextField
               margin="normal"
@@ -85,14 +70,21 @@ export default function Login() {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? (
+                <>
+                  <CircularProgress size={24} sx={{ mr: 1 }} />
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
             </Button>
           </Box>
-          
+
           <Box sx={{ mt: 2, textAlign: 'center' }}>
             <Typography variant="body2">
-              Don't have an account?{' '}
-              <Button 
+              <span>Don&apos;t have an account?</span>
+              <Button
                 onClick={() => router.push('/register')}
                 sx={{ textTransform: 'none' }}
               >

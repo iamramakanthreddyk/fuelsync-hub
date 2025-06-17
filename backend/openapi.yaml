@@ -1,19 +1,12 @@
 openapi: 3.0.0
 info:
   title: FuelSync Hub API
-  description: API for multi-tenant fuel station management system
-  version: 1.0.0
-  contact:
-    name: FuelSync Support
-    email: support@fuelsync.com
-
+  description: API for FuelSync Hub multi-tenant fuel station ERP
+  version: 0.3.0
+  
 servers:
-  - url: https://api.fuelsync.com/v1
-    description: Production server
-  - url: https://api-staging.fuelsync.com/v1
-    description: Staging server
-  - url: http://localhost:3001/api
-    description: Local development
+  - url: /api
+    description: API base path
 
 components:
   securitySchemes:
@@ -21,286 +14,27 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
+      description: JWT token for authentication
+  
   schemas:
     Error:
       type: object
       properties:
-        message:
-          type: string
-        code:
-          type: string
-        details:
-          type: object
-
-    Tenant:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        planType:
-          type: string
-          enum: [basic, premium, enterprise]
-        active:
-          type: boolean
-        createdAt:
-          type: string
-          format: date-time
-
-    User:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        email:
-          type: string
-          format: email
-        role:
-          type: string
-          enum: [owner, manager, employee]
-        firstName:
-          type: string
-        lastName:
-          type: string
-        phone:
-          type: string
-        active:
-          type: boolean
-        createdAt:
-          type: string
-          format: date-time
-        lastLogin:
-          type: string
-          format: date-time
-
-    Station:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        address:
-          type: string
-        city:
-          type: string
-        state:
-          type: string
-        zip:
-          type: string
-        contactPhone:
-          type: string
-        active:
-          type: boolean
-        createdAt:
-          type: string
-          format: date-time
-
-    Pump:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        stationId:
-          type: string
-          format: uuid
-        name:
-          type: string
-        serialNumber:
-          type: string
-        installationDate:
-          type: string
-          format: date
-        active:
-          type: boolean
-
-    Nozzle:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        pumpId:
-          type: string
-          format: uuid
-        fuelType:
-          type: string
-          enum: [petrol, diesel, premium, super, cng, lpg]
-        initialReading:
-          type: number
-          format: float
-        currentReading:
-          type: number
-          format: float
-        active:
-          type: boolean
-
-    FuelPrice:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        stationId:
-          type: string
-          format: uuid
-        fuelType:
-          type: string
-          enum: [petrol, diesel, premium, super, cng, lpg]
-        pricePerUnit:
-          type: number
-          format: float
-        effectiveFrom:
-          type: string
-          format: date-time
-        effectiveTo:
-          type: string
-          format: date-time
-
-    Sale:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        stationId:
-          type: string
-          format: uuid
-        nozzleId:
-          type: string
-          format: uuid
-        userId:
-          type: string
-          format: uuid
-        recordedAt:
-          type: string
-          format: date-time
-        saleVolume:
-          type: number
-          format: float
-        cumulativeReading:
-          type: number
-          format: float
-        previousReading:
-          type: number
-          format: float
-        fuelPrice:
-          type: number
-          format: float
-        amount:
-          type: number
-          format: float
-        cashReceived:
-          type: number
-          format: float
-        creditGiven:
-          type: number
-          format: float
-        paymentMethod:
-          type: string
-          enum: [cash, credit, card, upi, mixed]
-        creditPartyId:
-          type: string
-          format: uuid
         status:
           type: string
-          enum: [draft, posted, voided]
-        notes:
+          enum: [error]
+        code:
           type: string
-
-    Creditor:
-      type: object
-      properties:
-        id:
+          description: Error code for programmatic handling
+        message:
           type: string
-          format: uuid
-        stationId:
-          type: string
-          format: uuid
-        partyName:
-          type: string
-        partyContact:
-          type: string
-        runningBalance:
-          type: number
-          format: float
-        creditLimit:
-          type: number
-          format: float
-        active:
-          type: boolean
-
-    CreditPayment:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        creditorId:
-          type: string
-          format: uuid
-        amount:
-          type: number
-          format: float
-        paidAt:
-          type: string
-          format: date-time
-        paymentMethod:
-          type: string
-          enum: [cash, card, upi, bank_transfer]
-        receivedBy:
-          type: string
-          format: uuid
-        notes:
-          type: string
+          description: Human-readable error message
+      required:
+        - status
+        - message
     
-    DayReconciliation:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        stationId:
-          type: string
-          format: uuid
-        date:
-          type: string
-          format: date
-        totalSales:
-          type: number
-          format: float
-        cashTotal:
-          type: number
-          format: float
-        creditTotal:
-          type: number
-          format: float
-        cardTotal:
-          type: number
-          format: float
-        upiTotal:
-          type: number
-          format: float
-        finalized:
-          type: boolean
-        createdBy:
-          type: string
-          format: uuid
-        notes:
-          type: string
-
-    # Request/Response schemas
     LoginRequest:
       type: object
-      required:
-        - email
-        - password
       properties:
         email:
           type: string
@@ -308,188 +42,139 @@ components:
         password:
           type: string
           format: password
+      required:
+        - email
+        - password
     
     LoginResponse:
       type: object
       properties:
-        token:
+        status:
           type: string
-        user:
-          $ref: '#/components/schemas/User'
+          enum: [success]
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+              description: JWT token with Bearer prefix
+            user:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                email:
+                  type: string
+                  format: email
+                role:
+                  type: string
+                  enum: [owner, manager, employee]
+                tenant_id:
+                  type: string
+                  format: uuid
+                tenant_name:
+                  type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+      required:
+        - status
+        - data
     
-    RegisterTenantRequest:
+    RegisterRequest:
       type: object
+      properties:
+        name:
+          type: string
+          description: Tenant name
+        email:
+          type: string
+          format: email
+          description: Owner email
+        password:
+          type: string
+          format: password
+          description: Owner password
+        planType:
+          type: string
+          enum: [basic, premium, enterprise]
+          description: Subscription plan type
       required:
         - name
         - email
         - password
         - planType
-      properties:
-        name:
-          type: string
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          format: password
-        planType:
-          type: string
-          enum: [basic, premium, enterprise]
     
-    CreateUserRequest:
+    RegisterResponse:
       type: object
-      required:
-        - email
-        - password
-        - role
-        - firstName
-        - lastName
       properties:
-        email:
+        status:
           type: string
-          format: email
-        password:
-          type: string
-          format: password
-        role:
-          type: string
-          enum: [owner, manager, employee]
-        firstName:
-          type: string
-        lastName:
-          type: string
-        phone:
-          type: string
-    
-    CreateStationRequest:
-      type: object
-      required:
-        - name
-      properties:
-        name:
-          type: string
-        address:
-          type: string
-        city:
-          type: string
-        state:
-          type: string
-        zip:
-          type: string
-        contactPhone:
-          type: string
-        location:
+          enum: [success]
+        data:
           type: object
           properties:
-            latitude:
-              type: number
-            longitude:
-              type: number
-        operatingHours:
+            message:
+              type: string
+            tenant:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+                planType:
+                  type: string
+                  enum: [basic, premium, enterprise]
+      required:
+        - status
+        - data
+    
+    UserResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success]
+        data:
           type: object
-    
-    CreatePumpRequest:
-      type: object
+          properties:
+            user:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                email:
+                  type: string
+                  format: email
+                role:
+                  type: string
+                  enum: [owner, manager, employee]
+                tenant_id:
+                  type: string
+                  format: uuid
+                tenant_name:
+                  type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                active:
+                  type: boolean
       required:
-        - stationId
-        - name
-      properties:
-        stationId:
-          type: string
-          format: uuid
-        name:
-          type: string
-        serialNumber:
-          type: string
-        installationDate:
-          type: string
-          format: date
-    
-    CreateNozzleRequest:
-      type: object
-      required:
-        - pumpId
-        - fuelType
-        - initialReading
-      properties:
-        pumpId:
-          type: string
-          format: uuid
-        fuelType:
-          type: string
-          enum: [petrol, diesel, premium, super, cng, lpg]
-        initialReading:
-          type: number
-          format: float
-    
-    CreateSaleRequest:
-      type: object
-      required:
-        - stationId
-        - nozzleId
-        - cumulativeReading
-        - cashReceived
-        - creditGiven
-      properties:
-        stationId:
-          type: string
-          format: uuid
-        nozzleId:
-          type: string
-          format: uuid
-        cumulativeReading:
-          type: number
-          format: float
-        saleVolume:
-          type: number
-          format: float
-        cashReceived:
-          type: number
-          format: float
-        creditGiven:
-          type: number
-          format: float
-        creditPartyId:
-          type: string
-          format: uuid
-        notes:
-          type: string
-    
-    ReconciliationRequest:
-      type: object
-      required:
-        - stationId
-        - date
-        - cardTotal
-        - upiTotal
-      properties:
-        stationId:
-          type: string
-          format: uuid
-        date:
-          type: string
-          format: date
-        cardTotal:
-          type: number
-          format: float
-        upiTotal:
-          type: number
-          format: float
-        notes:
-          type: string
-
-security:
-  - bearerAuth: []
+        - status
+        - data
 
 paths:
   /auth/login:
     post:
       summary: User login
-      description: Authenticate a user and return a JWT token
       tags:
         - Authentication
-      security: []
       requestBody:
         required: true
         content:
@@ -503,8 +188,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many login attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
@@ -513,493 +216,130 @@ paths:
   /auth/register:
     post:
       summary: Register a new tenant and owner
-      description: Create a new tenant with an owner account
       tags:
         - Authentication
-      security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterTenantRequest'
+              $ref: '#/components/schemas/RegisterRequest'
       responses:
         '201':
           description: Tenant created successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  tenant:
-                    $ref: '#/components/schemas/Tenant'
+                $ref: '#/components/schemas/RegisterResponse'
         '400':
           description: Invalid input
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  
-  /users:
-    get:
-      summary: Get all users
-      description: Retrieve all users for the current tenant
-      tags:
-        - Users
-      responses:
-        '200':
-          description: A list of users
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/Error'
+  
+  /auth/me:
+    get:
+      summary: Get current authenticated user
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /auth/logout:
     post:
-      summary: Create a new user
-      description: Create a new user for the current tenant
+      summary: Logout current user
       tags:
-        - Users
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateUserRequest'
-      responses:
-        '201':
-          description: User created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-  
-  /users/{id}:
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    get:
-      summary: Get a user by ID
-      description: Retrieve a specific user by ID
-      tags:
-        - Users
+        - Authentication
+      security:
+        - bearerAuth: []
       responses:
         '200':
-          description: User details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-    patch:
-      summary: Update a user
-      description: Update specific fields of a user
-      tags:
-        - Users
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                firstName:
-                  type: string
-                lastName:
-                  type: string
-                phone:
-                  type: string
-                active:
-                  type: boolean
-      responses:
-        '200':
-          description: User updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-    delete:
-      summary: Delete a user
-      description: Soft delete a user (set active to false)
-      tags:
-        - Users
-      responses:
-        '204':
-          description: User deleted successfully
-  
-  /stations:
-    get:
-      summary: Get all stations
-      description: Retrieve all stations for the current tenant
-      tags:
-        - Stations
-      responses:
-        '200':
-          description: A list of stations
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Station'
-    post:
-      summary: Create a new station
-      description: Create a new station for the current tenant
-      tags:
-        - Stations
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateStationRequest'
-      responses:
-        '201':
-          description: Station created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Station'
-  
-  /stations/{id}:
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    get:
-      summary: Get a station by ID
-      description: Retrieve a specific station by ID
-      tags:
-        - Stations
-      responses:
-        '200':
-          description: Station details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Station'
-    patch:
-      summary: Update a station
-      description: Update specific fields of a station
-      tags:
-        - Stations
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                address:
-                  type: string
-                city:
-                  type: string
-                state:
-                  type: string
-                zip:
-                  type: string
-                contactPhone:
-                  type: string
-                active:
-                  type: boolean
-      responses:
-        '200':
-          description: Station updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Station'
-    delete:
-      summary: Delete a station
-      description: Soft delete a station (set active to false)
-      tags:
-        - Stations
-      responses:
-        '204':
-          description: Station deleted successfully
-  
-  /stations/{stationId}/pumps:
-    parameters:
-      - name: stationId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    get:
-      summary: Get all pumps for a station
-      description: Retrieve all pumps for a specific station
-      tags:
-        - Pumps
-      responses:
-        '200':
-          description: A list of pumps
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pump'
-    post:
-      summary: Create a new pump
-      description: Create a new pump for a specific station
-      tags:
-        - Pumps
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreatePumpRequest'
-      responses:
-        '201':
-          description: Pump created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Pump'
-  
-  /pumps/{pumpId}/nozzles:
-    parameters:
-      - name: pumpId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    get:
-      summary: Get all nozzles for a pump
-      description: Retrieve all nozzles for a specific pump
-      tags:
-        - Nozzles
-      responses:
-        '200':
-          description: A list of nozzles
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Nozzle'
-    post:
-      summary: Create a new nozzle
-      description: Create a new nozzle for a specific pump
-      tags:
-        - Nozzles
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateNozzleRequest'
-      responses:
-        '201':
-          description: Nozzle created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Nozzle'
-  
-  /sales:
-    get:
-      summary: Get all sales
-      description: Retrieve all sales for the current tenant with filtering options
-      tags:
-        - Sales
-      parameters:
-        - name: stationId
-          in: query
-          schema:
-            type: string
-            format: uuid
-        - name: startDate
-          in: query
-          schema:
-            type: string
-            format: date
-        - name: endDate
-          in: query
-          schema:
-            type: string
-            format: date
-        - name: userId
-          in: query
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: A list of sales
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Sale'
-    post:
-      summary: Create a new sale
-      description: Record a new fuel sale
-      tags:
-        - Sales
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateSaleRequest'
-      responses:
-        '201':
-          description: Sale recorded successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Sale'
-  
-  /reconciliations:
-    get:
-      summary: Get all reconciliations
-      description: Retrieve all day reconciliations for the current tenant
-      tags:
-        - Reconciliations
-      parameters:
-        - name: stationId
-          in: query
-          schema:
-            type: string
-            format: uuid
-        - name: startDate
-          in: query
-          schema:
-            type: string
-            format: date
-        - name: endDate
-          in: query
-          schema:
-            type: string
-            format: date
-      responses:
-        '200':
-          description: A list of reconciliations
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/DayReconciliation'
-    post:
-      summary: Create a new reconciliation
-      description: Create a new day reconciliation
-      tags:
-        - Reconciliations
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReconciliationRequest'
-      responses:
-        '201':
-          description: Reconciliation created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DayReconciliation'
-  
-  /reports/sales-summary:
-    get:
-      summary: Get sales summary
-      description: Get a summary of sales for a specified time period
-      tags:
-        - Reports
-      parameters:
-        - name: stationId
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: startDate
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
-        - name: endDate
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
-      responses:
-        '200':
-          description: Sales summary data
+          description: Logged out successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  totalSales:
-                    type: number
-                  totalVolume:
-                    type: number
-                  salesByFuelType:
+                  status:
+                    type: string
+                    enum: [success]
+                  data:
                     type: object
-                  salesByPaymentMethod:
-                    type: object
-                  dailySales:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        date:
-                          type: string
-                          format: date
-                        amount:
-                          type: number
-                        volume:
-                          type: number
-  
-  /reports/sales-detail:
-    get:
-      summary: Get detailed sales data
-      description: Get detailed sales data for a specified time period
-      tags:
-        - Reports
-      parameters:
-        - name: stationId
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: startDate
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
-        - name: endDate
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
-      responses:
-        '200':
-          description: Detailed sales data
+                    properties:
+                      message:
+                        type: string
+        '401':
+          description: Not authenticated
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Sale'
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /admin/login:
+    post:
+      summary: Admin login
+      tags:
+        - Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

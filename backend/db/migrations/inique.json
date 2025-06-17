@@ -1,0 +1,1339 @@
+[
+ {
+  "table_name": "activity_logs",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "activity_logs",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "activity_logs",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "activity_logs",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "activity_logs",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "activity_logs",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "activity_logs",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "activity_logs",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "activity_logs",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "activity_logs",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "activity_logs",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "activity_logs",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "admin_activity_logs",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "admin_activity_logs",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "admin_activity_logs",
+  "column_name": "admin_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "admin_users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "admin_users",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "admin_users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "admin_users",
+  "column_name": "email",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "admin_users",
+  "foreign_column": "email"
+ },
+ {
+  "table_name": "audit_logs",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "audit_logs",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "credit_payments",
+  "column_name": "creditor_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "creditors",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "credit_payments",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "credit_payments",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "credit_payments",
+  "column_name": "received_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "credit_payments",
+  "column_name": "received_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "credit_payments",
+  "column_name": "received_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "credit_payments",
+  "column_name": "creditor_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "creditors",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "credit_payments",
+  "column_name": "received_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "credit_payments",
+  "column_name": "creditor_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "creditors",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "credit_payments",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "credit_payments",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "credit_payments",
+  "column_name": "creditor_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "creditors",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "credit_payments",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "credit_payments",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "credit_payments",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "credit_payments",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "creditors",
+  "column_name": "station_id",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "creditors",
+  "foreign_column": "party_name"
+ },
+ {
+  "table_name": "creditors",
+  "column_name": "station_id",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "creditors",
+  "foreign_column": "station_id"
+ },
+ {
+  "table_name": "creditors",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "creditors",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "creditors",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "creditors",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "creditors",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "creditors",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "creditors",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "creditors",
+  "column_name": "party_name",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "creditors",
+  "foreign_column": "party_name"
+ },
+ {
+  "table_name": "creditors",
+  "column_name": "party_name",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "creditors",
+  "foreign_column": "station_id"
+ },
+ {
+  "table_name": "creditors",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "creditors",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "creditors",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "creditors",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "creditors",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "day_reconciliations",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "day_reconciliations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "day_reconciliations",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "day_reconciliations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "day_reconciliations",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "day_reconciliations",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "day_reconciliations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "day_reconciliations",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "day_reconciliations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "day_reconciliations",
+  "column_name": "created_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "day_reconciliations",
+  "column_name": "created_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "day_reconciliations",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "day_reconciliations",
+  "column_name": "created_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "day_reconciliations",
+  "column_name": "created_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "day_reconciliations",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "day_reconciliations",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_deliveries",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "fuel_deliveries",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_deliveries",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "fuel_deliveries",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_deliveries",
+  "column_name": "received_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_deliveries",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_deliveries",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_deliveries",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "fuel_deliveries",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_deliveries",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "fuel_deliveries",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_deliveries",
+  "column_name": "received_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_deliveries",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_deliveries",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_deliveries",
+  "column_name": "received_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_deliveries",
+  "column_name": "received_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_inventory",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_inventory",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_inventory",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_inventory",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "fuel_inventory",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_inventory",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "fuel_inventory",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_inventory",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "fuel_inventory",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_inventory",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "fuel_inventory",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_inventory",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "effective_from",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "fuel_prices",
+  "foreign_column": "fuel_type"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "effective_from",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "fuel_prices",
+  "foreign_column": "station_id"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "fuel_type",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "fuel_prices",
+  "foreign_column": "effective_from"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "fuel_type",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "fuel_prices",
+  "foreign_column": "station_id"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "fuel_type",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "fuel_prices",
+  "foreign_column": "fuel_type"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "created_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "fuel_prices",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "fuel_prices",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "fuel_prices",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "fuel_prices",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "created_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "station_id",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "fuel_prices",
+  "foreign_column": "station_id"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "station_id",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "fuel_prices",
+  "foreign_column": "fuel_type"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "station_id",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "fuel_prices",
+  "foreign_column": "effective_from"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "effective_from",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "fuel_prices",
+  "foreign_column": "effective_from"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "created_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "created_by",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "fuel_prices",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "migrations",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "migrations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "nozzle_readings",
+  "column_name": "reading_date",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "nozzle_readings",
+  "foreign_column": "reading_date"
+ },
+ {
+  "table_name": "nozzle_readings",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "nozzle_readings",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "nozzle_readings",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "nozzle_readings",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "nozzle_readings",
+  "column_name": "reading_date",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "nozzle_readings",
+  "foreign_column": "nozzle_id"
+ },
+ {
+  "table_name": "nozzle_readings",
+  "column_name": "nozzle_id",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "nozzle_readings",
+  "foreign_column": "reading_date"
+ },
+ {
+  "table_name": "nozzle_readings",
+  "column_name": "nozzle_id",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "nozzle_readings",
+  "foreign_column": "nozzle_id"
+ },
+ {
+  "table_name": "nozzle_readings",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "nozzle_readings",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "nozzle_readings",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "nozzle_readings",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "nozzles",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "nozzles",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "nozzles",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "nozzles",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "nozzles",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "nozzles",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "nozzles",
+  "column_name": "pump_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "pumps",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "nozzles",
+  "column_name": "pump_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "pumps",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "nozzles",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "nozzles",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "nozzles",
+  "column_name": "pump_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "pumps",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "nozzles",
+  "column_name": "pump_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "pumps",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "plan_features",
+  "column_name": "plan_type",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "plan_features",
+  "foreign_column": "plan_type"
+ },
+ {
+  "table_name": "plan_features",
+  "column_name": "plan_type",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "plans",
+  "foreign_column": "name"
+ },
+ {
+  "table_name": "plans",
+  "column_name": "name",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "plans",
+  "foreign_column": "name"
+ },
+ {
+  "table_name": "plans",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "plans",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "pumps",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "pumps",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "pumps",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "pumps",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "pumps",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "pumps",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "pumps",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "pumps",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "pumps",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "pumps",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "pumps",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "pumps",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "pumps",
+  "column_name": "serial_number",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "pumps",
+  "foreign_column": "serial_number"
+ },
+ {
+  "table_name": "pumps",
+  "column_name": "station_id",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "pumps",
+  "foreign_column": "station_id"
+ },
+ {
+  "table_name": "pumps",
+  "column_name": "station_id",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "pumps",
+  "foreign_column": "name"
+ },
+ {
+  "table_name": "pumps",
+  "column_name": "name",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "pumps",
+  "foreign_column": "station_id"
+ },
+ {
+  "table_name": "pumps",
+  "column_name": "name",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "pumps",
+  "foreign_column": "name"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "sales",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "sales",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "nozzle_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "nozzles",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "sales",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "sales",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "credit_party_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "creditors",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "credit_party_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "creditors",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "nozzle_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "nozzles",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "credit_party_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "creditors",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "nozzle_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "nozzles",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "nozzle_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "nozzles",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "sales",
+  "column_name": "credit_party_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "creditors",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "stations",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "stations",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "stations",
+  "column_name": "name",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "stations",
+  "foreign_column": "name"
+ },
+ {
+  "table_name": "stations",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "stations",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "subscription",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "subscription",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "subscription",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "subscription",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "subscription",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "subscription",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "subscription",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "subscription",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "tenant_settings",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "tenant_settings",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "tenant_settings",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "tenant_settings",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "tenant_settings",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "tenant_settings",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "tenant_settings",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "tenant_settings",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "tenants",
+  "column_name": "schema_name",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "tenants",
+  "foreign_column": "schema_name"
+ },
+ {
+  "table_name": "tenants",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "tenants",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_sessions",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "user_sessions",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_sessions",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_sessions",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_sessions",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "user_sessions",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_sessions",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "user_sessions",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_sessions",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_sessions",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_sessions",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "user_sessions",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "user_stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "user_stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "user_stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "user_stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "user_id",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "user_stations",
+  "foreign_column": "user_id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "user_id",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "user_stations",
+  "foreign_column": "station_id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "station_id",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "user_stations",
+  "foreign_column": "user_id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "station_id",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "user_stations",
+  "foreign_column": "station_id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "user_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "user_stations",
+  "column_name": "station_id",
+  "constraint_type": "FOREIGN KEY",
+  "foreign_table": "stations",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "users",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "users",
+  "column_name": "email",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "users",
+  "foreign_column": "email"
+ },
+ {
+  "table_name": "users",
+  "column_name": "email",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "users",
+  "foreign_column": "email"
+ },
+ {
+  "table_name": "users",
+  "column_name": "email",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "users",
+  "foreign_column": "email"
+ },
+ {
+  "table_name": "users",
+  "column_name": "email",
+  "constraint_type": "UNIQUE",
+  "foreign_table": "users",
+  "foreign_column": "email"
+ },
+ {
+  "table_name": "users",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "users",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ },
+ {
+  "table_name": "users",
+  "column_name": "id",
+  "constraint_type": "PRIMARY KEY",
+  "foreign_table": "users",
+  "foreign_column": "id"
+ }
+]

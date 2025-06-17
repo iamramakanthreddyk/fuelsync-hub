@@ -1,6 +1,5 @@
 // frontend/src/pages/sales/index.tsx
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import {
   Box,
   Paper,
@@ -9,7 +8,6 @@ import {
   Button,
   Grid,
   MenuItem,
-  CircularProgress,
   Table,
   TableBody,
   TableCell,
@@ -29,7 +27,12 @@ import {
   FormHelperText
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import AuthenticatedDashboardLayout from '@/components/layout/AuthenticatedDashboardLayout';
+import LoadingIndicator from '@/components/common/LoadingIndicator';
+import ErrorAlert from '@/components/common/ErrorAlert';
+import { apiGet, apiPost } from '@/utils/api';
+import { ApiResponse } from '@/types/api';
+import { formatErrorMessage } from '@/utils/errorHandler';
 
 interface Station {
   id: string;
@@ -38,37 +41,37 @@ interface Station {
 
 interface Nozzle {
   id: string;
-  fuelType: string;
-  pumpId: string;
-  pumpName: string;
-  currentReading: number;
+  fuel_type: string;
+  pump_id: string;
+  pump_name: string;
+  current_reading: number;
 }
 
 interface Sale {
   id: string;
-  recordedAt: string;
-  stationName: string;
-  pumpName: string;
-  fuelType: string;
-  saleVolume: number;
-  fuelPrice: number;
+  recorded_at: string;
+  station_name: string;
+  pump_name: string;
+  fuel_type: string;
+  sale_volume: number;
+  fuel_price: number;
   amount: number;
-  cashReceived: number;
-  creditGiven: number;
-  paymentMethod: string;
-  creditorName: string;
-  employeeName: string;
+  cash_received: number;
+  credit_given: number;
+  payment_method: string;
+  creditor_name: string;
+  employee_name: string;
 }
 
 interface Creditor {
   id: string;
-  partyName: string;
-  runningBalance: number;
+  party_name: string;
+  running_balance: number;
 }
 
-export default function Sales() {
-  const router = useRouter();
+function SalesContent() {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   const [sales, setSales] = useState<Sale[]>([]);
   const [stations, setStations] = useState<Station[]>([]);
   const [nozzles, setNozzles] = useState<Nozzle[]>([]);
@@ -106,132 +109,83 @@ export default function Sales() {
   });
   
   useEffect(() => {
-    // Verify authentication
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    
     const fetchData = async () => {
       try {
         // Fetch sales
-        const salesResponse = await fetch('/api/sales', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!salesResponse.ok) {
-          throw new Error('Failed to fetch sales');
+        const salesResponse = await apiGet<ApiResponse<Sale[]>>('/sales');
+        if (salesResponse.status === 'success' && salesResponse.data) {
+          setSales(salesResponse.data);
         }
-        
-        const salesData = await salesResponse.json();
-        setSales(salesData);
         
         // Fetch stations
-        const stationsResponse = await fetch('/api/stations', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!stationsResponse.ok) {
-          throw new Error('Failed to fetch stations');
+        const stationsResponse = await apiGet<ApiResponse<Station[]>>('/stations');
+        if (stationsResponse.status === 'success' && stationsResponse.data) {
+          setStations(stationsResponse.data);
         }
-        
-        const stationsData = await stationsResponse.json();
-        setStations(stationsData);
         
         // Fetch creditors
-        const creditorsResponse = await fetch('/api/creditors', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!creditorsResponse.ok) {
-          throw new Error('Failed to fetch creditors');
+        const creditorsResponse = await apiGet<ApiResponse<Creditor[]>>('/creditors');
+        if (creditorsResponse.status === 'success' && creditorsResponse.data) {
+          setCreditors(creditorsResponse.data);
         }
-        
-        const creditorsData = await creditorsResponse.json();
-        setCreditors(creditorsData);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setError(error as Error);
       } finally {
         setLoading(false);
       }
     };
     
     fetchData();
-  }, [router]);
+  }, []);
   
   const fetchNozzlesByStation = async (stationId: string) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    
     try {
-      const response = await fetch(`/api/stations/${stationId}/nozzles`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch nozzles');
+      const response = await apiGet<ApiResponse<Nozzle[]>>(`/stations/${stationId}/nozzles`);
+      if (response.status === 'success' && response.data) {
+        setNozzles(response.data);
       }
-      
-      const data = await response.json();
-      setNozzles(data);
     } catch (error) {
       console.error('Error fetching nozzles:', error);
+      setSnackbar({
+        open: true,
+        message: formatErrorMessage(error),
+        severity: 'error'
+      });
     }
   };
   
   const fetchNozzleDetails = async (nozzleId: string) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    
     try {
-      const response = await fetch(`/api/nozzles/${nozzleId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
+      const nozzleResponse = await apiGet<ApiResponse<Nozzle>>(`/nozzles/${nozzleId}`);
+      if (nozzleResponse.status !== 'success' || !nozzleResponse.data) {
         throw new Error('Failed to fetch nozzle details');
       }
       
-      const nozzleData = await response.json();
+      const nozzleData = nozzleResponse.data;
       
       // Fetch current fuel price
-      const priceResponse = await fetch(`/api/fuel-prices?stationId=${formData.stationId}&fuelType=${nozzleData.fuelType}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const priceResponse = await apiGet<ApiResponse<{ price_per_unit: number }>>(
+        `/fuel-prices?stationId=${formData.stationId}&fuelType=${nozzleData.fuel_type}`
+      );
       
-      if (!priceResponse.ok) {
+      if (priceResponse.status !== 'success' || !priceResponse.data) {
         throw new Error('Failed to fetch fuel price');
       }
       
-      const priceData = await priceResponse.json();
-      
       setCalculatedValues({
-        previousReading: nozzleData.currentReading,
+        previousReading: nozzleData.current_reading,
         saleVolume: 0,
-        fuelPrice: priceData.pricePerUnit,
+        fuelPrice: priceResponse.data.price_per_unit,
         totalAmount: 0
       });
     } catch (error) {
       console.error('Error fetching nozzle details:', error);
+      setSnackbar({
+        open: true,
+        message: formatErrorMessage(error),
+        severity: 'error'
+      });
     }
   };
   
@@ -304,7 +258,7 @@ export default function Sales() {
       // Auto-fill cash received with total amount
       setFormData(prev => ({
         ...prev,
-        cashReceived: totalAmount.toFixed(2)
+        cashReceived: totalAmount?.toFixed(2)
       }));
     } else if ((name === 'cashReceived' || name === 'creditGiven') && calculatedValues.totalAmount > 0) {
       const cashReceived = parseFloat(formData.cashReceived || '0');
@@ -317,7 +271,7 @@ export default function Sales() {
         
         setFormData(prev => ({
           ...prev,
-          creditGiven: newCredit.toFixed(2)
+          creditGiven: newCredit?.toFixed(2)
         }));
       }
       
@@ -328,7 +282,7 @@ export default function Sales() {
         
         setFormData(prev => ({
           ...prev,
-          cashReceived: newCash.toFixed(2)
+          cashReceived: newCash?.toFixed(2)
         }));
       }
     }
@@ -384,52 +338,34 @@ export default function Sales() {
       return;
     }
     
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    
     try {
-      const response = await fetch('/api/sales', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          stationId: formData.stationId,
-          nozzleId: formData.nozzleId,
-          cumulativeReading: parseFloat(formData.cumulativeReading),
-          cashReceived: parseFloat(formData.cashReceived),
-          creditGiven: parseFloat(formData.creditGiven),
-          creditPartyId: formData.creditPartyId || null,
-          notes: formData.notes
-        })
+      const response = await apiPost<ApiResponse<Sale>>('/sales', {
+        stationId: formData.stationId,
+        nozzleId: formData.nozzleId,
+        cumulativeReading: parseFloat(formData.cumulativeReading),
+        cashReceived: parseFloat(formData.cashReceived),
+        creditGiven: parseFloat(formData.creditGiven),
+        creditPartyId: formData.creditPartyId || null,
+        notes: formData.notes
       });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to record sale');
+      if (response.status === 'success' && response.data) {
+        // Add new sale to the list
+        setSales(prev => [response.data as Sale, ...prev]);
+        
+        setSnackbar({
+          open: true,
+          message: 'Sale recorded successfully',
+          severity: 'success'
+        });
+        
+        handleCloseDialog();
       }
-      
-      const data = await response.json();
-      
-      // Add new sale to the list
-      setSales(prev => [data, ...prev]);
-      
-      setSnackbar({
-        open: true,
-        message: 'Sale recorded successfully',
-        severity: 'success'
-      });
-      
-      handleCloseDialog();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error recording sale:', error);
       setSnackbar({
         open: true,
-        message: error.message || 'Failed to record sale',
+        message: formatErrorMessage(error),
         severity: 'error'
       });
     }
@@ -452,17 +388,15 @@ export default function Sales() {
   };
   
   if (loading) {
-    return (
-      <DashboardLayout title="Sales">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-          <CircularProgress />
-        </Box>
-      </DashboardLayout>
-    );
+    return <LoadingIndicator message="Loading sales data..." />;
+  }
+  
+  if (error) {
+    return <ErrorAlert error={error} />;
   }
   
   return (
-    <DashboardLayout title="Sales">
+    <>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h5">Sales Records</Typography>
         <Button 
@@ -501,24 +435,24 @@ export default function Sales() {
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((sale) => (
                     <TableRow key={sale.id}>
-                      <TableCell>{new Date(sale.recordedAt).toLocaleString()}</TableCell>
-                      <TableCell>{sale.stationName}</TableCell>
-                      <TableCell>{sale.fuelType}</TableCell>
-                      <TableCell>{sale.saleVolume.toFixed(2)}</TableCell>
-                      <TableCell>${sale.fuelPrice.toFixed(2)}</TableCell>
-                      <TableCell>${sale.amount.toFixed(2)}</TableCell>
+                      <TableCell>{new Date(sale.recorded_at).toLocaleString()}</TableCell>
+                      <TableCell>{sale.station_name}</TableCell>
+                      <TableCell>{sale.fuel_type}</TableCell>
+                      <TableCell>{sale.sale_volume?.toFixed(2)}</TableCell>
+                      <TableCell>${sale.fuel_price?.toFixed(2)}</TableCell>
+                      <TableCell>${sale.amount?.toFixed(2)}</TableCell>
                       <TableCell>
-                        {sale.paymentMethod === 'cash' && `Cash: $${sale.cashReceived.toFixed(2)}`}
-                        {sale.paymentMethod === 'credit' && `Credit: $${sale.creditGiven.toFixed(2)} to ${sale.creditorName}`}
-                        {sale.paymentMethod === 'mixed' && (
+                        {sale.payment_method === 'cash' && `Cash: $${sale.cash_received?.toFixed(2)}`}
+                        {sale.payment_method === 'credit' && `Credit: $${sale.credit_given?.toFixed(2)} to ${sale.creditor_name}`}
+                        {sale.payment_method === 'mixed' && (
                           <>
-                            Cash: ${sale.cashReceived.toFixed(2)}
+                            Cash: ${sale.cash_received?.toFixed(2)}
                             <br />
-                            Credit: ${sale.creditGiven.toFixed(2)} to {sale.creditorName}
+                            Credit: ${sale.credit_given?.toFixed(2)} to {sale.creditor_name}
                           </>
                         )}
                       </TableCell>
-                      <TableCell>{sale.employeeName}</TableCell>
+                      <TableCell>{sale.employee_name}</TableCell>
                     </TableRow>
                   ))
               )}
@@ -576,7 +510,7 @@ export default function Sales() {
                 >
                   {nozzles.map((nozzle) => (
                     <MenuItem key={nozzle.id} value={nozzle.id}>
-                      {nozzle.pumpName} - {nozzle.fuelType}
+                      {nozzle.pump_name} - {nozzle.fuel_type}
                     </MenuItem>
                   ))}
                 </Select>
@@ -590,7 +524,7 @@ export default function Sales() {
                 fullWidth
                 disabled
                 label="Previous Reading"
-                value={calculatedValues.previousReading.toFixed(2)}
+                value={calculatedValues.previousReading?.toFixed(2)}
               />
             </Grid>
 
@@ -614,7 +548,7 @@ export default function Sales() {
                 fullWidth
                 disabled
                 label="Sale Volume"
-                value={calculatedValues.saleVolume.toFixed(2)}
+                value={calculatedValues.saleVolume?.toFixed(2)}
               />
             </Grid>
 
@@ -623,7 +557,7 @@ export default function Sales() {
                 fullWidth
                 disabled
                 label="Fuel Price"
-                value={`$${calculatedValues.fuelPrice.toFixed(2)}`}
+                value={`$${calculatedValues.fuelPrice?.toFixed(2)}`}
               />
             </Grid>
 
@@ -632,7 +566,7 @@ export default function Sales() {
                 fullWidth
                 disabled
                 label="Total Amount"
-                value={`$${calculatedValues.totalAmount.toFixed(2)}`}
+                value={`$${calculatedValues.totalAmount?.toFixed(2)}`}
               />
             </Grid>
 
@@ -680,7 +614,7 @@ export default function Sales() {
                   >
                     {creditors.map((creditor) => (
                       <MenuItem key={creditor.id} value={creditor.id}>
-                        {creditor.partyName} (Balance: ${creditor.runningBalance.toFixed(2)})
+                        {creditor.party_name} (Balance: ${creditor.running_balance?.toFixed(2)})
                       </MenuItem>
                     ))}
                   </Select>
@@ -730,6 +664,17 @@ export default function Sales() {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </DashboardLayout>
+    </>
+  );
+}
+
+export default function Sales() {
+  return (
+    <AuthenticatedDashboardLayout 
+      title="Sales" 
+      requiredRoles={['owner', 'manager', 'employee']}
+    >
+      <SalesContent />
+    </AuthenticatedDashboardLayout>
   );
 }

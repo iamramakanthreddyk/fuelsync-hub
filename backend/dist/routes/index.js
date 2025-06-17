@@ -1,0 +1,35 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const auth_routes_1 = __importDefault(require("./auth.routes"));
+const station_routes_1 = __importDefault(require("./station.routes"));
+const pump_routes_1 = __importDefault(require("./pump.routes"));
+const nozzle_routes_1 = __importDefault(require("./nozzle.routes"));
+const sale_routes_1 = __importDefault(require("./sale.routes"));
+const reconciliation_routes_1 = __importDefault(require("./reconciliation.routes"));
+const report_routes_1 = __importDefault(require("./report.routes"));
+const docs_routes_1 = __importDefault(require("./docs.routes"));
+const admin_routes_1 = __importDefault(require("./admin.routes"));
+const analytics_routes_1 = __importDefault(require("./analytics.routes"));
+const plan_routes_1 = __importDefault(require("./plan.routes"));
+const nozzleReading_routes_1 = __importDefault(require("./nozzleReading.routes"));
+const dashboard_routes_1 = __importDefault(require("./dashboard.routes"));
+const router = (0, express_1.Router)();
+// Register all routes
+router.use('/auth', auth_routes_1.default);
+router.use('/stations', station_routes_1.default);
+router.use('/pumps', pump_routes_1.default);
+router.use('/nozzles', nozzle_routes_1.default);
+router.use('/sales', sale_routes_1.default);
+router.use('/reconciliations', reconciliation_routes_1.default);
+router.use('/reports', report_routes_1.default);
+router.use('/docs', docs_routes_1.default);
+router.use('/admin', admin_routes_1.default);
+router.use('/analytics', analytics_routes_1.default);
+router.use('/plans', plan_routes_1.default);
+router.use('/nozzle-readings', nozzleReading_routes_1.default);
+router.use(dashboard_routes_1.default);
+exports.default = router;

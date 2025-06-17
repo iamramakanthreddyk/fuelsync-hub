@@ -84,7 +84,7 @@ export default function Reconciliations() {
     message: '',
     severity: 'success' as 'success' | 'error'
   });
-  
+
   useEffect(() => {
     // Verify authentication
     const token = localStorage.getItem('token');
@@ -92,7 +92,7 @@ export default function Reconciliations() {
       router.push('/login');
       return;
     }
-    
+
     const fetchData = async () => {
       try {
         // Fetch reconciliations
@@ -101,25 +101,25 @@ export default function Reconciliations() {
             'Authorization': `Bearer ${token}`
           }
         });
-        
+
         if (!recsResponse.ok) {
           throw new Error('Failed to fetch reconciliations');
         }
-        
+
         const recsData = await recsResponse.json();
         setReconciliations(recsData);
-        
+
         // Fetch stations
         const stationsResponse = await fetch('/api/stations', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
-        
+
         if (!stationsResponse.ok) {
           throw new Error('Failed to fetch stations');
         }
-        
+
         const stationsData = await stationsResponse.json();
         setStations(stationsData);
       } catch (error) {
@@ -128,40 +128,40 @@ export default function Reconciliations() {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, [router]);
-  
+
   const fetchDailySales = async (stationId: string, date: string) => {
     const token = localStorage.getItem('token');
     if (!token) {
       router.push('/login');
       return;
     }
-    
+
     try {
       const response = await fetch(`/api/sales/daily-totals?stationId=${stationId}&date=${date}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch daily sales totals');
       }
-      
+
       const data = await response.json();
       setDailySales({
         totalSales: data.totalSales || 0,
         cashTotal: data.cashTotal || 0,
         creditTotal: data.creditTotal || 0
       });
-      
+
       // Check if a reconciliation already exists
       const existingRec = reconciliations.find(
         r => r.stationId === stationId && r.date === date
       );
-      
+
       if (existingRec) {
         setFormData(prev => ({
           ...prev,
@@ -169,7 +169,7 @@ export default function Reconciliations() {
           upiTotal: existingRec.upiTotal.toString(),
           notes: existingRec.notes
         }));
-        
+
         if (existingRec.finalized) {
           setSnackbar({
             open: true,
@@ -187,7 +187,7 @@ export default function Reconciliations() {
       });
     }
   };
-  
+
   const handleOpenDialog = () => {
     setFormData({
       stationId: '',
@@ -209,25 +209,25 @@ export default function Reconciliations() {
     });
     setOpenDialog(true);
   };
-  
+
   const handleCloseDialog = () => {
     setOpenDialog(false);
   };
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
     const { name, value } = e.target;
-    
+
     setFormData(prev => ({
       ...prev,
       [name as string]: value
     }));
-    
+
     // Clear the related error
     setFormErrors(prev => ({
       ...prev,
       [name as string]: ''
     }));
-    
+
     // If station or date changes, fetch daily sales
     if ((name === 'stationId' || name === 'date') && formData.stationId && formData.date) {
       fetchDailySales(
@@ -236,57 +236,57 @@ export default function Reconciliations() {
       );
     }
   };
-  
+
   const validateForm = () => {
     let valid = true;
     const newErrors = { ...formErrors };
-    
+
     if (!formData.stationId) {
       newErrors.stationId = 'Station is required';
       valid = false;
     }
-    
+
     if (!formData.date) {
       newErrors.date = 'Date is required';
       valid = false;
     }
-    
+
     if (!formData.cardTotal) {
       newErrors.cardTotal = 'Card total is required';
       valid = false;
     }
-    
+
     if (!formData.upiTotal) {
       newErrors.upiTotal = 'UPI total is required';
       valid = false;
     }
-    
+
     // Validate that all payment methods add up to total sales
     const cardTotal = parseFloat(formData.cardTotal || '0');
     const upiTotal = parseFloat(formData.upiTotal || '0');
-    const expectedTotal = parseFloat(dailySales.totalSales.toFixed(2));
-    const actualTotal = parseFloat((dailySales.cashTotal + dailySales.creditTotal + cardTotal + upiTotal).toFixed(2));
-    
+    const expectedTotal = parseFloat(dailySales.totalSales?.toFixed(2));
+    const actualTotal = parseFloat((dailySales.cashTotal + dailySales.creditTotal + cardTotal + upiTotal)?.toFixed(2));
+
     if (Math.abs(actualTotal - expectedTotal) > 0.01) {
       newErrors.cardTotal = 'Payment totals must equal total sales';
       valid = false;
     }
-    
+
     setFormErrors(newErrors);
     return valid;
   };
-  
+
   const handleSubmit = async () => {
     if (!validateForm()) {
       return;
     }
-    
+
     const token = localStorage.getItem('token');
     if (!token) {
       router.push('/login');
       return;
     }
-    
+
     try {
       const response = await fetch('/api/reconciliations', {
         method: 'POST',
@@ -306,23 +306,23 @@ export default function Reconciliations() {
           notes: formData.notes
         })
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to create reconciliation');
       }
-      
+
       const data = await response.json();
-      
+
       // Add new reconciliation to the list
       setReconciliations(prev => [data, ...prev]);
-      
+
       setSnackbar({
         open: true,
         message: 'Day reconciliation completed successfully',
         severity: 'success'
       });
-      
+
       handleCloseDialog();
     } catch (error: any) {
       console.error('Error creating reconciliation:', error);
@@ -333,23 +333,23 @@ export default function Reconciliations() {
       });
     }
   };
-  
+
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
-  
+
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-  
+
   const handleSnackbarClose = () => {
     setSnackbar(prev => ({
       ...prev,
       open: false
     }));
   };
-  
+
   if (loading) {
     return (
       <DashboardLayout title="Reconciliations">
@@ -359,20 +359,20 @@ export default function Reconciliations() {
       </DashboardLayout>
     );
   }
-  
+
   return (
     <DashboardLayout title="Daily Reconciliations">
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h5">Daily Reconciliations</Typography>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           startIcon={<AddIcon />}
           onClick={handleOpenDialog}
         >
           New Reconciliation
         </Button>
       </Box>
-      
+
       <Paper sx={{ width: '100%', mb: 2 }}>
         <TableContainer>
           <Table>
@@ -393,7 +393,7 @@ export default function Reconciliations() {
               {reconciliations.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} align="center">
-                    No reconciliations found. Click "New Reconciliation" to create your first reconciliation.
+                    No reconciliations found. Click &quot;New Reconciliation&quot; to create your first reconciliation.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -403,18 +403,18 @@ export default function Reconciliations() {
                     <TableRow key={rec.id}>
                       <TableCell>{new Date(rec.date).toLocaleDateString()}</TableCell>
                       <TableCell>{rec.stationName}</TableCell>
-                      <TableCell>${rec.totalSales.toFixed(2)}</TableCell>
-                      <TableCell>${rec.cashTotal.toFixed(2)}</TableCell>
-                      <TableCell>${rec.creditTotal.toFixed(2)}</TableCell>
-                      <TableCell>${rec.cardTotal.toFixed(2)}</TableCell>
-                      <TableCell>${rec.upiTotal.toFixed(2)}</TableCell>
+                      <TableCell>${rec.totalSales?.toFixed(2)}</TableCell>
+                      <TableCell>${rec.cashTotal?.toFixed(2)}</TableCell>
+                      <TableCell>${rec.creditTotal?.toFixed(2)}</TableCell>
+                      <TableCell>${rec.cardTotal?.toFixed(2)}</TableCell>
+                      <TableCell>${rec.upiTotal?.toFixed(2)}</TableCell>
                       <TableCell>
                         {rec.finalized ? (
-                          <Chip 
-                            icon={<CheckIcon />} 
-                            label="Finalized" 
-                            color="success" 
-                            size="small" 
+                          <Chip
+                            icon={<CheckIcon />}
+                            label="Finalized"
+                            color="success"
+                            size="small"
                           />
                         ) : (
                           <Chip label="Draft" size="small" />
@@ -437,7 +437,7 @@ export default function Reconciliations() {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
-      
+
       {/* New Reconciliation Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>New Daily Reconciliation</DialogTitle>
@@ -464,7 +464,7 @@ export default function Reconciliations() {
                 {formErrors.stationId && <FormHelperText>{formErrors.stationId}</FormHelperText>}
               </FormControl>
             </Grid>
-            
+
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -482,7 +482,7 @@ export default function Reconciliations() {
                 }}
               />
             </Grid>
-            
+
             {/* Sales Totals */}
             <Grid item xs={12}>
               <Paper variant="outlined" sx={{ p: 2 }}>
@@ -493,7 +493,7 @@ export default function Reconciliations() {
                       fullWidth
                       disabled
                       label="Total Sales"
-                      value={`$${dailySales.totalSales.toFixed(2)}`}
+                      value={`$${dailySales.totalSales?.toFixed(2)}`}
                     />
                   </Grid>
                   <Grid item xs={12} sm={4}>
@@ -501,7 +501,7 @@ export default function Reconciliations() {
                       fullWidth
                       disabled
                       label="Cash Total"
-                      value={`$${dailySales.cashTotal.toFixed(2)}`}
+                      value={`$${dailySales.cashTotal?.toFixed(2)}`}
                     />
                   </Grid>
                   <Grid item xs={12} sm={4}>
@@ -509,13 +509,13 @@ export default function Reconciliations() {
                       fullWidth
                       disabled
                       label="Credit Total"
-                      value={`$${dailySales.creditTotal.toFixed(2)}`}
+                      value={`$${dailySales.creditTotal?.toFixed(2)}`}
                     />
                   </Grid>
                 </Grid>
               </Paper>
             </Grid>
-            
+
             {/* Additional Payment Methods */}
             <Grid item xs={12} sm={6}>
               <TextField
@@ -530,7 +530,7 @@ export default function Reconciliations() {
                 helperText={formErrors.cardTotal || "Total amount collected via credit/debit cards"}
               />
             </Grid>
-            
+
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -544,16 +544,16 @@ export default function Reconciliations() {
                 helperText={formErrors.upiTotal || "Total amount collected via UPI payments"}
               />
             </Grid>
-            
+
             {/* Payment Verification */}
             <Grid item xs={12}>
-              <Paper 
-                variant="outlined" 
-                sx={{ 
-                  p: 2, 
-                  bgcolor: (formData.cardTotal && formData.upiTotal) 
-                    ? Math.abs((dailySales.cashTotal + dailySales.creditTotal + parseFloat(formData.cardTotal) + parseFloat(formData.upiTotal)) - dailySales.totalSales) <= 0.01 
-                      ? 'success.light' 
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  bgcolor: (formData.cardTotal && formData.upiTotal)
+                    ? Math.abs((dailySales.cashTotal + dailySales.creditTotal + parseFloat(formData.cardTotal) + parseFloat(formData.upiTotal)) - dailySales.totalSales) <= 0.01
+                      ? 'success.light'
                       : 'error.light'
                     : 'background.paper'
                 }}
@@ -565,7 +565,7 @@ export default function Reconciliations() {
                       fullWidth
                       disabled
                       label="Total Sales"
-                      value={`$${dailySales.totalSales.toFixed(2)}`}
+                      value={`$${dailySales.totalSales?.toFixed(2)}`}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -578,7 +578,7 @@ export default function Reconciliations() {
                         dailySales.creditTotal +
                         parseFloat(formData.cardTotal || '0') +
                         parseFloat(formData.upiTotal || '0')
-                      ).toFixed(2)}`}
+                      )?.toFixed(2)}`}
                     />
                   </Grid>
                   {formData.cardTotal && formData.upiTotal && (

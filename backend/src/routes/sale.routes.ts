@@ -3,23 +3,39 @@ import * as saleController from '../controllers/sale.controller';
 import { authenticateJWT } from '../middlewares/auth';
 import { setTenantContext } from '../middlewares/tenant';
 import { requireRole } from '../middlewares/auth';
+import { hasPermission } from '../middlewares/permissions';
+import { auditLog } from '../middlewares/auditLog';
+import { PLAN_CONFIG, PlanType } from '../config/planConfig';
+import rateLimit from 'express-rate-limit';
 
 const router = Router();
 
 // Apply middleware to all routes
 router.use(authenticateJWT);
 router.use(setTenantContext);
+router.use(auditLog);
 
-// Create a new sale
-router.post('/', saleController.createSale);
+// Per-plan rate limiting middleware
+router.use((req, res, next) => {
+  const planType: PlanType = req.user?.planType || 'basic';
+  const planLimits = { basic: 100, premium: 500, enterprise: 2000 };
+  return rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: planLimits[planType] || 100,
+    message: 'API rate limit exceeded for your plan. Please upgrade or try again later.'
+  })(req, res, next);
+});
 
-// Get sales (with optional filters)
-router.get('/', saleController.getSales);
+// Enforce permission for creating sales
+router.post('/', hasPermission('record_sales'), saleController.createSale);
 
-// Get daily sales totals
-router.get('/daily-totals', saleController.getDailySalesTotals);
+// Enforce permission for getting sales
+router.get('/', hasPermission('record_sales'), saleController.getSales);
 
-// Void a sale (manager or owner only)
+// Enforce permission for daily sales totals
+router.get('/daily-totals', hasPermission('record_sales'), saleController.getDailySalesTotals);
+
+// Void a sale (manager or owner only, already enforced)
 router.post('/:id/void', requireRole(['owner', 'manager']), saleController.voidSale);
 
 export default router;

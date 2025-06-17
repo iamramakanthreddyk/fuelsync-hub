@@ -3,33 +3,83 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 interface Config {
-  port: number | string;
   nodeEnv: string;
-  jwtSecret: string;
-  jwtExpiresIn: string | number;
-  bcryptSaltRounds: number;
-  database: {
+  port: number;
+  db: {
     host: string;
     port: number;
     user: string;
     password: string;
     database: string;
+    ssl: boolean;
+  };
+  jwt: {
+    secret: string;
+    expiresIn: string;
+    audience: string;
+    issuer: string;
+  };
+  adminJwt: {
+    secret: string;
+    expiresIn: string;
+    audience: string;
+    issuer: string;
+  };
+  rateLimit: {
+    windowMs: number;
+    max: number;
+  };
+  cors: {
+    origin: string | string[];
+    credentials: boolean;
   };
 }
 
-const config: Config = {
-  port: process.env.PORT || 3000,
-  nodeEnv: process.env.NODE_ENV || 'development',
-  jwtSecret: process.env.JWT_SECRET || 'your_jwt_secret',
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1d', // this is key!
-  bcryptSaltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS || '10', 10),
-  database: {
-    host: process.env.DB_HOST || 'fuelsync-server',
-    port: parseInt(process.env.DB_PORT || '5432', 10),
-    user: process.env.DB_USER || 'fueladmin',
-    password: process.env.DB_PASSWORD || '2304',
-    database: process.env.DB_NAME || 'fuelsync'
+// Default values for local development only
+const getEnvWithFallback = (key: string, fallback: string): string => {
+  const value = process.env[key];
+  if (!value && process.env.NODE_ENV === 'production') {
+    console.warn(`[CONFIG] Warning: ${key} is not set in production environment`);
   }
+  return value || fallback;
 };
 
-export default config;
+export const config: Config = {
+  nodeEnv: process.env.NODE_ENV || 'development',
+  port: parseInt(process.env.PORT || '3001', 10),
+  
+  db: {
+    host: getEnvWithFallback('DB_HOST', 'localhost'),
+    port: parseInt(getEnvWithFallback('DB_PORT', '5432'), 10),
+    user: getEnvWithFallback('DB_USER', 'postgres'),
+    password: getEnvWithFallback('DB_PASSWORD', 'postgres'),
+    database: getEnvWithFallback('DB_NAME', 'fuelsync_db'),
+    ssl: process.env.DB_SSL === 'true'
+  },
+  
+  jwt: {
+    // In production, this should be set via environment variable
+    secret: getEnvWithFallback('JWT_SECRET', 'local-dev-secret-do-not-use-in-production'),
+    expiresIn: getEnvWithFallback('JWT_EXPIRES_IN', '24h'),
+    audience: getEnvWithFallback('JWT_AUDIENCE', 'fuelsync-tenant-api'),
+    issuer: getEnvWithFallback('JWT_ISSUER', 'fuelsync-auth')
+  },
+  
+  adminJwt: {
+    // In production, this should be set via environment variable
+    secret: getEnvWithFallback('ADMIN_JWT_SECRET', 'admin-local-dev-secret-do-not-use-in-production'),
+    expiresIn: getEnvWithFallback('ADMIN_JWT_EXPIRES_IN', '12h'),
+    audience: getEnvWithFallback('ADMIN_JWT_AUDIENCE', 'fuelsync-admin-api'),
+    issuer: getEnvWithFallback('ADMIN_JWT_ISSUER', 'fuelsync-admin-auth')
+  },
+  
+  rateLimit: {
+    windowMs: parseInt(getEnvWithFallback('RATE_LIMIT_WINDOW_MS', (15 * 60 * 1000).toString()), 10), // 15 minutes
+    max: parseInt(getEnvWithFallback('RATE_LIMIT_MAX', '100'), 10)
+  },
+  
+  cors: {
+    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*',
+    credentials: true
+  }
+};

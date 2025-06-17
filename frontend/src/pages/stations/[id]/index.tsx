@@ -760,7 +760,7 @@ export default function StationDetail() {
                         >
                           <NozzleIcon sx={{ mr: 1, fontSize: 'small' }} />
                           <Typography variant="body2">
-                            {type.charAt(0).toUpperCase() + type.slice(1)}: ${getActivePriceForFuelType(type)?.toFixed(2) || 'Not set'}
+                            {type.charAt(0).toUpperCase() + type.slice(1)}: ${getActivePriceForFuelType(type)??.toFixed(2) || 'Not set'}
                           </Typography>
                         </Box>
                       ))}
@@ -842,7 +842,7 @@ export default function StationDetail() {
                                 <strong>{nozzle.fuelType.toUpperCase()}</strong>
                               </Typography>
                               <Typography variant="body2" color="textSecondary">
-                                Reading: {nozzle.currentReading.toFixed(2)}
+                                Reading: {nozzle.currentReading?.toFixed(2)}
                               </Typography>
                             </Box>
                             <Box>
@@ -926,7 +926,7 @@ export default function StationDetail() {
                           {fuelType.toUpperCase()}
                         </Typography>
                         <Typography variant="h4" color="primary" gutterBottom>
-                          ${activePrice?.toFixed(2) || 'Not set'}
+                          ${activePrice??.toFixed(2) || 'Not set'}
                         </Typography>
                         {activePrice && (
                           <Typography variant="body2" color="textSecondary">

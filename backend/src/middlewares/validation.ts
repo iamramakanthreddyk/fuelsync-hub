@@ -1,18 +1,30 @@
 // src/middlewares/validation.ts
 import { Request, Response, NextFunction } from 'express';
-import Joi from 'joi';
+import { z } from 'zod';
 
-export const validate = (schema: Joi.ObjectSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const { error } = schema.validate(req.body);
-    
-    if (error) {
-      return res.status(400).json({
-        message: 'Validation error',
-        details: error.details.map(d => d.message)
-      });
+export const validate = (schema: z.ZodSchema) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await schema.parseAsync(req.body);
+      next();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          message: 'Validation failed',
+          errors: error.issues.map(issue => ({
+            field: issue.path.join('.'),
+            message: issue.message
+          }))
+        });
+      }
+      return res.status(400).json({ message: 'Invalid input' });
     }
-    
-    next();
   };
 };
+
+export const validateLoginInput = validate(
+  z.object({
+    email: z.string().email('Invalid email format'),
+    password: z.string().min(6, 'Password must be at least 6 characters')
+  })
+);

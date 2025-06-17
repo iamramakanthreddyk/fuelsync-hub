@@ -1,4 +1,4 @@
-// frontend/src/pages/register.tsx (continued)
+// frontend/src/pages/register.tsx
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { 
@@ -13,8 +13,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid
+  CircularProgress
 } from '@mui/material';
+import { register } from '../utils/auth';
 
 export default function Register() {
   const router = useRouter();
@@ -49,24 +50,12 @@ export default function Register() {
     }
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          planType: formData.planType
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
-      }
+      await register(
+        formData.name,
+        formData.email,
+        formData.password,
+        formData.planType
+      );
 
       // Redirect to login page
       router.push('/login?registered=true');
@@ -156,7 +145,14 @@ export default function Register() {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? 'Creating Account...' : 'Register'}
+              {loading ? (
+                <>
+                  <CircularProgress size={24} sx={{ mr: 1 }} />
+                  Creating Account...
+                </>
+              ) : (
+                'Register'
+              )}
             </Button>
           </Box>
           

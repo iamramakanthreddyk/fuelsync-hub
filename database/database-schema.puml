@@ -1,0 +1,135 @@
+@startuml
+entity "tenants" as tenants {
+  *id : UUID <<PK>>
+  *name : TEXT
+  *plan_type : TEXT
+  *schema_name : TEXT
+  *created_at : TIMESTAMP
+  *updated_at : TIMESTAMP
+  *active : BOOLEAN
+  contact_email : TEXT
+  contact_phone : TEXT
+  address : JSONB
+}
+entity "users" as users {
+  *id : UUID <<PK>>
+  *email : TEXT
+  *password_hash : TEXT
+  *role : TEXT
+  *first_name : TEXT
+  *last_name : TEXT
+  phone : TEXT
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+  last_login : TIMESTAMP
+  active : BOOLEAN
+  deleted_at : TIMESTAMP
+}
+entity "stations" as stations {
+  *id : UUID <<PK>>
+  *name : TEXT
+  address : TEXT
+  city : TEXT
+  state : TEXT
+  zip : TEXT
+  contact_phone : TEXT
+  location : JSONB
+  operating_hours : JSONB
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+  active : BOOLEAN
+  deleted_at : TIMESTAMP
+}
+entity "pumps" as pumps {
+  *id : UUID <<PK>>
+  *station_id : UUID <<FK>>
+  *name : TEXT
+  serial_number : TEXT
+  installation_date : DATE
+  last_maintenance_date : DATE
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+  active : BOOLEAN
+  deleted_at : TIMESTAMP
+}
+entity "nozzles" as nozzles {
+  *id : UUID <<PK>>
+  *pump_id : UUID <<FK>>
+  *fuel_type : TEXT
+  initial_reading : NUMERIC
+  current_reading : NUMERIC
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+  active : BOOLEAN
+  deleted_at : TIMESTAMP
+}
+entity "sales" as sales {
+  *id : UUID <<PK>>
+  *station_id : UUID <<FK>>
+  *nozzle_id : UUID <<FK>>
+  *user_id : UUID <<FK>>
+  recorded_at : TIMESTAMP
+  sale_volume : NUMERIC
+  cumulative_reading : NUMERIC
+  previous_reading : NUMERIC
+  fuel_price : NUMERIC
+  amount : NUMERIC
+  cash_received : NUMERIC
+  credit_given : NUMERIC
+  payment_method : TEXT
+  credit_party_id : UUID <<FK>>
+  status : TEXT
+  notes : TEXT
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+entity "creditors" as creditors {
+  *id : UUID <<PK>>
+  *station_id : UUID <<FK>>
+  *party_name : TEXT
+  party_contact : TEXT
+  running_balance : NUMERIC
+  credit_limit : NUMERIC
+  last_updated_at : TIMESTAMP
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+  active : BOOLEAN
+  deleted_at : TIMESTAMP
+}
+entity "credit_payments" as credit_payments {
+  *id : UUID <<PK>>
+  *creditor_id : UUID <<FK>>
+  amount : NUMERIC
+  paid_at : TIMESTAMP
+  payment_method : TEXT
+  received_by : UUID <<FK>>
+  notes : TEXT
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+entity "day_reconciliations" as day_reconciliations {
+  *id : UUID <<PK>>
+  *station_id : UUID <<FK>>
+  date : DATE
+  total_sales : NUMERIC
+  cash_total : NUMERIC
+  credit_total : NUMERIC
+  card_total : NUMERIC
+  upi_total : NUMERIC
+  finalized : BOOLEAN
+  created_by : UUID <<FK>>
+  notes : TEXT
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+users -- tenants : "belongs to"
+stations -- users : "managed by"
+pumps -- stations : "belongs to"
+nozzles -- pumps : "belongs to"
+sales -- stations : "at"
+sales -- nozzles : "from"
+sales -- users : "by"
+sales -- creditors : "credit to"
+credit_payments -- creditors : "for"
+day_reconciliations -- stations : "for"
+@enduml

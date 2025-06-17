@@ -127,8 +127,8 @@ const NozzleList: React.FC<NozzleListProps> = ({
                       {nozzle.fuelType.toUpperCase()}
                     </Typography>
                   </TableCell>
-                  <TableCell align="right">{nozzle.initialReading.toFixed(2)}</TableCell>
-                  <TableCell align="right">{nozzle.currentReading.toFixed(2)}</TableCell>
+                  <TableCell align="right">{nozzle.initialReading?.toFixed(2)}</TableCell>
+                  <TableCell align="right">{nozzle.currentReading?.toFixed(2)}</TableCell>
                   <TableCell align="right">
                     <Chip
                       label={nozzle.active ? 'Active' : 'Disabled'}
@@ -203,8 +203,8 @@ const NozzleList: React.FC<NozzleListProps> = ({
                         {nozzle.fuelType.toUpperCase()}
                       </Typography>
                     </TableCell>
-                    <TableCell align="right">{nozzle.initialReading.toFixed(2)}</TableCell>
-                    <TableCell align="right">{nozzle.currentReading.toFixed(2)}</TableCell>
+                    <TableCell align="right">{nozzle.initialReading?.toFixed(2)}</TableCell>
+                    <TableCell align="right">{nozzle.currentReading?.toFixed(2)}</TableCell>
                     <TableCell align="right">
                       <Chip
                         label={nozzle.active ? 'Active' : 'Disabled'}

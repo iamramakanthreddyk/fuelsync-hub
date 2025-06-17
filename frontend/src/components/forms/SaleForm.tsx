@@ -188,7 +188,7 @@ const SaleForm: React.FC<SaleFormProps> = ({
         // Auto-fill cash received with total amount
         setFormData(prev => ({
           ...prev,
-          cashReceived: totalAmount.toFixed(2),
+          cashReceived: totalAmount?.toFixed(2),
           creditGiven: '0'
         }));
       }
@@ -210,7 +210,7 @@ const SaleForm: React.FC<SaleFormProps> = ({
       if (cashReceived > calculatedValues.totalAmount) {
         setFormData(prev => ({
           ...prev,
-          cashReceived: calculatedValues.totalAmount.toFixed(2),
+          cashReceived: calculatedValues.totalAmount?.toFixed(2),
           creditGiven: '0'
         }));
       } 
@@ -219,7 +219,7 @@ const SaleForm: React.FC<SaleFormProps> = ({
         setFormData(prev => ({
           ...prev,
           cashReceived: '0',
-          creditGiven: calculatedValues.totalAmount.toFixed(2)
+          creditGiven: calculatedValues.totalAmount?.toFixed(2)
         }));
       }
       // Otherwise, if cash changed, adjust credit to make up the difference
@@ -227,7 +227,7 @@ const SaleForm: React.FC<SaleFormProps> = ({
         const newCredit = Math.max(0, calculatedValues.totalAmount - cashReceived);
         setFormData(prev => ({
           ...prev,
-          creditGiven: newCredit.toFixed(2)
+          creditGiven: newCredit?.toFixed(2)
         }));
       }
       // If credit changed, adjust cash to make up the difference
@@ -235,7 +235,7 @@ const SaleForm: React.FC<SaleFormProps> = ({
         const newCash = Math.max(0, calculatedValues.totalAmount - creditGiven);
         setFormData(prev => ({
           ...prev,
-          cashReceived: newCash.toFixed(2)
+          cashReceived: newCash?.toFixed(2)
         }));
       }
     }
@@ -359,7 +359,7 @@ const SaleForm: React.FC<SaleFormProps> = ({
                   fullWidth
                   disabled
                   label="Previous Reading"
-                  value={calculatedValues.previousReading.toFixed(2)}
+                  value={calculatedValues.previousReading?.toFixed(2)}
                 />
               </Grid>
               
@@ -384,7 +384,7 @@ const SaleForm: React.FC<SaleFormProps> = ({
                   fullWidth
                   disabled
                   label="Sale Volume"
-                  value={calculatedValues.saleVolume.toFixed(2)}
+                  value={calculatedValues.saleVolume?.toFixed(2)}
                 />
               </Grid>
             </Grid>
@@ -401,7 +401,7 @@ const SaleForm: React.FC<SaleFormProps> = ({
                   fullWidth
                   disabled
                   label="Fuel Price"
-                  value={`$${calculatedValues.fuelPrice.toFixed(2)}`}
+                  value={`$${calculatedValues.fuelPrice?.toFixed(2)}`}
                 />
               </Grid>
               
@@ -410,7 +410,7 @@ const SaleForm: React.FC<SaleFormProps> = ({
                   fullWidth
                   disabled
                   label="Total Amount"
-                  value={`$${calculatedValues.totalAmount.toFixed(2)}`}
+                  value={`$${calculatedValues.totalAmount?.toFixed(2)}`}
                 />
               </Grid>
               
@@ -459,7 +459,7 @@ const SaleForm: React.FC<SaleFormProps> = ({
                     >
                       {creditors.map((creditor) => (
                         <MenuItem key={creditor.id} value={creditor.id}>
-                          {creditor.partyName} (Balance: ${creditor.runningBalance.toFixed(2)})
+                          {creditor.partyName} (Balance: ${creditor.runningBalance?.toFixed(2)})
                         </MenuItem>
                       ))}
                     </Select>

@@ -1,0 +1,1722 @@
+[
+ {
+  "table_schema": "public",
+  "table_name": "activity_logs",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "activity_logs",
+  "column_name": "user_id",
+  "data_type": "uuid",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "activity_logs",
+  "column_name": "action",
+  "data_type": "text",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "activity_logs",
+  "column_name": "entity_type",
+  "data_type": "text",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "activity_logs",
+  "column_name": "entity_id",
+  "data_type": "uuid",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "activity_logs",
+  "column_name": "metadata",
+  "data_type": "jsonb",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "activity_logs",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_activity_logs",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_activity_logs",
+  "column_name": "admin_id",
+  "data_type": "uuid",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_activity_logs",
+  "column_name": "action",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_activity_logs",
+  "column_name": "entity_type",
+  "data_type": "character varying",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_activity_logs",
+  "column_name": "entity_id",
+  "data_type": "uuid",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_activity_logs",
+  "column_name": "details",
+  "data_type": "jsonb",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_activity_logs",
+  "column_name": "ip_address",
+  "data_type": "character varying",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_activity_logs",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_users",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_users",
+  "column_name": "email",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_users",
+  "column_name": "password_hash",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_users",
+  "column_name": "role",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_users",
+  "column_name": "first_name",
+  "data_type": "character varying",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_users",
+  "column_name": "last_name",
+  "data_type": "character varying",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_users",
+  "column_name": "active",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "true"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "admin_users",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "audit_logs",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": "gen_random_uuid()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "audit_logs",
+  "column_name": "user_id",
+  "data_type": "uuid",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "audit_logs",
+  "column_name": "tenant_id",
+  "data_type": "uuid",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "audit_logs",
+  "column_name": "action",
+  "data_type": "text",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "audit_logs",
+  "column_name": "route",
+  "data_type": "text",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "audit_logs",
+  "column_name": "method",
+  "data_type": "text",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "audit_logs",
+  "column_name": "status_code",
+  "data_type": "integer",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "audit_logs",
+  "column_name": "details",
+  "data_type": "jsonb",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "audit_logs",
+  "column_name": "created_at",
+  "data_type": "timestamp with time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "credit_payments",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "credit_payments",
+  "column_name": "creditor_id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "credit_payments",
+  "column_name": "amount",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "credit_payments",
+  "column_name": "paid_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "credit_payments",
+  "column_name": "payment_method",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "credit_payments",
+  "column_name": "received_by",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "credit_payments",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "creditors",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "creditors",
+  "column_name": "station_id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "creditors",
+  "column_name": "party_name",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "creditors",
+  "column_name": "party_contact",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "creditors",
+  "column_name": "running_balance",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": "0"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "creditors",
+  "column_name": "credit_limit",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "creditors",
+  "column_name": "active",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "true"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "creditors",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "creditors",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "day_reconciliations",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "day_reconciliations",
+  "column_name": "station_id",
+  "data_type": "uuid",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "day_reconciliations",
+  "column_name": "date",
+  "data_type": "date",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "day_reconciliations",
+  "column_name": "total_sales",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "day_reconciliations",
+  "column_name": "cash_total",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "day_reconciliations",
+  "column_name": "credit_total",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "day_reconciliations",
+  "column_name": "card_total",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "day_reconciliations",
+  "column_name": "upi_total",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "day_reconciliations",
+  "column_name": "finalized",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "false"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "day_reconciliations",
+  "column_name": "created_by",
+  "data_type": "uuid",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "day_reconciliations",
+  "column_name": "notes",
+  "data_type": "text",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "day_reconciliations",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "day_reconciliations",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_deliveries",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_deliveries",
+  "column_name": "station_id",
+  "data_type": "uuid",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_deliveries",
+  "column_name": "fuel_type",
+  "data_type": "text",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_deliveries",
+  "column_name": "volume",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_deliveries",
+  "column_name": "price_per_unit",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_deliveries",
+  "column_name": "total_amount",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_deliveries",
+  "column_name": "delivery_date",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_deliveries",
+  "column_name": "supplier",
+  "data_type": "text",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_deliveries",
+  "column_name": "invoice_number",
+  "data_type": "text",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_deliveries",
+  "column_name": "received_by",
+  "data_type": "uuid",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_deliveries",
+  "column_name": "notes",
+  "data_type": "text",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_deliveries",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_deliveries",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_inventory",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_inventory",
+  "column_name": "station_id",
+  "data_type": "uuid",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_inventory",
+  "column_name": "fuel_type",
+  "data_type": "text",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_inventory",
+  "column_name": "current_volume",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_inventory",
+  "column_name": "capacity",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_inventory",
+  "column_name": "last_updated_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_inventory",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_inventory",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_prices",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_prices",
+  "column_name": "station_id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_prices",
+  "column_name": "fuel_type",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_prices",
+  "column_name": "price_per_unit",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_prices",
+  "column_name": "effective_from",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_prices",
+  "column_name": "created_by",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_prices",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "fuel_prices",
+  "column_name": "active",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "true"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "migrations",
+  "column_name": "id",
+  "data_type": "integer",
+  "is_nullable": "NO",
+  "column_default": "nextval('migrations_id_seq'::regclass)"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "migrations",
+  "column_name": "name",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "migrations",
+  "column_name": "batch",
+  "data_type": "integer",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "migrations",
+  "column_name": "applied_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "nozzle_readings",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "nozzle_readings",
+  "column_name": "nozzle_id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "nozzle_readings",
+  "column_name": "reading",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "nozzle_readings",
+  "column_name": "reading_date",
+  "data_type": "date",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "nozzle_readings",
+  "column_name": "created_by",
+  "data_type": "uuid",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "nozzle_readings",
+  "column_name": "created_at",
+  "data_type": "timestamp with time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "nozzles",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "nozzles",
+  "column_name": "pump_id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "nozzles",
+  "column_name": "fuel_type",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "nozzles",
+  "column_name": "initial_reading",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "nozzles",
+  "column_name": "current_reading",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "nozzles",
+  "column_name": "active",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "true"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "nozzles",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "nozzles",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plan_features",
+  "column_name": "plan_type",
+  "data_type": "text",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plan_features",
+  "column_name": "max_stations",
+  "data_type": "integer",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plan_features",
+  "column_name": "max_employees",
+  "data_type": "integer",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plan_features",
+  "column_name": "enable_creditors",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "true"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plan_features",
+  "column_name": "enable_reports",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "true"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plan_features",
+  "column_name": "enable_analytics",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "false"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plan_features",
+  "column_name": "enable_api_access",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "false"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plan_features",
+  "column_name": "support_level",
+  "data_type": "text",
+  "is_nullable": "YES",
+  "column_default": "'standard'::text"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plans",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plans",
+  "column_name": "name",
+  "data_type": "text",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plans",
+  "column_name": "max_stations",
+  "data_type": "integer",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plans",
+  "column_name": "max_employees",
+  "data_type": "integer",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plans",
+  "column_name": "price_monthly",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plans",
+  "column_name": "price_yearly",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plans",
+  "column_name": "features",
+  "data_type": "jsonb",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plans",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plans",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "plans",
+  "column_name": "active",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "true"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "pumps",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "pumps",
+  "column_name": "station_id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "pumps",
+  "column_name": "name",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "pumps",
+  "column_name": "serial_number",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "pumps",
+  "column_name": "installation_date",
+  "data_type": "date",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "pumps",
+  "column_name": "active",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "true"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "pumps",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "pumps",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "station_id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "nozzle_id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "user_id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "recorded_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "sale_volume",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "cumulative_reading",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "previous_reading",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "fuel_price",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "amount",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "cash_received",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": "0"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "credit_given",
+  "data_type": "numeric",
+  "is_nullable": "NO",
+  "column_default": "0"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "payment_method",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "credit_party_id",
+  "data_type": "uuid",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "status",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": "'posted'::character varying"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "sales",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "stations",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "stations",
+  "column_name": "name",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "stations",
+  "column_name": "address",
+  "data_type": "text",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "stations",
+  "column_name": "city",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "stations",
+  "column_name": "state",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "stations",
+  "column_name": "zip",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "stations",
+  "column_name": "contact_phone",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "stations",
+  "column_name": "active",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "true"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "stations",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "stations",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "subscription",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "subscription",
+  "column_name": "plan_id",
+  "data_type": "text",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "subscription",
+  "column_name": "subscribed_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "subscription",
+  "column_name": "expires_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "subscription",
+  "column_name": "is_trial",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "false"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "subscription",
+  "column_name": "auto_renew",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "true"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "subscription",
+  "column_name": "payment_method",
+  "data_type": "text",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "subscription",
+  "column_name": "payment_details",
+  "data_type": "jsonb",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "subscription",
+  "column_name": "status",
+  "data_type": "text",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "subscription",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "subscription",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenant_settings",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenant_settings",
+  "column_name": "timezone",
+  "data_type": "text",
+  "is_nullable": "YES",
+  "column_default": "'UTC'::text"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenant_settings",
+  "column_name": "currency",
+  "data_type": "text",
+  "is_nullable": "YES",
+  "column_default": "'USD'::text"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenant_settings",
+  "column_name": "date_format",
+  "data_type": "text",
+  "is_nullable": "YES",
+  "column_default": "'YYYY-MM-DD'::text"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenant_settings",
+  "column_name": "theme",
+  "data_type": "text",
+  "is_nullable": "YES",
+  "column_default": "'light'::text"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenant_settings",
+  "column_name": "branding",
+  "data_type": "jsonb",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenant_settings",
+  "column_name": "invoice_footer",
+  "data_type": "text",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenant_settings",
+  "column_name": "tax_rate",
+  "data_type": "numeric",
+  "is_nullable": "YES",
+  "column_default": "0"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenant_settings",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenant_settings",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenants",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenants",
+  "column_name": "name",
+  "data_type": "text",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenants",
+  "column_name": "plan_type",
+  "data_type": "text",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenants",
+  "column_name": "schema_name",
+  "data_type": "text",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenants",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenants",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenants",
+  "column_name": "active",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "true"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenants",
+  "column_name": "contact_email",
+  "data_type": "text",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenants",
+  "column_name": "contact_phone",
+  "data_type": "text",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenants",
+  "column_name": "address",
+  "data_type": "jsonb",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "tenants",
+  "column_name": "custom_plan",
+  "data_type": "jsonb",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "user_sessions",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "user_sessions",
+  "column_name": "user_id",
+  "data_type": "uuid",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "user_sessions",
+  "column_name": "login_time",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "NO",
+  "column_default": "now()"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "user_sessions",
+  "column_name": "logout_time",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "user_sessions",
+  "column_name": "ip_address",
+  "data_type": "text",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "user_sessions",
+  "column_name": "user_agent",
+  "data_type": "text",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "user_sessions",
+  "column_name": "device_info",
+  "data_type": "jsonb",
+  "is_nullable": "YES",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "user_stations",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "user_stations",
+  "column_name": "user_id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "user_stations",
+  "column_name": "station_id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "user_stations",
+  "column_name": "role",
+  "data_type": "USER-DEFINED",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "user_stations",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "user_stations",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "user_stations",
+  "column_name": "active",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "true"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "users",
+  "column_name": "id",
+  "data_type": "uuid",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "users",
+  "column_name": "email",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "users",
+  "column_name": "password_hash",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "users",
+  "column_name": "role",
+  "data_type": "USER-DEFINED",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "users",
+  "column_name": "first_name",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "users",
+  "column_name": "last_name",
+  "data_type": "character varying",
+  "is_nullable": "NO",
+  "column_default": null
+ },
+ {
+  "table_schema": "public",
+  "table_name": "users",
+  "column_name": "active",
+  "data_type": "boolean",
+  "is_nullable": "YES",
+  "column_default": "true"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "users",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ },
+ {
+  "table_schema": "public",
+  "table_name": "users",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP"
+ }
+]

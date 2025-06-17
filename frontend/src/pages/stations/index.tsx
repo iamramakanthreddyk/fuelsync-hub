@@ -10,7 +10,6 @@ import {
   Button,
   Box,
   CircularProgress,
-  Fab,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -21,18 +20,11 @@ import {
 } from '@mui/material';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { apiGet, apiPost, apiPatch, apiDelete } from '@/utils/api';
+import { ApiResponse, Station } from '@/types/api';
 
-interface Station {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-  contactPhone: string;
-}
-
-export default function Stations() {
+function StationsContent() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [stations, setStations] = useState<Station[]>([]);
@@ -45,7 +37,7 @@ export default function Stations() {
     city: '',
     state: '',
     zip: '',
-    contactPhone: ''
+    contact_phone: ''
   });
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -54,28 +46,14 @@ export default function Stations() {
   });
   
   useEffect(() => {
-    // Verify authentication
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    
     // Fetch stations
     const fetchStations = async () => {
       try {
-        const response = await fetch('/api/stations', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const response = await apiGet<ApiResponse<Station[]>>('/stations');
         
-        if (!response.ok) {
-          throw new Error('Failed to fetch stations');
+        if (response.status === 'success' && response.data) {
+          setStations(response.data);
         }
-        
-        const data = await response.json();
-        setStations(data);
       } catch (error) {
         console.error('Error fetching stations:', error);
       } finally {
@@ -84,7 +62,7 @@ export default function Stations() {
     };
     
     fetchStations();
-  }, [router]);
+  }, []);
   
   const handleOpenDialog = (mode: 'add' | 'edit', station?: Station) => {
     setDialogMode(mode);
@@ -96,7 +74,7 @@ export default function Stations() {
         city: station.city || '',
         state: station.state || '',
         zip: station.zip || '',
-        contactPhone: station.contactPhone || ''
+        contact_phone: station.contact_phone || ''
       });
     } else {
       setCurrentStation(null);
@@ -106,7 +84,7 @@ export default function Stations() {
         city: '',
         state: '',
         zip: '',
-        contactPhone: ''
+        contact_phone: ''
       });
     }
     setOpenDialog(true);
@@ -125,101 +103,64 @@ export default function Stations() {
   };
   
   const handleSubmit = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    
     try {
       let response;
       
       if (dialogMode === 'add') {
-        response = await fetch('/api/stations', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(formData)
-        });
+        response = await apiPost<ApiResponse<Station>>('/stations', formData);
       } else {
-        response = await fetch(`/api/stations/${currentStation?.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(formData)
+        response = await apiPatch<ApiResponse<Station>>(`/stations/${currentStation?.id}`, formData);
+      }
+      
+      if (response.status === 'success' && response.data) {
+        // Update stations list
+        if (dialogMode === 'add') {
+          setStations(prev => [...prev, response.data as Station]);
+        } else {
+          setStations(prev => prev.map(s => s.id === (response.data as Station).id ? (response.data as Station) : s));
+        }
+        
+        setSnackbar({
+          open: true,
+          message: `Station ${dialogMode === 'add' ? 'added' : 'updated'} successfully`,
+          severity: 'success'
         });
+        
+        handleCloseDialog();
       }
-      
-      if (!response.ok) {
-        throw new Error('Failed to save station');
-      }
-      
-      const data = await response.json();
-      
-      // Update stations list
-      if (dialogMode === 'add') {
-        setStations(prev => [...prev, data]);
-      } else {
-        setStations(prev => prev.map(s => s.id === data.id ? data : s));
-      }
-      
-      setSnackbar({
-        open: true,
-        message: `Station ${dialogMode === 'add' ? 'added' : 'updated'} successfully`,
-        severity: 'success'
-      });
-      
-      handleCloseDialog();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving station:', error);
       setSnackbar({
         open: true,
-        message: `Failed to ${dialogMode === 'add' ? 'add' : 'update'} station`,
+        message: error.message || `Failed to ${dialogMode === 'add' ? 'add' : 'update'} station`,
         severity: 'error'
       });
     }
   };
   
   const handleDelete = async (id: string) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    
     if (!confirm('Are you sure you want to delete this station?')) {
       return;
     }
     
     try {
-      const response = await fetch(`/api/stations/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await apiDelete<ApiResponse<{ success: boolean }>>(`/stations/${id}`);
       
-      if (!response.ok) {
-        throw new Error('Failed to delete station');
+      if (response.status === 'success') {
+        // Update stations list
+        setStations(prev => prev.filter(s => s.id !== id));
+        
+        setSnackbar({
+          open: true,
+          message: 'Station deleted successfully',
+          severity: 'success'
+        });
       }
-      
-      // Update stations list
-      setStations(prev => prev.filter(s => s.id !== id));
-      
-      setSnackbar({
-        open: true,
-        message: 'Station deleted successfully',
-        severity: 'success'
-      });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting station:', error);
       setSnackbar({
         open: true,
-        message: 'Failed to delete station',
+        message: error.message || 'Failed to delete station',
         severity: 'error'
       });
     }
@@ -277,9 +218,9 @@ export default function Stations() {
                       {station.address}, {station.city}, {station.state} {station.zip}
                     </Typography>
                   )}
-                  {station.contactPhone && (
+                  {station.contact_phone && (
                     <Typography variant="body2" color="textSecondary" mt={1}>
-                      Phone: {station.contactPhone}
+                      Phone: {station.contact_phone}
                     </Typography>
                   )}
                 </CardContent>
@@ -377,10 +318,10 @@ export default function Stations() {
             <TextField
               margin="normal"
               fullWidth
-              id="contactPhone"
+              id="contact_phone"
               label="Contact Phone"
-              name="contactPhone"
-              value={formData.contactPhone}
+              name="contact_phone"
+              value={formData.contact_phone}
               onChange={handleChange}
             />
           </Box>
@@ -409,5 +350,14 @@ export default function Stations() {
         </Alert>
       </Snackbar>
     </DashboardLayout>
+  );
+}
+
+// Wrap the stations content with the protected route component
+export default function Stations() {
+  return (
+    <ProtectedRoute requiredRoles={['owner', 'manager']}>
+      <StationsContent />
+    </ProtectedRoute>
   );
 }

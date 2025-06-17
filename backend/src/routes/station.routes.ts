@@ -2,10 +2,15 @@ import { Router } from 'express';
 import * as stationController from '../controllers/station.controller';
 import { authenticateJWT } from '../middlewares/auth';
 import { setTenantContext } from '../middlewares/tenant';
+import { hasPermission } from '../middlewares/permissions';
+import { validate } from '../middlewares/validation';
+import { createStationSchema } from '../models/station.schema';
+import { apiLimiter } from '../middlewares/rateLimit';
+import { PERMISSIONS } from '../config/permissions';
 
 const router = Router();
 
-// Apply middleware to all routes
+// Apply authentication and tenant context middleware
 router.use(authenticateJWT);
 router.use(setTenantContext);
 
@@ -13,13 +18,23 @@ router.use(setTenantContext);
  * @swagger
  * /stations:
  *   get:
- *     summary: Get all stations
+ *     summary: Get all stations for the current tenant
  *     tags: [Stations]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: A list of stations
+ *         description: List of stations
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  */
-router.get('/', stationController.getStations);
+router.get(
+  '/',
+  hasPermission(PERMISSIONS.MANAGE_STATIONS),
+  stationController.getStations
+);
 
 /**
  * @swagger
@@ -27,100 +42,31 @@ router.get('/', stationController.getStations);
  *   post:
  *     summary: Create a new station
  *     tags: [Stations]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/CreateStationRequest'
+ *             $ref: '#/components/schemas/CreateStation'
  *     responses:
  *       201:
  *         description: Station created successfully
  *       400:
  *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  */
-router.post('/', stationController.createStation);
-
-/**
- * @swagger
- * /stations/{id}:
- *   get:
- *     summary: Get a station by ID
- *     tags: [Stations]
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *     responses:
- *       200:
- *         description: Station details
- *       404:
- *         description: Station not found
- */
-router.get('/:id', stationController.getStationById);
-
-/**
- * @swagger
- * /stations/{id}:
- *   patch:
- *     summary: Update a station
- *     tags: [Stations]
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               address:
- *                 type: string
- *               city:
- *                 type: string
- *               state:
- *                 type: string
- *               zip:
- *                 type: string
- *               contactPhone:
- *                 type: string
- *     responses:
- *       200:
- *         description: Station updated successfully
- *       404:
- *         description: Station not found
- */
-router.patch('/:id', stationController.updateStation);
-
-/**
- * @swagger
- * /stations/{id}:
- *   delete:
- *     summary: Delete a station
- *     tags: [Stations]
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *     responses:
- *       204:
- *         description: Station deleted successfully
- *       404:
- *         description: Station not found
- */
-router.delete('/:id', stationController.deleteStation);
+router.post(
+  '/',
+  [
+    hasPermission(PERMISSIONS.MANAGE_STATIONS),
+    validate(createStationSchema)
+  ],
+  stationController.createStation
+);
 
 export default router;

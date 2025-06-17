@@ -6,11 +6,13 @@ actor "Owner" as owner
 actor "Manager" as manager
 actor "Employee" as employee
 actor "Customer" as customer
+actor "SuperAdmin" as superadmin
 
 ' Systems
 rectangle "Frontend (Next.js)" as frontend
 rectangle "Backend (Express.js)" as backend
 database "PostgreSQL Database" as db
+rectangle "Stripe" as stripe
 
 ' Data Flows - Authentication
 owner --> frontend: Register/Login
@@ -73,5 +75,18 @@ backend --> db: Query Sales/Inventory Data
 db --> backend: Aggregated Data
 backend --> frontend: Formatted Report
 frontend --> owner: Visual Dashboard
+
+' Data Flows - UI/API/DB Interaction
+employee -> frontend: Login, Record Sale
+manager -> frontend: Reconcile, Reports
+owner -> frontend: Manage Users, Billing
+superadmin -> frontend: Admin Dashboard
+
+frontend -> backend: Auth, CRUD, Actions
+backend -> db: Query/Insert/Update
+backend -> stripe: Billing Events
+
+backend -> db: Set search_path to tenant schema
+backend -> db: Write/read only within tenant schema
 
 @enduml
