@@ -1,103 +1,123 @@
+// frontend/src/components/stations/StationCard.tsx
 import React from 'react';
-import {
-  Card,
-  CardContent,
-  CardActions,
-  Typography,
-  Button,
-  Chip,
+import { 
+  Card, 
+  CardContent, 
+  Typography, 
+  CardActions, 
+  Button, 
   Box,
-  Divider
+  Chip,
+  Grid
 } from '@mui/material';
 import { 
   Edit as EditIcon, 
-  Delete as DeleteIcon,
-  LocalGasStation as PumpIcon 
+  LocalGasStation as GasIcon,
+  LocationOn as LocationIcon
 } from '@mui/icons-material';
+import { useRouter } from 'next/router';
 
 interface Station {
   id: string;
   name: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-  contactPhone: string;
-  pumpsCount?: number;
-  nozzlesCount?: number;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  contact_phone?: string;
+  pumps_count?: number;
+  active?: boolean;
 }
 
 interface StationCardProps {
   station: Station;
-  onEdit: (station: Station) => void;
-  onDelete: (stationId: string) => void;
-  onManage: (stationId: string) => void;
 }
 
-const StationCard: React.FC<StationCardProps> = ({ station, onEdit, onDelete, onManage }) => {
-  const { id, name, address, city, state, zip, contactPhone, pumpsCount = 0, nozzlesCount = 0 } = station;
+const StationCard: React.FC<StationCardProps> = ({ station }) => {
+  const router = useRouter();
   
+  const handleViewDetails = () => {
+    router.push(`/stations/${station.id}`);
+  };
+  
+  const handleEdit = () => {
+    router.push(`/stations/${station.id}/edit`);
+  };
+
+  // Format address
+  const formattedAddress = [
+    station.address,
+    station.city && station.state ? `${station.city}, ${station.state}` : (station.city || station.state),
+    station.zip
+  ].filter(Boolean).join(', ');
+
   return (
-    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Card 
+      sx={{ 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column',
+        transition: 'transform 0.2s',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: 4
+        }
+      }}
+    >
       <CardContent sx={{ flexGrow: 1 }}>
-        <Typography variant="h6" component="div" gutterBottom>
-          {name}
-        </Typography>
-        
-        {address && (
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            {address}{city ? `, ${city}` : ''}{state ? `, ${state}` : ''} {zip}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Typography variant="h5" component="h2" gutterBottom>
+            {station.name}
           </Typography>
-        )}
-        
-        {contactPhone && (
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Phone: {contactPhone}
-          </Typography>
-        )}
-        
-        <Divider sx={{ my: 1.5 }} />
-        
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
-          <Chip 
-            icon={<PumpIcon sx={{ fontSize: '0.75rem !important' }} />}
-            label={`${pumpsCount} Pump${pumpsCount !== 1 ? 's' : ''}`}
-            size="small"
-            color="primary"
-            variant="outlined"
-          />
-          <Chip
-            label={`${nozzlesCount} Nozzle${nozzlesCount !== 1 ? 's' : ''}`}
-            size="small"
-            color="secondary"
-            variant="outlined"
-          />
+          {station.active !== undefined && (
+            <Chip 
+              label={station.active ? "Active" : "Inactive"} 
+              color={station.active ? "success" : "default"}
+              size="small"
+            />
+          )}
         </Box>
+        
+        {formattedAddress && (
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1 }}>
+            <LocationIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+            <Typography variant="body2" color="text.secondary">
+              {formattedAddress}
+            </Typography>
+          </Box>
+        )}
+        
+        {station.contact_phone && (
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Phone: {station.contact_phone}
+          </Typography>
+        )}
+        
+        {station.pumps_count !== undefined && (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <GasIcon fontSize="small" sx={{ mr: 1, color: 'primary.main' }} />
+            <Typography variant="body2">
+              {station.pumps_count} {station.pumps_count === 1 ? 'Pump' : 'Pumps'}
+            </Typography>
+          </Box>
+        )}
       </CardContent>
       
       <CardActions>
         <Button 
+          variant="contained" 
+          size="small"
+          onClick={handleViewDetails}
+        >
+          View Details
+        </Button>
+        <Button 
+          variant="outlined" 
           size="small" 
           startIcon={<EditIcon />}
-          onClick={() => onEdit(station)}
+          onClick={handleEdit}
         >
           Edit
-        </Button>
-        <Button 
-          size="small" 
-          color="error" 
-          startIcon={<DeleteIcon />}
-          onClick={() => onDelete(id)}
-        >
-          Delete
-        </Button>
-        <Button 
-          size="small" 
-          color="primary"
-          onClick={() => onManage(id)}
-          sx={{ ml: 'auto' }}
-        >
-          Manage
         </Button>
       </CardActions>
     </Card>

@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../components/auth/ProtectedRoute';
-import { getUserRole } from '../../utils/authHelper';
+import { getUserRole, getToken } from '../../utils/authHelper';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -28,27 +28,32 @@ const Dashboard = () => {
         setLoading(true);
         setError('');
         
-        const token = localStorage.getItem('token');
+        const token = getToken();
         if (!token) {
           setError('Authentication required');
           setLoading(false);
           return;
         }
         
-        const response = await fetch('/api/dashboard', {
+        const response = await fetch('http://localhost:3001/api/dashboard', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
         
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch dashboard data');
+        }
+        
         const data = await response.json();
         console.log('Dashboard data:', data);
         
-        if (response.ok && data.status === 'success' && data.data) {
-          setDashboardData(data.data);
+        if (data) {
+          setDashboardData(data);
         } else {
           console.error('Invalid dashboard data format:', data);
-          setError(data.message || 'Failed to load dashboard data');
+          setError('Invalid data format received from server');
         }
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
