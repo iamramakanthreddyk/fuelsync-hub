@@ -1,0 +1,290 @@
+// FuelSync Hub Database Schema in DBML format
+// https://dbdiagram.io/d
+
+// Public schema
+Table tenants {
+  id uuid [pk]
+  name text [not null]
+  plan_type text [not null]
+  schema_name text [not null, unique]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  active boolean [default: true]
+  contact_email text
+  contact_phone text
+  address jsonb
+}
+
+Table plans {
+  id uuid [pk]
+  name text [not null, unique]
+  max_stations integer [not null]
+  max_employees integer [not null]
+  price_monthly decimal(10,2) [not null]
+  price_yearly decimal(10,2) [not null]
+  features jsonb [not null]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  active boolean [default: true]
+}
+
+Table plan_features {
+  plan_type text [pk, ref: > plans.name]
+  max_stations integer [not null]
+  max_employees integer [not null]
+  enable_creditors boolean [not null]
+  enable_reports boolean [not null]
+  enable_analytics boolean [not null]
+  enable_api_access boolean [not null]
+  support_level text [not null]
+}
+
+Table admin_users {
+  id uuid [pk]
+  email text [not null, unique]
+  password_hash text [not null]
+  first_name text [not null]
+  last_name text [not null]
+  role text [not null]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  last_login timestamp
+  active boolean [default: true]
+}
+
+Table admin_activity_logs {
+  id uuid [pk]
+  admin_id uuid [not null, ref: > admin_users.id]
+  tenant_id uuid [ref: > tenants.id]
+  action text [not null]
+  metadata jsonb
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+// Tenant schema (per-tenant)
+Table users {
+  id uuid [pk]
+  email text [not null, unique]
+  password_hash text [not null]
+  role text [not null]
+  first_name text [not null]
+  last_name text [not null]
+  phone text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  last_login timestamp
+  active boolean [default: true]
+  deleted_at timestamp
+}
+
+Table user_sessions {
+  id uuid [pk]
+  user_id uuid [not null, ref: > users.id]
+  login_time timestamp [not null]
+  logout_time timestamp
+  ip_address text
+  user_agent text
+  device_info jsonb
+}
+
+Table activity_logs {
+  id uuid [pk]
+  user_id uuid [not null, ref: > users.id]
+  action text [not null]
+  entity_type text [not null]
+  entity_id uuid
+  metadata jsonb
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table tenant_settings {
+  id uuid [pk]
+  timezone text
+  currency text
+  date_format text
+  theme text
+  branding jsonb
+  invoice_footer text
+  tax_rate decimal(5,2)
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table subscription {
+  id uuid [pk]
+  plan_id text [not null]
+  subscribed_at timestamp [not null]
+  expires_at timestamp
+  is_trial boolean
+  auto_renew boolean
+  payment_method text
+  payment_details jsonb
+  status text [not null]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table stations {
+  id uuid [pk]
+  name text [not null]
+  address text
+  city text
+  state text
+  zip text
+  contact_phone text
+  location jsonb
+  operating_hours jsonb
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  active boolean [default: true]
+  deleted_at timestamp
+}
+
+Table user_stations {
+  id uuid [pk]
+  user_id uuid [not null, ref: > users.id]
+  station_id uuid [not null, ref: > stations.id]
+  role text [not null]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  active boolean [default: true]
+}
+
+Table pumps {
+  id uuid [pk]
+  station_id uuid [not null, ref: > stations.id]
+  name text [not null]
+  serial_number text
+  installation_date date
+  last_maintenance_date date
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  active boolean [default: true]
+  deleted_at timestamp
+}
+
+Table nozzles {
+  id uuid [pk]
+  pump_id uuid [not null, ref: > pumps.id]
+  fuel_type text [not null]
+  initial_reading decimal(12,3) [not null]
+  current_reading decimal(12,3) [not null]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  active boolean [default: true]
+  deleted_at timestamp
+}
+
+Table nozzle_readings {
+  id uuid [pk]
+  nozzle_id uuid [not null, ref: > nozzles.id]
+  reading decimal(12,3) [not null]
+  recorded_at timestamp [not null]
+  recorded_by uuid [not null, ref: > users.id]
+  notes text
+}
+
+Table fuel_prices {
+  id uuid [pk]
+  station_id uuid [not null, ref: > stations.id]
+  fuel_type text [not null]
+  price_per_unit decimal(10,2) [not null]
+  effective_from timestamp [not null]
+  effective_to timestamp
+  created_by uuid [not null, ref: > users.id]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table creditors {
+  id uuid [pk]
+  station_id uuid [not null, ref: > stations.id]
+  party_name text [not null]
+  party_contact text
+  running_balance decimal(10,2) [not null]
+  credit_limit decimal(10,2)
+  last_updated_at timestamp [not null]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  active boolean [default: true]
+  deleted_at timestamp
+}
+
+Table sales {
+  id uuid [pk]
+  station_id uuid [not null, ref: > stations.id]
+  nozzle_id uuid [not null, ref: > nozzles.id]
+  user_id uuid [not null, ref: > users.id]
+  recorded_at timestamp [not null]
+  sale_volume decimal(12,3) [not null]
+  cumulative_reading decimal(12,3)
+  previous_reading decimal(12,3)
+  fuel_price decimal(10,2) [not null]
+  amount decimal(10,2) [not null]
+  cash_received decimal(10,2)
+  credit_given decimal(10,2)
+  payment_method text [not null]
+  credit_party_id uuid [ref: > creditors.id]
+  status text [not null]
+  voided_by uuid [ref: > users.id]
+  voided_at timestamp
+  void_reason text
+  notes text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table credit_payments {
+  id uuid [pk]
+  creditor_id uuid [not null, ref: > creditors.id]
+  amount decimal(10,2) [not null]
+  paid_at timestamp [not null]
+  payment_method text [not null]
+  received_by uuid [not null, ref: > users.id]
+  notes text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table day_reconciliations {
+  id uuid [pk]
+  station_id uuid [not null, ref: > stations.id]
+  date date [not null]
+  total_sales decimal(12,2) [not null]
+  cash_total decimal(12,2) [not null]
+  credit_total decimal(12,2) [not null]
+  card_total decimal(12,2) [not null]
+  upi_total decimal(12,2) [not null]
+  finalized boolean [not null]
+  created_by uuid [not null, ref: > users.id]
+  notes text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table fuel_inventory {
+  id uuid [pk]
+  station_id uuid [not null, ref: > stations.id]
+  fuel_type text [not null]
+  current_volume decimal(12,3) [not null]
+  capacity decimal(12,3) [not null]
+  last_updated_at timestamp [not null]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table fuel_deliveries {
+  id uuid [pk]
+  station_id uuid [not null, ref: > stations.id]
+  fuel_type text [not null]
+  volume decimal(12,3) [not null]
+  price_per_unit decimal(10,2) [not null]
+  total_amount decimal(12,2) [not null]
+  delivery_date timestamp [not null]
+  supplier text
+  invoice_number text
+  received_by uuid [not null, ref: > users.id]
+  notes text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+}

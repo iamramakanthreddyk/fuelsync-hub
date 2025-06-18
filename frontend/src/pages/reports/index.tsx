@@ -25,6 +25,7 @@ import {
   TableRow,
   TableCell
 } from '@mui/material';
+import type { SelectChangeEvent } from '@mui/material/Select';
 import { Download as DownloadIcon } from '@mui/icons-material';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
@@ -93,30 +94,19 @@ export default function Reports() {
 
     const fetchStations = async () => {
       try {
-        const response = await fetch('/api/stations', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch stations');
-        }
-
+        const response = await fetch('/api/stations');
         const data = await response.json();
-        setStations(data);
-
-        // If we have stations, set the first one as default
-        if (data.length > 0) {
-          setFilters(prev => ({
-            ...prev,
-            stationId: data[0].id
-          }));
+        
+        // Ensure data is an array before setting
+        if (Array.isArray(data)) {
+          setStations(data);
+        } else {
+          setStations([]);
+          console.error('Received invalid stations data:', data);
         }
       } catch (error) {
         console.error('Error fetching stations:', error);
-      } finally {
-        setLoading(false);
+        setStations([]);
       }
     };
 
@@ -136,6 +126,14 @@ export default function Reports() {
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
     const { name, value } = e.target;
+    setFilters(prev => ({
+      ...prev,
+      [name as string]: value
+    }));
+  };
+
+  const handleSelectChange = (event: SelectChangeEvent<string>) => {
+    const { name, value } = event.target;
     setFilters(prev => ({
       ...prev,
       [name as string]: value
@@ -254,9 +252,9 @@ export default function Reports() {
                         name="stationId"
                         value={filters.stationId}
                         label="Station"
-                        onChange={handleFilterChange}
+                        onChange={handleSelectChange}
                       >
-                        {stations.map((station) => (
+                        {(stations || []).map((station) => (
                           <MenuItem key={station.id} value={station.id}>
                             {station.name}
                           </MenuItem>

@@ -1,44 +1,100 @@
-import { useState } from 'react';
+// frontend/src/pages/login.tsx
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import { TextField, Button, Paper, Typography, Box, Container, Alert, CircularProgress } from '@mui/material';
-import { login } from '../utils/auth';
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Container,
+  Paper,
+  Alert,
+  CircularProgress
+} from '@mui/material';
+import { storeToken, parseToken } from '../utils/authHelper';
 
-export default function Login() {
-  const router = useRouter();
+const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setLoading(true);
 
     try {
-      // Use the updated login function from auth utility
-      const result = await login(email, password);
+      console.log('Attempting login with:', { email });
       
-      // Redirect to dashboard
-      router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials and try again.');
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      console.log('Login response:', data);
+
+      if (response.ok && data.status === 'success' && data.data?.token) {
+        // Store token using authHelper
+        storeToken(data.data.token);
+        
+        // Parse token to get user role
+        const tokenData = parseToken(data.data.token);
+        console.log('Token data:', tokenData);
+        
+        // Redirect based on role
+        if (tokenData?.role === 'superadmin') {
+          router.push('/admin/dashboard');
+        } else {
+          router.push('/dashboard');
+        }
+      } else {
+        setError(data.message || 'Login failed. Please check your credentials.');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('An error occurred during login. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
-          <Typography component="h1" variant="h5" align="center" gutterBottom>
-            FuelSync Hub Login
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={{
+          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Paper
+          elevation={3}
+          sx={{
+            padding: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <Typography component="h1" variant="h5">
+            Sign in to FuelSync Hub
           </Typography>
-
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-
-          <Box component="form" onSubmit={handleSubmit} noValidate>
+          
+          {error && (
+            <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
+              {error}
+            </Alert>
+          )}
+          
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
             <TextField
               margin="normal"
               required
@@ -70,30 +126,13 @@ export default function Login() {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? (
-                <>
-                  <CircularProgress size={24} sx={{ mr: 1 }} />
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
-              )}
+              {loading ? <CircularProgress size={24} /> : 'Sign In'}
             </Button>
-          </Box>
-
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Typography variant="body2">
-              <span>Don&apos;t have an account?</span>
-              <Button
-                onClick={() => router.push('/register')}
-                sx={{ textTransform: 'none' }}
-              >
-                Register here
-              </Button>
-            </Typography>
           </Box>
         </Paper>
       </Box>
     </Container>
   );
-}
+};
+
+export default LoginPage;

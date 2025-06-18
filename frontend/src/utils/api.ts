@@ -1,93 +1,66 @@
-import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import { ApiResponse } from '../types/api';
-import { handleApiError, ApiError } from './errorHandler';
+// frontend/src/utils/api.ts
+import { authHeader } from './authHelper';
 
-// Create axios instance with base URL
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
-});
+interface ApiOptions {
+  method?: string;
+  body?: any;
+  headers?: Record<string, string>;
+}
 
-// Request interceptor to add auth token
-api.interceptors.request.use(
-  (config) => {
-    const isAdminRoute = config.url?.startsWith('/admin');
-    const token = localStorage.getItem(isAdminRoute ? 'admin_token' : 'token');
-    
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(handleApiError(error));
+export async function fetchApi<T>(endpoint: string, options: ApiOptions = {}): Promise<T> {
+  const { method = 'GET', body, headers = {} } = options;
+
+  // Get auth headers from authHelper
+  const authHeaders = authHeader();
+  
+  const requestOptions: RequestInit = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeaders,
+      ...headers,
+    },
+  };
+
+  if (body) {
+    requestOptions.body = JSON.stringify(body);
   }
-);
 
-// Response interceptor to handle common errors
-api.interceptors.response.use(
-  (response) => response,
-  (error: AxiosError<ApiResponse<any>>) => {
-    // Handle 401 Unauthorized errors (token expired or invalid)
-    if (error.response?.status === 401) {
-      // Check if this is an admin route
-      const isAdminRoute = error.config?.url?.startsWith('/admin');
-      
-      // Clear token and redirect to login
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(isAdminRoute ? 'admin_token' : 'token');
-        localStorage.removeItem(isAdminRoute ? 'admin_user' : 'user');
-        window.location.href = isAdminRoute ? '/admin/login' : '/login';
+  console.log(`API Request to ${endpoint}:`, { method, headers: requestOptions.headers });
+
+  try {
+    const response = await fetch(endpoint, requestOptions);
+    const data = await response.json();
+    
+    console.log(`API Response from ${endpoint}:`, data);
+
+    if (!response.ok) {
+      // Check for auth errors
+      if (response.status === 401) {
+        console.error('Authentication error:', data);
+        // Could redirect to login page here
       }
+      
+      throw new Error(data.message || 'API request failed');
     }
+
+    return data;
+  } catch (error) {
+    console.error(`API Error (${endpoint}):`, error);
+    throw error;
+  }
+}
+
+export const api = {
+  get: <T>(endpoint: string, options: ApiOptions = {}): Promise<T> => 
+    fetchApi<T>(endpoint, { ...options, method: 'GET' }),
     
-    return Promise.reject(handleApiError(error));
-  }
-);
-
-// Type-safe request methods
-export const apiGet = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
-  try {
-    const response: AxiosResponse<T> = await api.get(url, config);
-    return response.data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
+  post: <T>(endpoint: string, body: any, options: ApiOptions = {}): Promise<T> => 
+    fetchApi<T>(endpoint, { ...options, method: 'POST', body }),
+    
+  put: <T>(endpoint: string, body: any, options: ApiOptions = {}): Promise<T> => 
+    fetchApi<T>(endpoint, { ...options, method: 'PUT', body }),
+    
+  delete: <T>(endpoint: string, options: ApiOptions = {}): Promise<T> => 
+    fetchApi<T>(endpoint, { ...options, method: 'DELETE' }),
 };
-
-export const apiPost = async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
-  try {
-    const response: AxiosResponse<T> = await api.post(url, data, config);
-    return response.data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
-};
-
-export const apiPut = async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
-  try {
-    const response: AxiosResponse<T> = await api.put(url, data, config);
-    return response.data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
-};
-
-export const apiPatch = async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
-  try {
-    const response: AxiosResponse<T> = await api.patch(url, data, config);
-    return response.data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
-};
-
-export const apiDelete = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
-  try {
-    const response: AxiosResponse<T> = await api.delete(url, config);
-    return response.data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
-};
-
-export default api;

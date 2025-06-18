@@ -9,9 +9,35 @@ FuelSync Hub is a multi-tenant SaaS platform for fuel station management. We're 
 ## Related Documentation
 
 - [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md) - Database schema details
+- [DATA_FLOW.md](DATA_FLOW.md) - Data flow diagrams
+- [schema.dbml](schema.dbml) - DBML schema definition
 - [TENANT_SETUP.md](TENANT_SETUP.md) - Tenant setup process
 - [SUPERADMIN_GUIDE.md](SUPERADMIN_GUIDE.md) - Superadmin user guide
 - [API_REFERENCE.md](API_REFERENCE.md) - API documentation
+
+## Database Schema
+
+The FuelSync Hub platform uses a schema-based multi-tenancy approach:
+
+1. **Public Schema**: Contains shared tables like tenants, plans, and admin users
+2. **Tenant Schemas**: Each tenant has its own schema with isolated data
+
+Key tables in the public schema:
+- `tenants`: Tenant accounts and subscription information
+- `plans`: Subscription plan definitions
+- `admin_users`: Superadmin user accounts
+- `admin_activity_logs`: Audit trail of superadmin actions
+
+Key tables in tenant schemas:
+- `users`: User accounts within tenants
+- `stations`: Fuel stations within tenants
+- `pumps`: Fuel pumps within stations
+- `nozzles`: Nozzles within pumps
+- `sales`: Sales transactions
+- `creditors`: Credit customers
+- `credit_payments`: Payments for credit sales
+
+For a complete schema definition, see [schema.dbml](schema.dbml).
 
 ## Business Rules
 
@@ -156,6 +182,8 @@ The following business rules must be enforced throughout the system:
   - [x] Create API reference
   - [x] Write superadmin user guide
   - [x] Create migration documentation
+  - [x] Create DBML schema definition
+  - [x] Create data flow diagrams
 
 - [x] **Deployment**
   - [x] Create migration scripts
@@ -163,96 +191,91 @@ The following business rules must be enforced throughout the system:
   - [x] Prepare rollback plan
   - [ ] Schedule deployment
 
-## Implementation Details
+## API Endpoints
 
-### Database Schema Updates
-
-```sql
--- Admin users table
-CREATE TABLE IF NOT EXISTS admin_users (
-  id UUID PRIMARY KEY,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
-  role VARCHAR(50) NOT NULL CHECK (role IN ('superadmin')),
-  first_name VARCHAR(100) NOT NULL,
-  last_name VARCHAR(100) NOT NULL,
-  active BOOLEAN DEFAULT true,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Admin sessions table
-CREATE TABLE IF NOT EXISTS admin_sessions (
-  id UUID PRIMARY KEY,
-  admin_id UUID NOT NULL REFERENCES admin_users(id),
-  token TEXT NOT NULL,
-  expires_at TIMESTAMP NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  last_used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Admin activity logs
-CREATE TABLE IF NOT EXISTS admin_activity_logs (
-  id UUID PRIMARY KEY,
-  admin_id UUID NOT NULL REFERENCES admin_users(id),
-  action VARCHAR(50) NOT NULL,
-  entity_type VARCHAR(50),
-  entity_id UUID,
-  details JSONB,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Admin settings
-CREATE TABLE IF NOT EXISTS admin_settings (
-  id UUID PRIMARY KEY,
-  key VARCHAR(100) NOT NULL UNIQUE,
-  value JSONB NOT NULL,
-  description TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-### API Endpoints
-
-#### Admin Authentication
+### Admin Authentication
 - `POST /api/admin-auth/login` - Login as superadmin
 - `POST /api/admin-auth/logout` - Logout superadmin session
 - `GET /api/admin-auth/me` - Get current admin user
 - `POST /api/direct-admin-auth/login` - Direct login endpoint for superadmin
 
-#### Admin Dashboard
+### Admin Dashboard
 - `GET /api/admin/dashboard` - Get dashboard statistics and recent activity
 
-#### Tenant Management
+### Tenant Management
 - `GET /api/admin/tenants` - List all tenants
 - `GET /api/admin/tenants/:id` - Get tenant details
 - `POST /api/admin/tenants` - Create a new tenant
 - `PUT /api/admin/tenants/:id` - Update tenant details
 - `DELETE /api/admin/tenants/:id` - Delete a tenant
 
-#### User Management
+### User Management
 - `GET /api/admin/users` - List all users
 - `GET /api/admin/users/:id` - Get user details
 - `POST /api/admin/users` - Create a new user
 - `PUT /api/admin/users/:id` - Update user details
 - `DELETE /api/admin/users/:id` - Delete a user
 
-#### Station Management
+### Station Management
 - `GET /api/admin/stations` - List all stations
 - `GET /api/admin/stations/:id` - Get station details
 - `POST /api/admin/stations` - Create a new station
 - `PUT /api/admin/stations/:id` - Update station details
 - `DELETE /api/admin/stations/:id` - Delete a station
 
-#### Reporting
+### Reporting
 - `GET /api/admin/reports/sales` - Get sales reports
 - `GET /api/admin/reports/credits` - Get credit reports
 - `GET /api/admin/reports/compliance` - Get compliance reports
 
-#### Settings Management
+### Settings Management
 - `GET /api/admin/settings` - Get system settings
 - `PUT /api/admin/settings` - Update system settings
+
+## Tenant User API Endpoints
+
+### Authentication
+- `POST /api/auth/login` - Login as tenant user
+- `POST /api/auth/logout` - Logout tenant user session
+- `GET /api/auth/me` - Get current tenant user
+- `POST /api/auth/refresh` - Refresh authentication token
+
+### Dashboard
+- `GET /api/dashboard` - Get tenant dashboard data
+- `GET /api/dashboard/sales` - Get sales summary
+- `GET /api/dashboard/inventory` - Get inventory summary
+- `GET /api/dashboard/activity` - Get recent activity
+
+### User Management
+- `GET /api/users` - List all users in tenant
+- `GET /api/users/:id` - Get user details
+- `POST /api/users` - Create a new user
+- `PUT /api/users/:id` - Update user details
+- `DELETE /api/users/:id` - Delete a user
+
+### Station Management
+- `GET /api/stations` - List all stations in tenant
+- `GET /api/stations/:id` - Get station details
+- `POST /api/stations` - Create a new station
+- `PUT /api/stations/:id` - Update station details
+- `DELETE /api/stations/:id` - Delete a station
+
+### Sales Management
+- `GET /api/sales` - List all sales
+- `GET /api/sales/:id` - Get sale details
+- `POST /api/sales` - Create a new sale
+- `PUT /api/sales/:id` - Update sale details
+- `DELETE /api/sales/:id` - Delete a sale
+
+### Inventory Management
+- `GET /api/inventory` - Get current inventory levels
+- `POST /api/inventory/delivery` - Record fuel delivery
+- `POST /api/inventory/reconciliation` - Reconcile inventory
+
+### Reporting
+- `GET /api/reports/sales` - Get sales report
+- `GET /api/reports/inventory` - Get inventory report
+- `GET /api/reports/credit` - Get credit report
 
 ## Next Steps
 
@@ -279,6 +302,24 @@ CREATE TABLE IF NOT EXISTS admin_settings (
 
 7. Create detail pages for users, stations, and tenants
 
+## Testing Tenant Users
+
+1. Run the seed scripts to create tenant users and data:
+   ```bash
+   npm run db:seed-tenant-users
+   npm run db:seed-credit
+   ```
+
+2. Test tenant user login:
+   ```bash
+   node test-tenant-login.js
+   ```
+
+3. Login credentials:
+   - Owner: `owner@demofuel.com` / `password123`
+   - Manager: `manager@demofuel.com` / `password123`
+   - Employee: `employee@demofuel.com` / `password123`
+
 ## Progress Tracking
 
 - **Started**: June 17, 2025
@@ -294,3 +335,5 @@ CREATE TABLE IF NOT EXISTS admin_settings (
 - Business rules must be enforced at all layers
 - Documentation must be updated in parallel with implementation
 - Regular testing should be performed throughout development
+- The database schema is documented in DBML format for clarity
+- Data flow diagrams illustrate how data moves through the system

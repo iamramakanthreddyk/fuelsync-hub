@@ -1,158 +1,304 @@
-# Superadmin Guide for FuelSync Hub
+# FuelSync Hub - Superadmin User Guide
 
-## Overview
+This guide provides comprehensive instructions for superadmins on how to use the FuelSync Hub administration portal.
 
-The superadmin role in FuelSync Hub is responsible for managing the entire platform, including tenants, users, and system settings. This guide explains the superadmin workflow and features.
+## Table of Contents
 
-## Superadmin vs Tenant Users
+1. [Introduction](#introduction)
+2. [Getting Started](#getting-started)
+3. [Dashboard](#dashboard)
+4. [Tenant Management](#tenant-management)
+5. [User Management](#user-management)
+6. [Station Management](#station-management)
+7. [Reports](#reports)
+8. [System Settings](#system-settings)
+9. [Troubleshooting](#troubleshooting)
 
-| Feature | Superadmin | Tenant Users |
-|---------|------------|--------------|
-| Access | Admin portal | Tenant portal |
-| Authentication | Separate admin login | Tenant-specific login |
-| Database | Public schema | Tenant-specific schema |
-| Role | Platform management | Fuel station management |
+## Introduction
 
-## Superadmin Workflow
+FuelSync Hub is a multi-tenant SaaS platform for fuel station management. As a superadmin, you have access to all tenants, users, and stations across the platform. You can manage tenant subscriptions, monitor system health, and enforce business rules.
 
-### 1. Authentication
+### Key Responsibilities
 
-1. Navigate to `/admin/login`
-2. Enter superadmin credentials:
-   - Email: `admin@fuelsync.com`
-   - Password: `admin123` (change this in production)
-3. Upon successful login, you'll be redirected to the admin dashboard
+- Managing tenant accounts and subscriptions
+- Monitoring system health and performance
+- Generating and analyzing reports
+- Configuring system-wide settings
+- Enforcing business rules and compliance
 
-### 2. Dashboard
+## Getting Started
 
-The admin dashboard provides an overview of the platform:
+### Accessing the Admin Portal
 
-- Total number of tenants
-- Total number of users
-- Total number of stations
-- Recent tenant registrations
+1. Navigate to the admin login page: `/admin/login`
+2. Enter your superadmin credentials:
+   - Email: `admin@fuelsync.com` (default)
+   - Password: Your assigned password
+3. Click "Sign In"
 
-### 3. Tenant Management
+### Navigation
 
-Superadmins can manage tenants through the Tenants page:
+The admin portal has a sidebar navigation menu with the following sections:
 
-- **View Tenants**: See a list of all tenants with their details
-- **Create Tenant**: Add a new tenant with subscription plan
-- **Edit Tenant**: Modify tenant details and subscription plan
-- **Delete Tenant**: Remove a tenant from the platform
-- **View Tenant Details**: See detailed information about a specific tenant
+- **Dashboard**: Overview of system statistics and recent activity
+- **Tenants**: Manage tenant accounts
+- **Users**: Manage users across all tenants
+- **Reports**: Access sales, credit, and compliance reports
+- **Settings**: Configure system-wide settings
 
-### 4. User Management
+## Dashboard
 
-Superadmins can manage users across all tenants:
+The dashboard provides a quick overview of the system status and recent activity.
 
-- **View Users**: See a list of all users with their details
-- **Create User**: Add a new user to a tenant
-- **Edit User**: Modify user details and roles
-- **Delete User**: Remove a user from the platform
+### Key Metrics
 
-### 5. System Settings
+- **Total Tenants**: Number of active tenant accounts
+- **Total Users**: Number of users across all tenants
+- **Total Stations**: Number of fuel stations across all tenants
+- **System Health**: Current status of system components
 
-Superadmins can configure system-wide settings:
+### Recent Activity
 
-- **Subscription Plans**: Configure limits for different subscription plans
-- **System Maintenance**: Enable/disable maintenance mode
-- **Email Templates**: Manage email templates for notifications
-- **API Keys**: Manage API keys for external integrations
+The recent activity section shows the latest actions performed by admins and users, including:
 
-## Database Schema
+- Tenant creations and updates
+- User logins and logouts
+- Station configurations
+- System setting changes
 
-The superadmin functionality uses the following tables in the public schema:
+## Tenant Management
 
-- `admin_users`: Stores superadmin user information
-- `admin_activity_logs`: Logs all superadmin activities
-- `admin_sessions`: Manages superadmin login sessions
-- `admin_settings`: Stores system-wide settings
-- `admin_notifications`: Manages notifications for superadmins
+The tenant management section allows you to create, view, update, and delete tenant accounts.
 
-## Setting Up Superadmin
+### Viewing Tenants
 
-To set up the superadmin functionality:
+1. Click on "Tenants" in the sidebar
+2. View the list of all tenants with key information:
+   - Name
+   - Email
+   - Subscription Plan
+   - Status
+   - Creation Date
 
-1. Run the admin schema setup:
-   ```bash
-   npm run db:admin
-   ```
+### Creating a Tenant
 
-2. This will create the necessary tables and insert a default superadmin user:
-   - Email: `admin@fuelsync.com`
-   - Password: `admin123`
+1. Click on "Tenants" in the sidebar
+2. Click the "Add Tenant" button
+3. Fill in the required information:
+   - Name
+   - Email
+   - Contact Person
+   - Contact Phone
+   - Subscription Plan (Basic, Premium, Enterprise)
+4. Click "Create Tenant"
 
-3. For security, change the default password after first login
+### Editing a Tenant
 
-## API Endpoints
+1. Click on "Tenants" in the sidebar
+2. Find the tenant you want to edit
+3. Click the "Edit" button
+4. Update the tenant information
+5. Click "Save Changes"
 
-The superadmin API endpoints are prefixed with `/api/admin`:
+### Deleting a Tenant
 
-- **Authentication**:
-  - `POST /api/admin/auth/login`: Login as superadmin
-  - `POST /api/admin/auth/logout`: Logout superadmin session
+1. Click on "Tenants" in the sidebar
+2. Find the tenant you want to delete
+3. Click the "Delete" button
+4. Confirm the deletion
 
-- **Dashboard**:
-  - `GET /api/admin/dashboard`: Get dashboard statistics
+## User Management
 
-- **Tenants**:
-  - `GET /api/admin/tenants`: Get all tenants
-  - `POST /api/admin/tenants`: Create a new tenant
-  - `GET /api/admin/tenants/:id`: Get tenant details
-  - `PUT /api/admin/tenants/:id`: Update tenant details
-  - `DELETE /api/admin/tenants/:id`: Delete a tenant
+The user management section allows you to manage users across all tenants.
 
-- **Users**:
-  - `GET /api/admin/users`: Get all users
-  - `POST /api/admin/users`: Create a new user
-  - `GET /api/admin/users/:id`: Get user details
-  - `PUT /api/admin/users/:id`: Update user details
-  - `DELETE /api/admin/users/:id`: Delete a user
+### Viewing Users
 
-- **Settings**:
-  - `GET /api/admin/settings`: Get all settings
-  - `PUT /api/admin/settings/:key`: Update a setting
+1. Click on "Users" in the sidebar
+2. View the list of all users with key information:
+   - Name
+   - Email
+   - Role
+   - Tenant
+   - Status
+   - Creation Date
 
-## Security Considerations
+### Creating a User
 
-1. **Separate Authentication**: Superadmin authentication is completely separate from tenant user authentication
-2. **JWT Tokens**: Different JWT secrets and expiration times for superadmin tokens
-3. **Activity Logging**: All superadmin actions are logged for audit purposes
-4. **IP Restrictions**: Optional IP-based restrictions for superadmin access
-5. **Rate Limiting**: Strict rate limiting on admin API endpoints
+1. Click on "Users" in the sidebar
+2. Click the "Add User" button
+3. Fill in the required information:
+   - First Name
+   - Last Name
+   - Email
+   - Password
+   - Role (Owner, Manager, Employee)
+   - Tenant
+4. Click "Create User"
+
+### Editing a User
+
+1. Click on "Users" in the sidebar
+2. Find the user you want to edit
+3. Click the "Edit" button
+4. Update the user information
+5. Click "Save Changes"
+
+### Deleting a User
+
+1. Click on "Users" in the sidebar
+2. Find the user you want to delete
+3. Click the "Delete" button
+4. Confirm the deletion
+
+## Station Management
+
+The station management section allows you to manage fuel stations across all tenants.
+
+### Viewing Stations
+
+1. Click on "Stations" in the sidebar
+2. View the list of all stations with key information:
+   - Name
+   - Address
+   - Tenant
+   - Status
+   - Creation Date
+
+### Creating a Station
+
+1. Click on "Stations" in the sidebar
+2. Click the "Add Station" button
+3. Fill in the required information:
+   - Name
+   - Address
+   - City
+   - State
+   - ZIP
+   - Contact Phone
+   - Tenant
+4. Click "Create Station"
+
+### Editing a Station
+
+1. Click on "Stations" in the sidebar
+2. Find the station you want to edit
+3. Click the "Edit" button
+4. Update the station information
+5. Click "Save Changes"
+
+### Deleting a Station
+
+1. Click on "Stations" in the sidebar
+2. Find the station you want to delete
+3. Click the "Delete" button
+4. Confirm the deletion
+
+## Reports
+
+The reports section provides insights into sales, credits, and compliance across the platform.
+
+### Sales Report
+
+The sales report shows sales data across tenants and stations.
+
+1. Click on "Reports" in the sidebar
+2. Click on "Sales Report"
+3. Set the filters:
+   - Date Range
+   - Tenant (optional)
+   - Station (optional)
+4. Click "Generate Report"
+5. View the report with the following sections:
+   - Summary: Total sales, transactions, and average transaction value
+   - Payment Methods: Sales breakdown by payment method
+   - Fuel Types: Sales breakdown by fuel type
+   - Detailed Sales: Day-by-day sales data
+
+### Credit Report
+
+The credit report shows credit sales and outstanding balances.
+
+1. Click on "Reports" in the sidebar
+2. Click on "Credit Report"
+3. Set the filters:
+   - Date Range
+   - Tenant (optional)
+   - Station (optional)
+4. Click "Generate Report"
+5. View the report with the following sections:
+   - Summary: Total credit, outstanding credit, paid credit, and payment rate
+   - Credit Details: Breakdown by creditor
+
+### Compliance Report
+
+The compliance report shows tenant compliance with business rules.
+
+1. Click on "Reports" in the sidebar
+2. Click on "Compliance Report"
+3. Set the filters:
+   - Tenant (optional)
+4. Click "Generate Report"
+5. View the report with the following sections:
+   - Summary: Overall compliance score, compliant tenants, and non-compliant tenants
+   - Tenant Compliance Details: Compliance score, status, and issues for each tenant
+
+## System Settings
+
+The system settings section allows you to configure system-wide parameters.
+
+### Tenant Subscription Limits
+
+1. Click on "Settings" in the sidebar
+2. Scroll to the "Tenant Subscription Limits" section
+3. Configure limits for each subscription plan:
+   - Basic Plan: Maximum stations and users
+   - Premium Plan: Maximum stations and users
+   - Enterprise Plan: Maximum stations and users (use -1 for unlimited)
+4. Click "Save Settings"
+
+### System Maintenance
+
+1. Click on "Settings" in the sidebar
+2. Scroll to the "System Maintenance" section
+3. Configure maintenance settings:
+   - Maintenance Mode: Enable/disable
+   - Maintenance Message: Message to display during maintenance
+   - Allowed IPs: IPs that can access the system during maintenance
+4. Click "Save Settings"
 
 ## Troubleshooting
 
-### Login Issues
+### Common Issues
 
-If you can't log in as superadmin:
+#### Login Issues
 
-1. Verify the admin_users table exists:
-   ```sql
-   SELECT * FROM admin_users;
-   ```
+- **Problem**: Unable to log in
+- **Solution**: 
+  1. Verify your email and password
+  2. Check if your account is active
+  3. Clear browser cache and cookies
+  4. Contact system administrator if the issue persists
 
-2. Reset the superadmin password:
-   ```sql
-   UPDATE admin_users 
-   SET password_hash = '$2b$10$1XkNzy.KxQq5PCYzqH7f5OzR.kxUBqY5RHPz1InmKCDPZKX9YX9Vy' 
-   WHERE email = 'admin@fuelsync.com';
-   ```
+#### Report Generation Issues
 
-### Missing Tables
+- **Problem**: Reports take too long to generate
+- **Solution**:
+  1. Narrow down the date range
+  2. Filter by specific tenant or station
+  3. Try again during off-peak hours
 
-If admin tables are missing:
+#### System Maintenance Mode
 
-1. Run the admin schema setup:
-   ```bash
-   npm run db:admin
-   ```
+- **Problem**: Users cannot access the system during maintenance
+- **Solution**:
+  1. Add your IP to the allowed IPs list
+  2. Disable maintenance mode when not needed
+  3. Schedule maintenance during off-peak hours
 
-### API Errors
+### Support
 
-If you encounter API errors:
+For additional support, please contact the system administrator at `support@fuelsync.com`.
 
-1. Check the server logs for detailed error messages
-2. Verify the JWT token is valid and not expired
-3. Check if the superadmin user is active in the database
+---
+
+© 2025 FuelSync Hub. All rights reserved.
