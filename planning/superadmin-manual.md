@@ -83,9 +83,9 @@ This guide is for SuperAdmins responsible for maintaining, monitoring, and scali
 ---
 
 ## References
-- [ERP/Feature Matrix](../palnning/erp.md)
-- [API Spec](../palnning/api-spec.yaml)
-- [API Summary](../palnning/api-summary.md)
+- [ERP/Feature Matrix](../planning/erp.md)
+- [API Spec](../planning/api-spec.yaml)
+- [API Summary](../planning/api-summary.md)
 - [Database Schema](../database/database-schema.puml)
 - [Data Flow Diagram](../database/data-flow-diagram.puml)
 

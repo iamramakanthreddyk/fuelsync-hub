@@ -7,7 +7,7 @@ This guide is for developers integrating with, extending, or contributing to Fue
 ## Project Structure
 - **backend/**: Node.js/Express API, PostgreSQL, business logic, plan enforcement, and documentation automation.
 - **frontend/**: Next.js React app for all user/admin dashboards and forms.
-- **palnning/**: All documentation, diagrams, and onboarding guides.
+- **planning/**: All documentation, diagrams, and onboarding guides.
 - **database/**: PlantUML ERD and data flow diagrams.
 - **scripts/**: Automation scripts for docs and setup.
 
@@ -45,7 +45,7 @@ This guide is for developers integrating with, extending, or contributing to Fue
    cd ../frontend && npm run dev
    ```
 5. **Docs & Diagrams:**
-   - See `palnning/README.md` for all documentation links.
+   - See `planning/README.md` for all documentation links.
    - Update docs with `node scripts/generate-erp-md.js` and `node scripts/generate-api-docs.js`.
 
 ---

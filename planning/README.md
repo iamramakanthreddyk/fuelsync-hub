@@ -1,8 +1,8 @@
 # FuelSync Hub - Documentation Index
 
 ## Architecture
-- [database-schema.puml](../../database/database-schema.puml): ER diagram of all main tables and relationships
-- [data-flow-diagram.puml](../../data-flow-diagram.puml): System data flow (actors, UI, API, DB, Stripe)
+- [database-schema.puml](../database/database-schema.puml): ER diagram of all main tables and relationships
+- [data-flow-diagram.puml](../database/data-flow-diagram.puml): System data flow (actors, UI, API, DB, Stripe)
 
 ## Implementation Plan
 - [FuelSync Hub - Implementation Plan](./FuelSync%20Hub%20-%20Implementation%20Plan)
