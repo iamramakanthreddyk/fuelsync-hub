@@ -72,16 +72,29 @@ export const parseToken = (token) => {
   }
   
   try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
+    // Check if token has the correct format (three parts separated by dots)
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      console.error('Invalid token format: not a valid JWT');
+      return null;
+    }
     
-    return JSON.parse(jsonPayload);
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    
+    try {
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error('Error decoding token payload:', e);
+      return null;
+    }
   } catch (error) {
     console.error('Error parsing token:', error);
     return null;
@@ -123,6 +136,13 @@ export const authHeader = () => {
   const token = getToken();
   if (!token) return {};
   
+  // Validate token format before returning
+  if (!token.match(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_.+/=]*$/)) {
+    console.error('Invalid token format in authHeader');
+    removeToken(); // Remove invalid token
+    return {};
+  }
+  
   return { Authorization: `Bearer ${token}` };
 };
 
@@ -135,7 +155,11 @@ export const debugAuth = () => {
   console.log('Token exists:', !!token);
   
   if (token) {
-    console.log('Token:', token.substring(0, 20) + '...');
+    console.log('Token:', token);
+    
+    // Check token format
+    const isValidFormat = token.match(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_.+/=]*$/);
+    console.log('Valid token format:', isValidFormat);
     
     const payload = parseToken(token);
     console.log('Token payload:', payload);

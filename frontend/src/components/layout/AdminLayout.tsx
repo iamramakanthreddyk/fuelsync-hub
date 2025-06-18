@@ -1,5 +1,5 @@
 // frontend/src/components/layout/AdminLayout.tsx
-import { ReactNode, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import {
   AppBar,
@@ -14,66 +14,44 @@ import {
   ListItemIcon,
   ListItemText,
   Toolbar,
-  Typography,
-  Menu,
-  MenuItem,
-  Avatar,
-  Tooltip,
-  Collapse
+  Typography
 } from '@mui/material';
 import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
-  Business as TenantsIcon,
-  SupervisorAccount as UsersIcon,
-  Settings as SettingsIcon,
-  Logout as LogoutIcon,
-  Person as PersonIcon,
-  Assessment as ReportIcon,
-  ExpandLess,
-  ExpandMore,
-  BarChart as SalesReportIcon,
-  CreditCard as CreditReportIcon,
-  Rule as ComplianceReportIcon
+  People as PeopleIcon,
+  Business as BusinessIcon,
+  Assessment as ReportsIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
+import Link from 'next/link';
+import { isAuthenticated, getUserRole } from '../../utils/authHelper';
+import LogoutButton from '../auth/LogoutButton';
 
 const drawerWidth = 240;
 
 interface AdminLayoutProps {
-  children: ReactNode;
-  title: string;
+  children: React.ReactNode;
+  title?: string;
 }
 
-export default function AdminLayout({ children, title }: AdminLayoutProps) {
-  const router = useRouter();
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin Dashboard' }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [admin, setAdmin] = useState<any>(null);
-  const [mounted, setMounted] = useState(false);
-  const [reportsOpen, setReportsOpen] = useState(false);
+  const router = useRouter();
 
-  // Fix hydration mismatch by only rendering admin-dependent parts after mounting
   useEffect(() => {
-    setMounted(true);
-    // Get admin from localStorage after component mounts (client-side only)
-    const adminJson = localStorage.getItem('admin');
-    if (adminJson) {
-      try {
-        setAdmin(JSON.parse(adminJson));
-      } catch (e) {
-        console.error('Error parsing admin data:', e);
-        localStorage.removeItem('admin');
-        localStorage.removeItem('adminToken');
-        router.push('/admin/login');
-      }
-    } else {
-      // Redirect to login if no admin found
-      router.push('/admin/login');
+    // Check authentication
+    if (!isAuthenticated()) {
+      console.log('User not authenticated, redirecting to login...');
+      router.push('/login');
+      return;
     }
 
-    // Check if current path is a reports page
-    if (router.pathname.startsWith('/admin/reports')) {
-      setReportsOpen(true);
+    // Check if user is superadmin
+    const userRole = getUserRole();
+    if (userRole !== 'superadmin') {
+      console.log('User is not superadmin, redirecting to login...');
+      router.push('/login');
     }
   }, [router]);
 
@@ -81,62 +59,12 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
     setMobileOpen(!mobileOpen);
   };
 
-  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = async () => {
-    try {
-      // Call logout API
-      const token = localStorage.getItem('adminToken');
-      if (token) {
-        await fetch('/api/admin-auth/logout', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      // Clear local storage
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('admin');
-      
-      // Close menu
-      handleMenuClose();
-      
-      // Redirect to login
-      router.push('/admin/login');
-    }
-  };
-
-  const handleNavigation = (path: string) => {
-    router.push(path);
-    setMobileOpen(false);
-  };
-
-  const handleReportsToggle = () => {
-    setReportsOpen(!reportsOpen);
-  };
-
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
-    { text: 'Tenants', icon: <TenantsIcon />, path: '/admin/tenants' },
-    { text: 'Users', icon: <UsersIcon />, path: '/admin/users' },
-    { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' }
-  ];
-
-  const reportItems = [
-    { text: 'Sales Report', icon: <SalesReportIcon />, path: '/admin/reports/sales' },
-    { text: 'Credit Report', icon: <CreditReportIcon />, path: '/admin/reports/credits' },
-    { text: 'Compliance Report', icon: <ComplianceReportIcon />, path: '/admin/reports/compliance' }
+    { text: 'Dashboard', icon: <DashboardIcon />, href: '/admin/dashboard' },
+    { text: 'Tenants', icon: <BusinessIcon />, href: '/admin/tenants' },
+    { text: 'Users', icon: <PeopleIcon />, href: '/admin/users' },
+    { text: 'Reports', icon: <ReportsIcon />, href: '/admin/reports' },
+    { text: 'Settings', icon: <SettingsIcon />, href: '/admin/settings' }
   ];
 
   const drawer = (
@@ -149,66 +77,18 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
       <Divider />
       <List>
         {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              selected={router.pathname === item.path}
-              onClick={() => handleNavigation(item.path)}
-            >
-              <ListItemIcon>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-        
-        {/* Reports submenu */}
-        <ListItem disablePadding>
-          <ListItemButton onClick={handleReportsToggle}>
-            <ListItemIcon>
-              <ReportIcon />
-            </ListItemIcon>
-            <ListItemText primary="Reports" />
-            {reportsOpen ? <ExpandLess /> : <ExpandMore />}
-          </ListItemButton>
-        </ListItem>
-        <Collapse in={reportsOpen} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            {reportItems.map((item) => (
-              <ListItemButton
-                key={item.text}
-                sx={{ pl: 4 }}
-                selected={router.pathname === item.path}
-                onClick={() => handleNavigation(item.path)}
-              >
-                <ListItemIcon>
-                  {item.icon}
-                </ListItemIcon>
+          <Link href={item.href} key={item.text} passHref legacyBehavior>
+            <ListItem disablePadding component="a">
+              <ListItemButton selected={router.pathname === item.href}>
+                <ListItemIcon>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.text} />
               </ListItemButton>
-            ))}
-          </List>
-        </Collapse>
+            </ListItem>
+          </Link>
+        ))}
       </List>
     </div>
   );
-
-  // Return a loading state or simplified layout until client-side rendering is ready
-  if (!mounted) {
-    return (
-      <Box sx={{ display: 'flex' }}>
-        <CssBaseline />
-        <Box
-          component="main"
-          sx={{ flexGrow: 1, p: 3 }}
-        >
-          <Toolbar />
-          <Typography variant="h6">{title}</Typography>
-          {children}
-        </Box>
-      </Box>
-    );
-  }
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -218,7 +98,6 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
-          bgcolor: 'primary.dark' // Darker color to distinguish from tenant dashboard
         }}
       >
         <Toolbar>
@@ -234,61 +113,12 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             {title}
           </Typography>
-          
-          {admin && (
-            <Box>
-              <Tooltip title="Account settings">
-                <IconButton
-                  onClick={handleProfileMenuOpen}
-                  size="small"
-                  sx={{ ml: 2 }}
-                  aria-controls="menu-appbar"
-                  aria-haspopup="true"
-                >
-                  <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
-                    {admin.firstName ? admin.firstName[0] : admin.email ? admin.email[0].toUpperCase() : 'A'}
-                  </Avatar>
-                </IconButton>
-              </Tooltip>
-              <Menu
-                id="menu-appbar"
-                anchorEl={anchorEl}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-              >
-                <MenuItem onClick={() => {
-                  handleMenuClose();
-                  router.push('/admin/profile');
-                }}>
-                  <ListItemIcon>
-                    <PersonIcon fontSize="small" />
-                  </ListItemIcon>
-                  <Typography variant="inherit">Profile</Typography>
-                </MenuItem>
-                <MenuItem onClick={handleLogout}>
-                  <ListItemIcon>
-                    <LogoutIcon fontSize="small" />
-                  </ListItemIcon>
-                  <Typography variant="inherit">Logout</Typography>
-                </MenuItem>
-              </Menu>
-            </Box>
-          )}
+          <LogoutButton color="inherit" />
         </Toolbar>
       </AppBar>
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        aria-label="mailbox folders"
       >
         <Drawer
           variant="temporary"
@@ -324,4 +154,6 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
       </Box>
     </Box>
   );
-}
+};
+
+export default AdminLayout;

@@ -1,72 +1,69 @@
-import { useEffect } from 'react';
+// frontend/src/components/auth/ProtectedRoute.tsx
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth } from '../../utils/auth';
-import { CircularProgress, Box } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
+import { isAuthenticated, getUserRole } from '../../utils/authHelper';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRoles?: string[];
-  isAdminRoute?: boolean;
+  allowedRoles?: string[];
 }
 
-/**
- * Higher-order component to protect routes that require authentication
- */
-export default function ProtectedRoute({ 
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
-  requiredRoles = [], 
-  isAdminRoute = false 
-}: ProtectedRouteProps) {
+  allowedRoles = ['owner', 'manager', 'employee', 'superadmin'] 
+}) => {
   const router = useRouter();
-  const { user, loading, hasRole } = useAuth(isAdminRoute);
+  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
-    // If not loading and no user, redirect to login
-    if (!loading && !user) {
-      router.replace(isAdminRoute ? '/admin/login' : '/login');
+    // Skip auth check for login page
+    if (router.pathname === '/login') {
+      setLoading(false);
+      setAuthorized(true);
       return;
     }
 
-    // If user exists and roles are specified, check if user has required role
-    if (!loading && user && requiredRoles.length > 0) {
-      const hasRequiredRole = requiredRoles.some(role => hasRole(role));
-      
-      if (!hasRequiredRole) {
-        // Redirect to dashboard if user doesn't have required role
-        router.replace(isAdminRoute ? '/admin/dashboard' : '/dashboard');
-      }
+    // Check if user is authenticated
+    const authenticated = isAuthenticated();
+    if (!authenticated) {
+      console.log('User not authenticated, redirecting to login...');
+      router.push('/login');
+      return;
     }
-  }, [loading, user, router, requiredRoles, hasRole, isAdminRoute]);
 
-  // Show loading spinner while checking auth
+    // Check if user has required role
+    const userRole = getUserRole();
+    if (!userRole || !allowedRoles.includes(userRole)) {
+      console.log(`User role ${userRole} not allowed, redirecting to login...`);
+      router.push('/login');
+      return;
+    }
+
+    // User is authenticated and authorized
+    setAuthorized(true);
+    setLoading(false);
+  }, [router, allowedRoles]);
+
   if (loading) {
     return (
       <Box 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '100vh' 
-        }}
+        display="flex" 
+        justifyContent="center" 
+        alignItems="center" 
+        minHeight="100vh"
+        flexDirection="column"
       >
-        <CircularProgress />
+        <CircularProgress size={60} />
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Loading...
+        </Typography>
       </Box>
     );
   }
 
-  // If not loading and no user, don't render children (will redirect)
-  if (!loading && !user) {
-    return null;
-  }
+  return authorized ? <>{children}</> : null;
+};
 
-  // If roles are specified and user doesn't have required role, don't render children
-  if (!loading && user && requiredRoles.length > 0) {
-    const hasRequiredRole = requiredRoles.some(role => hasRole(role));
-    if (!hasRequiredRole) {
-      return null;
-    }
-  }
-
-  // If all checks pass, render children
-  return <>{children}</>;
-}
+export default ProtectedRoute;

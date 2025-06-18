@@ -1,8 +1,11 @@
+// frontend/src/pages/_app.tsx
+import React, { useEffect } from 'react';
+import { AppProps } from 'next/app';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { useRouter } from 'next/router';
+import { isAuthenticated, isTokenExpired } from '../utils/authHelper';
 import '../styles/globals.css';
-import type { AppProps } from 'next/app';
-import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
-import { useEffect } from 'react';
-import NavigationGuard from '../components/auth/NavigationGuard';
 
 // Create a theme instance
 const theme = createTheme({
@@ -13,41 +16,56 @@ const theme = createTheme({
     secondary: {
       main: '#dc004e',
     },
-    background: {
-      default: '#f5f5f5',
-    },
-  },
-  typography: {
-    fontFamily: [
-      '-apple-system',
-      'BlinkMacSystemFont',
-      '"Segoe UI"',
-      'Roboto',
-      '"Helvetica Neue"',
-      'Arial',
-      'sans-serif',
-      '"Apple Color Emoji"',
-      '"Segoe UI Emoji"',
-      '"Segoe UI Symbol"',
-    ].join(','),
   },
 });
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+
   useEffect(() => {
     // Remove the server-side injected CSS
     const jssStyles = document.querySelector('#jss-server-side');
-    if (jssStyles && jssStyles.parentElement) {
-      jssStyles.parentElement.removeChild(jssStyles);
+    if (jssStyles) {
+      jssStyles.parentElement?.removeChild(jssStyles);
     }
-  }, []);
+
+    // Check authentication on route change
+    const handleRouteChange = (url: string) => {
+      // Skip auth check for login and debug pages
+      if (url === '/login' || url === '/debug') {
+        return;
+      }
+
+      // Check if token is expired
+      if (isAuthenticated() && isTokenExpired()) {
+        console.log('Token expired, redirecting to login...');
+        router.push('/login');
+        return;
+      }
+
+      // Check if user is authenticated for protected routes
+      if (!isAuthenticated() && !url.startsWith('/login')) {
+        console.log('User not authenticated, redirecting to login...');
+        router.push('/login');
+      }
+    };
+
+    // Initial auth check
+    handleRouteChange(router.pathname);
+
+    // Listen for route changes
+    router.events.on('routeChangeComplete', handleRouteChange);
+
+    // Clean up event listener
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+    };
+  }, [router]);
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <NavigationGuard>
-        <Component {...pageProps} />
-      </NavigationGuard>
+      <Component {...pageProps} />
     </ThemeProvider>
   );
 }

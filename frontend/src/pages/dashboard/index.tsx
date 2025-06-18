@@ -1,312 +1,178 @@
-import { useEffect, useState } from 'react';
-import {
-  Grid, Paper, Typography, Box, CircularProgress, Button, 
-  Dialog, DialogTitle, DialogContent, Select, MenuItem
+// frontend/src/pages/dashboard/index.tsx
+import React, { useState, useEffect } from 'react';
+import { 
+  Container, 
+  Typography, 
+  Grid, 
+  Paper, 
+  Box,
+  CircularProgress,
+  Alert
 } from '@mui/material';
-import { Line, Pie } from '@ant-design/charts';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import StatCard from '../../components/dashboard/StatCard';
-import RecentSales from '../../components/dashboard/RecentSales';
-import SaleForm from '../../components/forms/SaleForm';
-import { apiGet, apiPost } from '../../utils/api';
 import ProtectedRoute from '../../components/auth/ProtectedRoute';
-import {
-  LocalGasStation as StationIcon,
-  LocalGasStation as PumpIcon,
-  AttachMoney as SalesIcon,
-  CreditCard as CreditIcon,
-  Add as AddIcon
-} from '@mui/icons-material';
+import { getUserRole } from '../../utils/authHelper';
 
-interface Station {
-  id: string;
-  name: string;
-}
-
-interface DashboardStats {
-  totalStations: number;
-  totalPumps: number;
-  todaySales: number;
-  totalCredit: number;
-  recentSales: any[];
-  prices: { fuel_type: string; price: number; }[];
-  sales: { total_amount: number; total_volume: number; };
-  creditors: { customer_name: string; outstanding: number; last_sale: string; }[];
-  trend: { sale_date: string; total_amount: number; }[];
-  payments: { payment_method: string; total: number; }[];
-}
-
-function DashboardContent() {
+const Dashboard = () => {
+  const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedStation, setSelectedStation] = useState<string>('');
-  const [stations, setStations] = useState<Station[]>([]);
-  const [stats, setStats] = useState<DashboardStats>({
-    totalStations: 0,
-    totalPumps: 0,
-    todaySales: 0,
-    totalCredit: 0,
-    recentSales: [],
-    prices: [],
-    sales: { total_amount: 0, total_volume: 0 },
-    creditors: [],
-    trend: [],
-    payments: []
-  });
-  const [saleDialogOpen, setSaleDialogOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
-  
-  useEffect(() => {
-    const fetchStations = async () => {
-      try {
-        const response = await apiGet<ApiResponse<Station[]>>('/stations');
-        if (response.status === 'success' && response.data) {
-          const stationsData = response.data;
-          setStations(stationsData);
-          if (stationsData.length > 0) {
-            setSelectedStation(stationsData[0].id);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching stations:', error);
-      }
-    };
-
-    fetchStations();
-  }, []);
+  const [error, setError] = useState('');
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!selectedStation) return;
+    const role = getUserRole();
+    setUserRole(role);
     
     const fetchDashboardData = async () => {
       try {
-        const response = await apiGet<ApiResponse<DashboardStats>>(`/dashboard/stats?stationId=${selectedStation}`);
-        if (response.status === 'success' && response.data) {
-          setStats(response.data);
+        setLoading(true);
+        setError('');
+        
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError('Authentication required');
+          setLoading(false);
+          return;
         }
-      } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
+        
+        const response = await fetch('/api/dashboard', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        const data = await response.json();
+        console.log('Dashboard data:', data);
+        
+        if (response.ok && data.status === 'success' && data.data) {
+          setDashboardData(data.data);
+        } else {
+          console.error('Invalid dashboard data format:', data);
+          setError(data.message || 'Failed to load dashboard data');
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError(`Error: ${err.message}`);
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchDashboardData();
-  }, [selectedStation]);
-  
-  const handleOpenSaleDialog = () => {
-    setSaleDialogOpen(true);
-  };
-  
-  const handleCloseSaleDialog = () => {
-    setSaleDialogOpen(false);
-    setSubmitError('');
-  };
-  
-  const handleSaleSubmit = async (formData: any) => {
-    setSubmitting(true);
-    setSubmitError('');
-    
-    try {
-      const response = await apiPost<ApiResponse<any>>('/sales', formData);
-      if (response.status !== 'success') {
-        throw new Error(response.message || 'Failed to record sale');
-      }
-      
-      // Refresh dashboard data
-      const statsResponse = await apiGet<ApiResponse<DashboardStats>>('/dashboard/stats');
-      if (statsResponse.status === 'success' && statsResponse.data) {
-        setStats(statsResponse.data);
-      }
-      
-      handleCloseSaleDialog();
-    } catch (error: any) {
-      console.error('Error recording sale:', error);
-      setSubmitError(error.message || 'Failed to record sale');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-  
-  if (loading) {
-    return (
-      <DashboardLayout title="Dashboard">
-        <Box display="flex" justifyContent="center" alignItems="center" height="60vh">
-          <CircularProgress />
-        </Box>
-      </DashboardLayout>
-    );
-  }
-  
-  return (
-    <DashboardLayout title="Dashboard">
-      <Grid container spacing={3}>
-        {/* Station Selector */}
-        <Grid item xs={12}>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Select
-              value={selectedStation}
-              onChange={(e) => setSelectedStation(e.target.value)}
-              sx={{ minWidth: 200 }}
-            >
-              {stations.map((station) => (
-                <MenuItem key={station.id} value={station.id}>
-                  {station.name}
-                </MenuItem>
-              ))}
-            </Select>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleOpenSaleDialog}
-            >
-              Record Sale
-            </Button>
-          </Box>
-        </Grid>
+  }, []);
 
-        {/* Stats Cards */}
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Stations"
-            value={stats.totalStations}
-            icon={<StationIcon />}
-            color="#1976d2"
-          />
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Pumps"
-            value={stats.totalPumps}
-            icon={<PumpIcon />}
-            color="#9c27b0"
-          />
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Today's Sales"
-            value={`$${stats.todaySales?.toFixed(2)}`}
-            icon={<SalesIcon />}
-            color="#2e7d32"
-            subtitle="Total sales today"
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Outstanding Credit"
-            value={`$${stats.totalCredit?.toFixed(2)}`}
-            icon={<CreditIcon />}
-            color="#ed6c02"
-            subtitle="Total credit given"
-          />
-        </Grid>
-
-        {/* Recent Sales */}
-        <Grid item xs={12}>
-          <RecentSales sales={stats.recentSales} />
-        </Grid>
-
-        {/* Station Activity */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2, height: '100%' }}>
-            <Typography variant="h6" gutterBottom>
-              Station Activity
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {stats.totalStations === 0 ? (
-                "No stations configured yet. Add your first station to start tracking fuel sales."
-              ) : (
-                "Station activity visualization will be available in a future update."
-              )}
-            </Typography>
-          </Paper>
-        </Grid>
-
-        {/* Credit Status */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2, height: '100%' }}>
-            <Typography variant="h6" gutterBottom>
-              Credit Status
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {stats.totalCredit === 0 ? (
-                "No outstanding credit at the moment."
-              ) : (
-                "Credit status visualization will be available in a future update."
-              )}
-            </Typography>
-          </Paper>
-        </Grid>
-
-        {/* Charts Section */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>7-Day Sales Trend</Typography>
-            {stats.trend.length > 0 ? (
-              <Line
-                data={stats.trend}
-                xField="sale_date"
-                yField="total_amount"
-                point={{ size: 4 }}
-                color="#1890ff"
-                height={220}
-                autoFit
-              />
-            ) : (
-              <Typography>No sales data available</Typography>
-            )}
-          </Paper>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>Payment Breakdown</Typography>
-            {stats.payments.length > 0 ? (
-              <Pie
-                data={stats.payments}
-                angleField="total"
-                colorField="payment_method"
-                radius={0.9}
-                label={{ type: 'outer', content: '{name}: {percentage}' }}
-                height={220}
-                autoFit
-              />
-            ) : (
-              <Typography>No payment data available</Typography>
-            )}
-          </Paper>
-        </Grid>
-      </Grid>
-
-      {/* Sale Dialog */}
-      <Dialog
-        open={saleDialogOpen}
-        onClose={handleCloseSaleDialog}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Record New Sale</DialogTitle>
-        <DialogContent>
-          <SaleForm
-            onSubmit={handleSaleSubmit}
-            onCancel={handleCloseSaleDialog}
-            isSubmitting={submitting}
-            submitError={submitError}
-          />
-        </DialogContent>
-      </Dialog>
-    </DashboardLayout>
-  );
-}
-
-// Wrap the dashboard content with the protected route component
-export default function Dashboard() {
   return (
     <ProtectedRoute>
-      <DashboardContent />
+      <DashboardLayout title="Dashboard">
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+          <Typography variant="h4" gutterBottom>
+            Welcome, {userRole?.charAt(0).toUpperCase() + userRole?.slice(1) || 'User'}
+          </Typography>
+          
+          {loading ? (
+            <Box display="flex" justifyContent="center" my={4}>
+              <CircularProgress />
+            </Box>
+          ) : error ? (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          ) : (
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={4}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: 140,
+                  }}
+                >
+                  <Typography component="h2" variant="h6" color="primary" gutterBottom>
+                    Today's Sales
+                  </Typography>
+                  <Typography component="p" variant="h4">
+                    {dashboardData?.todaySales?.total || '$0.00'}
+                  </Typography>
+                  <Typography color="text.secondary" sx={{ flex: 1 }}>
+                    {dashboardData?.todaySales?.count || 0} transactions
+                  </Typography>
+                </Paper>
+              </Grid>
+              
+              <Grid item xs={12} md={4}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: 140,
+                  }}
+                >
+                  <Typography component="h2" variant="h6" color="primary" gutterBottom>
+                    Fuel Volume
+                  </Typography>
+                  <Typography component="p" variant="h4">
+                    {dashboardData?.fuelVolume?.total || '0'} L
+                  </Typography>
+                  <Typography color="text.secondary" sx={{ flex: 1 }}>
+                    Today's total volume
+                  </Typography>
+                </Paper>
+              </Grid>
+              
+              <Grid item xs={12} md={4}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: 140,
+                  }}
+                >
+                  <Typography component="h2" variant="h6" color="primary" gutterBottom>
+                    Credit Sales
+                  </Typography>
+                  <Typography component="p" variant="h4">
+                    {dashboardData?.creditSales?.total || '$0.00'}
+                  </Typography>
+                  <Typography color="text.secondary" sx={{ flex: 1 }}>
+                    {dashboardData?.creditSales?.count || 0} credit transactions
+                  </Typography>
+                </Paper>
+              </Grid>
+              
+              <Grid item xs={12}>
+                <Paper sx={{ p: 2 }}>
+                  <Typography component="h2" variant="h6" color="primary" gutterBottom>
+                    Recent Activity
+                  </Typography>
+                  {dashboardData?.recentActivity?.length > 0 ? (
+                    <Box>
+                      {dashboardData.recentActivity.map((activity) => (
+                        <Box key={activity.id} sx={{ mb: 1, pb: 1, borderBottom: '1px solid #eee' }}>
+                          <Typography variant="body2">
+                            <strong>{activity.type}:</strong> {activity.details} - {activity.amount}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {new Date(activity.timestamp).toLocaleString()}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No recent activity to display.
+                    </Typography>
+                  )}
+                </Paper>
+              </Grid>
+            </Grid>
+          )}
+        </Container>
+      </DashboardLayout>
     </ProtectedRoute>
   );
-}
+};
+
+export default Dashboard;

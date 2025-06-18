@@ -1,5 +1,5 @@
 // frontend/src/pages/login.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -11,7 +11,7 @@ import {
   Alert,
   CircularProgress
 } from '@mui/material';
-import { storeToken, parseToken } from '../utils/authHelper';
+import { storeToken, parseToken, isAuthenticated } from '../utils/authHelper';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -19,6 +19,14 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // Check if already logged in
+  useEffect(() => {
+    if (isAuthenticated()) {
+      console.log('User already authenticated, redirecting...');
+      router.push('/dashboard');
+    }
+  }, [router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

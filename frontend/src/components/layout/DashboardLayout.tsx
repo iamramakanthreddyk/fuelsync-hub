@@ -1,5 +1,5 @@
 // frontend/src/components/layout/DashboardLayout.tsx
-import { ReactNode, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import {
   AppBar,
@@ -15,10 +15,7 @@ import {
   ListItemText,
   Toolbar,
   Typography,
-  Menu,
-  MenuItem,
-  Avatar,
-  Tooltip
+  Button
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -26,68 +23,56 @@ import {
   LocalGasStation as StationIcon,
   Receipt as SalesIcon,
   Assessment as ReportsIcon,
-  Settings as SettingsIcon,
-  Logout as LogoutIcon,
-  Person as PersonIcon
+  Settings as SettingsIcon
 } from '@mui/icons-material';
+import Link from 'next/link';
+import { isAuthenticated, getUserRole } from '../../utils/authHelper';
+import LogoutButton from '../auth/LogoutButton';
 
 const drawerWidth = 240;
 
 interface DashboardLayoutProps {
-  children: ReactNode;
-  title: string;
+  children: React.ReactNode;
+  title?: string;
 }
 
-export default function DashboardLayout({ children, title }: DashboardLayoutProps) {
-  const router = useRouter();
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Dashboard' }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [user, setUser] = useState<any>(null);
-  const [mounted, setMounted] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const router = useRouter();
 
-  // Fix hydration mismatch by only rendering user-dependent parts after mounting
   useEffect(() => {
-    setMounted(true);
-    // Get user from localStorage after component mounts (client-side only)
-    const userJson = localStorage.getItem('user');
-    if (userJson) {
-      setUser(JSON.parse(userJson));
-    } else {
-      // Redirect to login if no user found
+    // Check authentication
+    if (!isAuthenticated()) {
+      console.log('User not authenticated, redirecting to login...');
       router.push('/login');
+      return;
     }
+
+    // Get user role
+    const role = getUserRole();
+    setUserRole(role);
   }, [router]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    router.push('/login');
-  };
-
-  const handleNavigation = (path: string) => {
-    router.push(path);
-    setMobileOpen(false);
-  };
-
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Stations', icon: <StationIcon />, path: '/stations' },
-    { text: 'Sales', icon: <SalesIcon />, path: '/sales' },
-    { text: 'Reports', icon: <ReportsIcon />, path: '/reports' },
-    { text: 'Settings', icon: <SettingsIcon />, path: '/settings' }
+    { text: 'Dashboard', icon: <DashboardIcon />, href: '/dashboard' },
+    { text: 'Stations', icon: <StationIcon />, href: '/stations' },
+    { text: 'Sales', icon: <SalesIcon />, href: '/sales' },
+    { text: 'Reports', icon: <ReportsIcon />, href: '/reports' },
+    { text: 'Settings', icon: <SettingsIcon />, href: '/settings' }
   ];
+
+  // Filter menu items based on user role
+  const filteredMenuItems = menuItems.filter(item => {
+    if (userRole === 'employee' && (item.text === 'Reports' || item.text === 'Settings')) {
+      return false;
+    }
+    return true;
+  });
 
   const drawer = (
     <div>
@@ -98,40 +83,19 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
       </Toolbar>
       <Divider />
       <List>
-        {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              selected={router.pathname === item.path}
-              onClick={() => handleNavigation(item.path)}
-            >
-              <ListItemIcon>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
+        {filteredMenuItems.map((item) => (
+          <Link href={item.href} key={item.text} passHref legacyBehavior>
+            <ListItem disablePadding component="a">
+              <ListItemButton selected={router.pathname === item.href}>
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            </ListItem>
+          </Link>
         ))}
       </List>
     </div>
   );
-
-  // Return a loading state or simplified layout until client-side rendering is ready
-  if (!mounted) {
-    return (
-      <Box sx={{ display: 'flex' }}>
-        <CssBaseline />
-        <Box
-          component="main"
-          sx={{ flexGrow: 1, p: 3 }}
-        >
-          <Toolbar />
-          <Typography variant="h6">{title}</Typography>
-          {/* Render a simplified version of children that doesn't depend on user data */}
-          {children}
-        </Box>
-      </Box>
-    );
-  }
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -156,61 +120,12 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             {title}
           </Typography>
-          
-          {user && (
-            <Box>
-              <Tooltip title="Account settings">
-                <IconButton
-                  onClick={handleProfileMenuOpen}
-                  size="small"
-                  sx={{ ml: 2 }}
-                  aria-controls="menu-appbar"
-                  aria-haspopup="true"
-                >
-                  <Avatar sx={{ width: 32, height: 32 }}>
-                    {user.firstName ? user.firstName[0] : user.email[0].toUpperCase()}
-                  </Avatar>
-                </IconButton>
-              </Tooltip>
-              <Menu
-                id="menu-appbar"
-                anchorEl={anchorEl}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-              >
-                <MenuItem onClick={() => {
-                  handleMenuClose();
-                  router.push('/profile');
-                }}>
-                  <ListItemIcon>
-                    <PersonIcon fontSize="small" />
-                  </ListItemIcon>
-                  <Typography variant="inherit">Profile</Typography>
-                </MenuItem>
-                <MenuItem onClick={handleLogout}>
-                  <ListItemIcon>
-                    <LogoutIcon fontSize="small" />
-                  </ListItemIcon>
-                  <Typography variant="inherit">Logout</Typography>
-                </MenuItem>
-              </Menu>
-            </Box>
-          )}
+          <LogoutButton color="inherit" />
         </Toolbar>
       </AppBar>
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        aria-label="mailbox folders"
       >
         <Drawer
           variant="temporary"
@@ -246,4 +161,6 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
       </Box>
     </Box>
   );
-}
+};
+
+export default DashboardLayout;
