@@ -5,6 +5,7 @@ import * as authService from '../services/auth.service';
 import * as tenantService from '../services/tenant.service';
 import { validateEmail } from '../utils/validators';
 import { UserModel } from '../models/user.model';
+import pool from '../config/database';
 
 type Plan = 'basic' | 'premium' | 'enterprise';
 
@@ -202,7 +203,18 @@ export const getCurrentUser = async (req: Request, res: Response) => {
       });
     }
 
-    const user = await UserModel.findById(req.user.id);
+    // Use direct query instead of UserModel to ensure we use public schema
+    const query = `
+      SELECT 
+        u.*,
+        t.name as tenant_name 
+      FROM public.users u 
+      LEFT JOIN public.tenants t ON t.id = u.tenant_id 
+      WHERE u.id = $1 AND u.active = true`;
+    
+    const { rows } = await pool.query(query, [req.user.id]);
+    const user = rows[0];
+
     if (!user) {
       console.error('[AUTH] Get current user: User not found in DB:', { 
         requestId, 

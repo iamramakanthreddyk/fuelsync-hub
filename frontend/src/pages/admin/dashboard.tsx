@@ -1,53 +1,72 @@
+// frontend/src/pages/admin/dashboard.tsx
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import {
-  Grid, Paper, Typography, Box, CircularProgress,
-  Table, TableBody, TableCell, TableHead, TableRow
+  Box,
+  Grid,
+  Paper,
+  Typography,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  CircularProgress,
+  Alert
 } from '@mui/material';
-import AdminLayout from '../../components/layout/AdminLayout';
-import { apiGet } from '../../utils/api';
-import ProtectedRoute from '../../components/auth/ProtectedRoute';
-import { ApiResponse } from '../../types/api';
+import AdminLayout from '@/components/layout/AdminLayout';
+import { Business, SupervisorAccount, Storage } from '@mui/icons-material';
 
-interface AdminStats {
-  totalTenants: number;
-  totalUsers: number;
-  totalStations: number;
-  totalSales: number;
-  recentActivity: Array<{
-    id: string;
-    adminId: string;
-    adminEmail: string;
-    action: string;
-    entityType: string;
-    entityId: string;
-    timestamp: string;
-  }>;
-}
-
-function AdminDashboardContent() {
-  const [stats, setStats] = useState<AdminStats | null>(null);
+export default function AdminDashboard() {
+  const router = useRouter();
+  const [stats, setStats] = useState<any>({
+    tenantCount: 0,
+    userCount: 0,
+    stationCount: 0,
+    recentTenants: []
+  });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const response = await apiGet<ApiResponse<AdminStats>>('/admin/global-stats');
-        if (response.status === 'success' && response.data) {
-          setStats(response.data);
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+          router.push('/admin/login');
+          return;
         }
-      } catch (error) {
-        console.error('Error fetching admin stats:', error);
+
+        const response = await fetch('/api/admin/dashboard', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch dashboard data');
+        }
+
+        const data = await response.json();
+        setStats(data.data);
+      } catch (err: any) {
+        console.error('Dashboard error:', err);
+        setError(err.message || 'An error occurred');
       } finally {
         setLoading(false);
       }
     };
-    fetchStats();
-  }, []);
+
+    fetchDashboardData();
+  }, [router]);
 
   if (loading) {
     return (
       <AdminLayout title="Admin Dashboard">
-        <Box display="flex" justifyContent="center" alignItems="center" height="60vh">
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <CircularProgress />
         </Box>
       </AdminLayout>
@@ -56,75 +75,91 @@ function AdminDashboardContent() {
 
   return (
     <AdminLayout title="Admin Dashboard">
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
+      
       <Grid container spacing={3}>
-        {/* Admin Stats */}
-        <Grid item xs={12} md={6} lg={3}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Total Tenants</Typography>
-            <Typography variant="h3">{stats?.totalTenants || 0}</Typography>
-          </Paper>
+        {/* Stats Cards */}
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardHeader
+              avatar={<Business color="primary" />}
+              title="Total Tenants"
+              titleTypographyProps={{ variant: 'h6' }}
+            />
+            <CardContent>
+              <Typography variant="h3" align="center">
+                {stats.tenantCount}
+              </Typography>
+            </CardContent>
+          </Card>
         </Grid>
-        <Grid item xs={12} md={6} lg={3}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Total Users</Typography>
-            <Typography variant="h3">{stats?.totalUsers || 0}</Typography>
-          </Paper>
+        
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardHeader
+              avatar={<SupervisorAccount color="primary" />}
+              title="Total Users"
+              titleTypographyProps={{ variant: 'h6' }}
+            />
+            <CardContent>
+              <Typography variant="h3" align="center">
+                {stats.userCount}
+              </Typography>
+            </CardContent>
+          </Card>
         </Grid>
-        <Grid item xs={12} md={6} lg={3}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Total Stations</Typography>
-            <Typography variant="h3">{stats?.totalStations || 0}</Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={6} lg={3}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Total Sales</Typography>
-            <Typography variant="h3">{stats?.totalSales || 0}</Typography>
-          </Paper>
+        
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardHeader
+              avatar={<Storage color="primary" />}
+              title="Total Stations"
+              titleTypographyProps={{ variant: 'h6' }}
+            />
+            <CardContent>
+              <Typography variant="h3" align="center">
+                {stats.stationCount}
+              </Typography>
+            </CardContent>
+          </Card>
         </Grid>
 
-        {/* Recent Activity */}
+        {/* Recent Tenants */}
         <Grid item xs={12}>
           <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>Recent Admin Activity</Typography>
-            {stats?.recentActivity && stats.recentActivity.length > 0 ? (
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Admin</TableCell>
-                    <TableCell>Action</TableCell>
-                    <TableCell>Entity Type</TableCell>
-                    <TableCell>Entity ID</TableCell>
-                    <TableCell>Timestamp</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {stats.recentActivity.map((activity) => (
-                    <TableRow key={activity.id}>
-                      <TableCell>{activity.adminEmail}</TableCell>
-                      <TableCell>{activity.action}</TableCell>
-                      <TableCell>{activity.entityType}</TableCell>
-                      <TableCell>{activity.entityId}</TableCell>
-                      <TableCell>{new Date(activity.timestamp).toLocaleString()}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <Typography variant="h6" gutterBottom>
+              Recent Tenants
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            
+            {stats.recentTenants && stats.recentTenants.length > 0 ? (
+              <List>
+                {stats.recentTenants.map((tenant: any) => (
+                  <ListItem
+                    key={tenant.id}
+                    divider
+                    button
+                    onClick={() => router.push(`/admin/tenants/${tenant.id}`)}
+                  >
+                    <ListItemText
+                      primary={tenant.name}
+                      secondary={`${tenant.subscription_plan} plan • Created: ${new Date(tenant.created_at).toLocaleDateString()}`}
+                    />
+                  </ListItem>
+                ))}
+              </List>
             ) : (
-              <Typography variant="body2">No recent activity</Typography>
+              <Typography variant="body2" color="textSecondary" align="center">
+                No tenants found
+              </Typography>
             )}
           </Paper>
         </Grid>
       </Grid>
     </AdminLayout>
-  );
-}
-
-// Wrap the dashboard content with the protected route component
-export default function AdminDashboard() {
-  return (
-    <ProtectedRoute requiredRoles={['superadmin']} isAdminRoute={true}>
-      <AdminDashboardContent />
-    </ProtectedRoute>
   );
 }

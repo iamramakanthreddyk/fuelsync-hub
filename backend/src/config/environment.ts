@@ -19,11 +19,11 @@ interface Config {
     audience: string;
     issuer: string;
   };
-  adminJwt: {
-    secret: string;
-    expiresIn: string;
-    audience: string;
-    issuer: string;
+  admin: {
+    jwtSecret: string;
+    jwtExpiresIn: string;
+    jwtAudience: string;
+    jwtIssuer: string;
   };
   rateLimit: {
     windowMs: number;
@@ -65,12 +65,12 @@ export const config: Config = {
     issuer: getEnvWithFallback('JWT_ISSUER', 'fuelsync-auth')
   },
   
-  adminJwt: {
+  admin: {
     // In production, this should be set via environment variable
-    secret: getEnvWithFallback('ADMIN_JWT_SECRET', 'admin-local-dev-secret-do-not-use-in-production'),
-    expiresIn: getEnvWithFallback('ADMIN_JWT_EXPIRES_IN', '12h'),
-    audience: getEnvWithFallback('ADMIN_JWT_AUDIENCE', 'fuelsync-admin-api'),
-    issuer: getEnvWithFallback('ADMIN_JWT_ISSUER', 'fuelsync-admin-auth')
+    jwtSecret: getEnvWithFallback('ADMIN_JWT_SECRET', 'admin-local-dev-secret-do-not-use-in-production'),
+    jwtExpiresIn: getEnvWithFallback('ADMIN_JWT_EXPIRES_IN', '12h'),
+    jwtAudience: getEnvWithFallback('ADMIN_JWT_AUDIENCE', 'fuelsync-admin-api'),
+    jwtIssuer: getEnvWithFallback('ADMIN_JWT_ISSUER', 'fuelsync-admin-auth')
   },
   
   rateLimit: {

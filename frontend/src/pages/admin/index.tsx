@@ -1,32 +1,38 @@
+// frontend/src/pages/admin/index.tsx
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { Box, CircularProgress, Typography } from '@mui/material';
 
-// Dummy check for superadmin role (replace with real auth logic)
-const isSuperAdmin = () => {
-  if (typeof window === 'undefined') return false;
-  const user = localStorage.getItem('user');
-  if (!user) return false;
-  try {
-    const parsed = JSON.parse(user);
-    return parsed.role === 'superadmin';
-  } catch {
-    return false;
-  }
-};
-
-export default function AdminDashboard() {
+export default function AdminIndex() {
   const router = useRouter();
+
   useEffect(() => {
-    if (!isSuperAdmin()) {
-      router.replace('/login');
+    // Check if admin is logged in
+    const adminToken = localStorage.getItem('adminToken');
+    
+    if (adminToken) {
+      // Redirect to dashboard if logged in
+      router.push('/admin/dashboard');
+    } else {
+      // Redirect to login if not logged in
+      router.push('/admin/login');
     }
   }, [router]);
 
   return (
-    <div style={{ padding: 40 }}>
-      <h1>SuperAdmin Dashboard</h1>
-      <p>Manage tenants, plans, billing, and global settings here.</p>
-      {/* Add more admin features here */}
-    </div>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+      }}
+    >
+      <CircularProgress />
+      <Typography variant="body1" sx={{ mt: 2 }}>
+        Redirecting...
+      </Typography>
+    </Box>
   );
 }

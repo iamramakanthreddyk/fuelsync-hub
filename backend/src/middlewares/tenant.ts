@@ -2,41 +2,51 @@
 import { Request, Response, NextFunction } from 'express';
 import pool from '../config/database';
 
-// Extend Express Request type to include tenant
-declare global {
-  namespace Express {
-    interface Request {
-      tenantId?: string;
-      tenantName?: string;
-    }
-  }
-}
-
 export const setTenantContext = async (
   req: Request, 
   res: Response, 
   next: NextFunction
 ) => {
   if (!req.user) {
-    return res.status(401).json({ message: 'Authentication required' });
+    return res.status(401).json({ 
+      status: 'error',
+      code: 'AUTHENTICATION_REQUIRED',
+      message: 'Authentication required' 
+    });
   }
 
   try {
-    if (req.user.role === 'admin') {
+    // Skip tenant context for admin users
+    if (req.user.role === 'admin' || req.user.role === 'superadmin') {
       return next();
     }
 
     if (!req.user.tenant_id) {
-      return res.status(403).json({ message: 'No tenant context available' });
+      return res.status(403).json({ 
+        status: 'error',
+        code: 'NO_TENANT_CONTEXT',
+        message: 'No tenant context available' 
+      });
     }
 
     // Set tenant context
     req.tenantId = req.user.tenant_id;
     req.tenantName = req.user.tenant_name;
+    
+    // Set schema name for database operations
+    // Format: tenant_[uuid with hyphens replaced by underscores]
+    req.schemaName = `tenant_${req.user.tenant_id.replace(/-/g, '_')}`;
+    
+    // Log tenant context for debugging
+    console.log(`Tenant context set: ${req.schemaName}`);
 
     next();
   } catch (error) {
     console.error('Tenant middleware error:', error);
-    res.status(500).json({ message: 'Error setting tenant context' });
+    res.status(500).json({ 
+      status: 'error',
+      code: 'TENANT_CONTEXT_ERROR',
+      message: 'Error setting tenant context' 
+    });
   }
 };

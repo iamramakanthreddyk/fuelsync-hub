@@ -59,9 +59,19 @@ A multi-tenant SaaS platform for fuel station management. The system allows stat
    npm run db:setup
    ```
    
+   This will:
+   - Apply the main schema to the public schema
+   - Seed the database with initial data
+   - Create tenant schemas for each tenant
+
    If you encounter issues with the schema setup, try applying it in chunks:
    ```bash
    npm run db:schema:chunks
+   ```
+
+   If you need to create tenant schemas separately:
+   ```bash
+   npm run db:tenant-schemas
    ```
 
 6. Start the development server:
@@ -90,6 +100,15 @@ A multi-tenant SaaS platform for fuel station management. The system allows stat
    ```bash
    npm run dev
    ```
+
+## Multi-Tenant Architecture
+
+FuelSync Hub uses a schema-per-tenant approach for multi-tenancy:
+
+1. The `public` schema contains shared tables like `tenants` and `admin_users`
+2. Each tenant gets its own schema named `tenant_[uuid]` with isolated tables
+
+For more details on tenant setup and troubleshooting, see the [Tenant Setup Guide](TENANT_SETUP.md).
 
 ## Database Configuration
 
@@ -123,7 +142,8 @@ For more details on database configuration and troubleshooting, see the [Databas
 - **Check Database Connection**: `npm run db:check` - Test your database connection
 - **Debug Database Schema**: `npm run db:debug` - Check the status of tables, enums, and functions
 - **Apply Schema in Chunks**: `npm run db:schema:chunks` - Apply schema in smaller chunks to identify issues
-- **Setup Database**: `npm run db:setup` - Apply schema and seed data
+- **Create Tenant Schemas**: `npm run db:tenant-schemas` - Create schemas for all tenants
+- **Setup Database**: `npm run db:setup` - Apply schema, seed data, and create tenant schemas
 - **Apply Schema Only**: `npm run db:schema` - Apply only the schema without seed data
 - **Seed Data Only**: `npm run db:seed` - Seed data without modifying schema
 - **Reset Database**: `npm run db:reset` - Reset and recreate the database
@@ -134,6 +154,7 @@ If you encounter issues with the database setup or other aspects of the applicat
 
 - [Database Setup and Troubleshooting Guide](DATABASE_SETUP.md) - Detailed guide for database setup and troubleshooting
 - [Troubleshooting Guide](TROUBLESHOOTING.md) - Solutions for common issues, including the "relation does not exist" error
+- [Tenant Setup Guide](TENANT_SETUP.md) - Guide for setting up and troubleshooting tenant schemas
 
 ## Default Users
 
@@ -163,6 +184,7 @@ fuelsync-hub/
 │   │   ├── check-connection.ts # Database connection test
 │   │   ├── debug-schema.ts    # Schema debugging tool
 │   │   ├── apply-schema-in-chunks.ts # Apply schema in chunks
+│   │   ├── create-tenant-schema.ts # Create tenant schemas
 │   │   └── setup-local-env.ts # Interactive env setup
 │   ├── src/
 │   │   ├── config/            # Configuration files
@@ -188,6 +210,7 @@ fuelsync-hub/
 │   │   └── utils/             # Utility functions
 │   └── package.json           # Frontend dependencies
 ├── DATABASE_SETUP.md          # Database setup guide
+├── TENANT_SETUP.md            # Tenant setup guide
 ├── TROUBLESHOOTING.md         # Troubleshooting guide
 ├── CLEANUP.md                 # Project cleanup guide
 └── README.md                  # Project documentation

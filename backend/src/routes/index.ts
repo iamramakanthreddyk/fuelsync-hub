@@ -8,6 +8,8 @@ import reconciliationRoutes from './reconciliation.routes';
 import reportRoutes from './report.routes';
 import docsRoutes from './docs.routes';
 import adminRoutes from './admin.routes';
+import adminAuthRoutes from './admin-auth.routes';
+import directAdminAuthRoutes from './direct-admin-auth.routes';
 import analyticsRoutes from './analytics.routes';
 import planRoutes from './plan.routes';
 import nozzleReadingRoutes from './nozzleReading.routes';
@@ -29,13 +31,15 @@ router.use('/reconciliations', reconciliationRoutes);
 router.use('/reports', reportRoutes);
 router.use('/docs', docsRoutes);
 router.use('/admin', adminRoutes);
+router.use('/admin-auth', adminAuthRoutes);
+router.use('/direct-admin-auth', directAdminAuthRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/plans', planRoutes);
 router.use('/nozzle-readings', nozzleReadingRoutes);
 router.use('/creditors', creditorRoutes);
 router.use('/tender', tenderRoutes);
 router.use('/fuel-prices', fuelPriceRoutes);
-router.use('/user-stations', userStationRoutes); // Changed from '/stations' to '/user-stations'
+router.use('/user-stations', userStationRoutes);
 router.use(dashboardRoutes);
 
 export default router;

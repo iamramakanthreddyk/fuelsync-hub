@@ -25,9 +25,7 @@ const pool = new Pool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
 });
 
 // Main setup function
@@ -43,27 +41,23 @@ async function setupDatabase() {
     // Read schema.sql
     console.log('Applying database schema...');
     const schemaPath = path.join(__dirname, 'schema.sql');
-    const schemaSql = fs.readFileSync(schemaPath, 'utf8');
+    let schemaSql = fs.readFileSync(schemaPath, 'utf8');
+    
+    // Comment out the DROP SCHEMA line to prevent dropping the public schema
+    schemaSql = schemaSql.replace('DROP SCHEMA IF EXISTS public CASCADE;', '-- DROP SCHEMA IF EXISTS public CASCADE;');
     
     // Execute schema in a transaction
     try {
+      await client.query('BEGIN');
       await client.query(schemaSql);
+      await client.query('COMMIT');
       console.log('Schema applied successfully!');
     } catch (error) {
+      await client.query('ROLLBACK');
       console.error('Error applying schema:', error);
       throw error;
     } finally {
       client.release();
-    }
-    
-    // Run seed script
-    console.log('Running seed script...');
-    try {
-      await execPromise('npx ts-node db/seed.ts');
-      console.log('Seed data applied successfully!');
-    } catch (seedError) {
-      console.error('Error seeding database:', seedError);
-      throw seedError;
     }
     
     console.log('Database setup completed successfully!');

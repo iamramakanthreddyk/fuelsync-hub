@@ -21,8 +21,8 @@ export class UserModel {
         SELECT 
           u.*,
           t.name as tenant_name 
-        FROM users u 
-        LEFT JOIN tenants t ON t.id = u.tenant_id 
+        FROM public.users u 
+        LEFT JOIN public.tenants t ON t.id = u.tenant_id 
         WHERE u.email = $1 AND u.active = true`;
       
       const { rows } = await pool.query(query, [email]);
@@ -39,8 +39,8 @@ export class UserModel {
         SELECT 
           u.*,
           t.name as tenant_name 
-        FROM users u 
-        LEFT JOIN tenants t ON t.id = u.tenant_id 
+        FROM public.users u 
+        LEFT JOIN public.tenants t ON t.id = u.tenant_id 
         WHERE u.id = $1 AND u.active = true`;
       
       const { rows } = await pool.query(query, [id]);
@@ -57,8 +57,8 @@ export class UserModel {
         SELECT 
           u.*,
           t.name as tenant_name 
-        FROM users u 
-        LEFT JOIN tenants t ON t.id = u.tenant_id 
+        FROM public.users u 
+        LEFT JOIN public.tenants t ON t.id = u.tenant_id 
         WHERE u.tenant_id = $1 AND u.active = true`;
       
       const { rows } = await pool.query(query, [tenantId]);
