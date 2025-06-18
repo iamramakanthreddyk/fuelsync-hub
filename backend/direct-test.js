@@ -3,9 +3,9 @@ const fetch = require('node-fetch');
 
 async function testAdminAuth() {
   try {
-    console.log('Testing admin-auth login...');
+    console.log('Testing direct-admin-auth login...');
     
-    const response = await fetch('http://localhost:3001/api/admin-auth/login', {
+    const response = await fetch('http://localhost:3001/api/direct-admin-auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

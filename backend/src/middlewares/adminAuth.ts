@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { config } from '../config/environment';
 import pool from '../config/database';
 
-// Extend Express Request type to include admin
+// Extend Express Request type
 declare global {
   namespace Express {
     interface Request {
@@ -17,9 +17,6 @@ declare global {
   }
 }
 
-/**
- * Middleware to authenticate admin users
- */
 export const authenticateAdmin = async (
   req: Request,
   res: Response,
@@ -32,59 +29,56 @@ export const authenticateAdmin = async (
       return res.status(401).json({
         status: 'error',
         code: 'UNAUTHORIZED',
-        message: 'Authentication required'
+        message: 'Not authenticated'
       });
     }
 
     const token = authHeader.split(' ')[1];
 
     // Verify token
-    try {
-      const decoded = jwt.verify(token, config.admin.jwtSecret) as {
-        id: string;
-        email: string;
-        role: string;
-      };
+    const jwtSecret = config.admin.jwtSecret;
+    const decoded = jwt.verify(token, jwtSecret) as {
+      id: string;
+      email: string;
+      role: string;
+    };
 
-      // Check if token is in admin_sessions table
-      const sessionQuery = `
-        SELECT * FROM admin_sessions
-        WHERE admin_id = $1 AND token = $2 AND expires_at > NOW()
-      `;
+    // Check if token exists in admin_sessions
+    const query = `
+      SELECT * FROM admin_sessions
+      WHERE admin_id = $1 AND token = $2 AND expires_at > NOW()
+    `;
 
-      const sessionResult = await pool.query(sessionQuery, [decoded.id, token]);
+    const result = await pool.query(query, [decoded.id, token]);
 
-      if (sessionResult.rows.length === 0) {
-        return res.status(401).json({
-          status: 'error',
-          code: 'INVALID_TOKEN',
-          message: 'Invalid or expired token'
-        });
-      }
-
-      // Update last_used_at
-      await pool.query(
-        'UPDATE admin_sessions SET last_used_at = NOW() WHERE admin_id = $1 AND token = $2',
-        [decoded.id, token]
-      );
-
-      // Set admin in request
-      req.admin = decoded;
-
-      next();
-    } catch (error) {
+    if (result.rows.length === 0) {
       return res.status(401).json({
         status: 'error',
         code: 'INVALID_TOKEN',
         message: 'Invalid or expired token'
       });
     }
+
+    // Set admin on request object
+    req.admin = {
+      id: decoded.id,
+      email: decoded.email,
+      role: decoded.role
+    };
+
+    // Update last_used_at
+    await pool.query(
+      'UPDATE admin_sessions SET last_used_at = NOW() WHERE admin_id = $1 AND token = $2',
+      [decoded.id, token]
+    );
+
+    next();
   } catch (error) {
     console.error('Admin authentication error:', error);
-    return res.status(500).json({
+    return res.status(401).json({
       status: 'error',
-      code: 'SERVER_ERROR',
-      message: 'An unexpected error occurred'
+      code: 'UNAUTHORIZED',
+      message: 'Not authenticated'
     });
   }
 };

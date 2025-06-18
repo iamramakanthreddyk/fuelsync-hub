@@ -28,7 +28,9 @@ export default function AdminLogin() {
     try {
       console.log('Attempting admin login with:', { email });
       
-      const response = await fetch('/api/admin-auth/login', {
+      // Use the direct admin auth endpoint
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+      const response = await fetch(`${apiUrl}/direct-admin-auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

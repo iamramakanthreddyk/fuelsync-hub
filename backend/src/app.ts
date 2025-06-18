@@ -2,10 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
+import path from 'path';
 import { apiLimiter } from './middlewares/rateLimit';
-import authRoutes from './routes/auth.routes';
-import stationRoutes from './routes/station.routes';
-// Import other routes as needed
+import routes from './routes';
 
 const app = express();
 
@@ -16,13 +15,19 @@ app.use(cors());
 app.use(compression());
 app.use(express.json());
 
+// Serve static files
+app.use(express.static(path.join(__dirname, '../public')));
+
 // API rate limiting
 app.use('/api', apiLimiter);
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/stations', stationRoutes);
-// Add other routes as needed
+app.use('/api', routes);
+
+// Serve admin login test page
+app.get('/admin-test', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/admin-login-test.html'));
+});
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

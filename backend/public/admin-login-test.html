@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      background-color: #f9f9f9;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Login Test</h1>
+  
+  <div class="form-group">
+    <label for="email">Email:</label>
+    <input type="email" id="email" value="admin@fuelsync.com">
+  </div>
+  
+  <div class="form-group">
+    <label for="password">Password:</label>
+    <input type="password" id="password" value="admin123">
+  </div>
+  
+  <div class="form-group">
+    <label for="api-url">API URL:</label>
+    <input type="text" id="api-url" value="http://localhost:3001/api/direct-admin-auth/login">
+  </div>
+  
+  <button onclick="login()">Login</button>
+  
+  <div class="result" id="result"></div>
+  
+  <script>
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const apiUrl = document.getElementById('api-url').value;
+      const resultElement = document.getElementById('result');
+      
+      resultElement.textContent = 'Logging in...';
+      
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const responseText = await response.text();
+        resultElement.textContent = `Response status: ${response.status}\n\n`;
+        resultElement.textContent += `Response text: ${responseText}\n\n`;
+        
+        try {
+          const data = JSON.parse(responseText);
+          resultElement.textContent += `Parsed data: ${JSON.stringify(data, null, 2)}\n\n`;
+          
+          if (response.ok && data.status === 'success') {
+            // Store token in localStorage
+            localStorage.setItem('adminToken', data.data.token);
+            localStorage.setItem('admin', JSON.stringify(data.data.user));
+            
+            resultElement.textContent += 'Login successful! Token stored in localStorage.';
+          }
+        } catch (e) {
+          resultElement.textContent += `Failed to parse response as JSON: ${e.message}`;
+        }
+      } catch (error) {
+        resultElement.textContent = `Error: ${error.message}`;
+      }
+    }
+  </script>
+</body>
+</html>
