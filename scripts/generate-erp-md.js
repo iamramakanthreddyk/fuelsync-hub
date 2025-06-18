@@ -42,5 +42,5 @@ for (const feat of features) {
 md += '\n- All plans include core sales, reconciliation, and user management features.\n';
 md += '- Upgrades unlock more stations, advanced analytics, and integrations.\n';
 
-require('fs').writeFileSync('palnning/erp.md', md);
+require('fs').writeFileSync('planning/erp.md', md);
 console.log('erp.md updated!');
