@@ -53,12 +53,181 @@ components:
         updatedAt:
           type: string
           format: date-time
+    
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        contactPerson:
+          type: string
+        contactPhone:
+          type: string
+        subscriptionPlan:
+          type: string
+          enum: [basic, premium, enterprise]
+        status:
+          type: string
+          enum: [active, suspended, deleted]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum: [owner, manager, employee]
+        tenantId:
+          type: string
+          format: uuid
+        phone:
+          type: string
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    Station:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip:
+          type: string
+        contactPhone:
+          type: string
+        tenantId:
+          type: string
+          format: uuid
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    TenantLimits:
+      type: object
+      properties:
+        stations:
+          type: integer
+          description: Maximum number of stations allowed (-1 for unlimited)
+        users:
+          type: integer
+          description: Maximum number of users allowed (-1 for unlimited)
+    
+    SystemSettings:
+      type: object
+      properties:
+        tenantLimits:
+          type: object
+          properties:
+            basic:
+              $ref: '#/components/schemas/TenantLimits'
+            premium:
+              $ref: '#/components/schemas/TenantLimits'
+            enterprise:
+              $ref: '#/components/schemas/TenantLimits'
+        systemMaintenance:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            message:
+              type: string
+            allowedIPs:
+              type: array
+              items:
+                type: string
 
 paths:
   /admin-auth/login:
     post:
       summary: Admin login
       description: Authenticate as superadmin
+      tags:
+        - Admin Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      user:
+                        $ref: '#/components/schemas/AdminUser'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /direct-admin-auth/login:
+    post:
+      summary: Direct admin login
+      description: Alternative endpoint for admin authentication
       tags:
         - Admin Authentication
       requestBody:
@@ -152,6 +321,251 @@ paths:
                     example: success
                   data:
                     $ref: '#/components/schemas/AdminUser'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /admin/settings:
+    get:
+      summary: Get system settings
+      description: Get system-wide settings and tenant limits
+      tags:
+        - Admin Settings
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/SystemSettings'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      summary: Update system settings
+      description: Update system-wide settings and tenant limits
+      tags:
+        - Admin Settings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SystemSettings'
+      responses:
+        '200':
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/SystemSettings'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /admin/reports/sales:
+    get:
+      summary: Get sales report
+      description: Get sales data across tenants and stations
+      tags:
+        - Admin Reports
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: tenantId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: stationId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      summary:
+                        type: object
+                        properties:
+                          totalSales:
+                            type: number
+                          totalTransactions:
+                            type: integer
+                          paymentMethodSummary:
+                            type: object
+                          fuelTypeSummary:
+                            type: object
+                      details:
+                        type: array
+                        items:
+                          type: object
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /admin/reports/credits:
+    get:
+      summary: Get credit report
+      description: Get credit sales and outstanding balances
+      tags:
+        - Admin Reports
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: tenantId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: stationId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      summary:
+                        type: object
+                        properties:
+                          totalCredit:
+                            type: number
+                          outstandingCredit:
+                            type: number
+                          paidCredit:
+                            type: number
+                          paymentRate:
+                            type: number
+                      details:
+                        type: array
+                        items:
+                          type: object
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /admin/reports/compliance:
+    get:
+      summary: Get compliance report
+      description: Get tenant compliance with business rules
+      tags:
+        - Admin Reports
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: tenantId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      summary:
+                        type: object
+                        properties:
+                          overallScore:
+                            type: number
+                          compliantTenants:
+                            type: integer
+                          totalTenants:
+                            type: integer
+                      details:
+                        type: array
+                        items:
+                          type: object
         '401':
           description: Unauthorized
           content:

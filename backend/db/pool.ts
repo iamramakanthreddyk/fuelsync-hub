@@ -1,13 +1,16 @@
 // src/db/pool.ts
 import { Pool } from 'pg';
+import { config } from '../src/config/environment';
 
 const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '5432'),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  ssl: {
+  host: config.db.host,
+  port: config.db.port,
+  user: config.db.user,
+  password: config.db.password,
+  database: config.db.database,
+  ssl: config.db.ssl ? {
     rejectUnauthorized: false
-  }
+  } : undefined
 });
+
+export default pool;

@@ -18,7 +18,8 @@ import {
   Menu,
   MenuItem,
   Avatar,
-  Tooltip
+  Tooltip,
+  Collapse
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -27,7 +28,13 @@ import {
   SupervisorAccount as UsersIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  Assessment as ReportIcon,
+  ExpandLess,
+  ExpandMore,
+  BarChart as SalesReportIcon,
+  CreditCard as CreditReportIcon,
+  Rule as ComplianceReportIcon
 } from '@mui/icons-material';
 
 const drawerWidth = 240;
@@ -43,6 +50,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [admin, setAdmin] = useState<any>(null);
   const [mounted, setMounted] = useState(false);
+  const [reportsOpen, setReportsOpen] = useState(false);
 
   // Fix hydration mismatch by only rendering admin-dependent parts after mounting
   useEffect(() => {
@@ -61,6 +69,11 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
     } else {
       // Redirect to login if no admin found
       router.push('/admin/login');
+    }
+
+    // Check if current path is a reports page
+    if (router.pathname.startsWith('/admin/reports')) {
+      setReportsOpen(true);
     }
   }, [router]);
 
@@ -109,11 +122,21 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
     setMobileOpen(false);
   };
 
+  const handleReportsToggle = () => {
+    setReportsOpen(!reportsOpen);
+  };
+
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
     { text: 'Tenants', icon: <TenantsIcon />, path: '/admin/tenants' },
     { text: 'Users', icon: <UsersIcon />, path: '/admin/users' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' }
+  ];
+
+  const reportItems = [
+    { text: 'Sales Report', icon: <SalesReportIcon />, path: '/admin/reports/sales' },
+    { text: 'Credit Report', icon: <CreditReportIcon />, path: '/admin/reports/credits' },
+    { text: 'Compliance Report', icon: <ComplianceReportIcon />, path: '/admin/reports/compliance' }
   ];
 
   const drawer = (
@@ -138,6 +161,34 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
             </ListItemButton>
           </ListItem>
         ))}
+        
+        {/* Reports submenu */}
+        <ListItem disablePadding>
+          <ListItemButton onClick={handleReportsToggle}>
+            <ListItemIcon>
+              <ReportIcon />
+            </ListItemIcon>
+            <ListItemText primary="Reports" />
+            {reportsOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+        </ListItem>
+        <Collapse in={reportsOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {reportItems.map((item) => (
+              <ListItemButton
+                key={item.text}
+                sx={{ pl: 4 }}
+                selected={router.pathname === item.path}
+                onClick={() => handleNavigation(item.path)}
+              >
+                <ListItemIcon>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            ))}
+          </List>
+        </Collapse>
       </List>
     </div>
   );
