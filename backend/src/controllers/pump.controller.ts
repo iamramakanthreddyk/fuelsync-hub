@@ -4,9 +4,9 @@ import * as pumpService from '../services/pump.service';
 export const createPump = async (req: Request, res: Response) => {
   try {
     const { stationId, name, serialNumber, installationDate } = req.body;
-    
-    if (!stationId || !name) {
-      return res.status(400).json({ message: 'Station ID and name are required' });
+
+    if (!stationId || !name || !serialNumber || !installationDate) {
+      return res.status(400).json({ message: 'Station ID, name, serial number and installation date are required' });
     }
     
     // Get schema name from middleware
@@ -19,8 +19,8 @@ export const createPump = async (req: Request, res: Response) => {
       schemaName,
       stationId,
       name,
-      serialNumber || '',
-      installationDate || null
+      serialNumber,
+      installationDate
     );
     
     return res.status(201).json(pump);

@@ -60,7 +60,9 @@ describe('Reconciliation API', () => {
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           stationId,
-          name: 'Recon Pump'
+          name: 'Recon Pump',
+          serialNumber: 'RECON-001',
+          installationDate: '2023-01-01'
         });
       
       const nozzleRes = await request(app)
