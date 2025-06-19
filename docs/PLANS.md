@@ -29,57 +29,36 @@ Limits are enforced in:
 Plan limits are controlled by `planConfig.ts`:
 
 ```ts
-export const planConfig = {
+export const PLAN_CONFIG = {
   basic: {
     maxStations: 1,
+    maxPumpsPerStation: 4,
+    maxNozzlesPerPump: 4,
     maxUsers: 5,
-    enableCreditors: false,
-    enableReports: false,
-    enableApiAccess: false,
-    support: 'email'
+    exportData: false,
+    advancedReports: false,
+    apiAccess: false
   },
   premium: {
-    maxStations: 3,
+    maxStations: 5,
+    maxPumpsPerStation: 8,
+    maxNozzlesPerPump: 6,
     maxUsers: 20,
-    enableCreditors: true,
-    enableReports: true,
-    enableApiAccess: false,
-    support: 'priority'
+    exportData: true,
+    advancedReports: true,
+    apiAccess: false
   },
   enterprise: {
-    maxStations: Infinity,
-    maxUsers: Infinity,
-    enableCreditors: true,
-    enableReports: true,
-    enableApiAccess: true,
-    support: 'dedicated'
+    maxStations: 999,
+    maxPumpsPerStation: 999,
+    maxNozzlesPerPump: 999,
+    maxUsers: 999,
+    exportData: true,
+    advancedReports: true,
+    apiAccess: true
   }
 }
-📈 Plan Upgrade Flow
-When a tenant hits a limit:
-
-A warning or upgrade prompt is shown in the UI
-
-Features are greyed out or disabled
-
-Option to contact SuperAdmin or open an upgrade request
-
-🧪 Plan Features Testing
-SuperAdmins can override plans or manually test features using the seed script:
-
-bash
-Copy
-Edit
-npm run db:seed -- --plan=premium
-🔐 Plan-Based Route Enforcement
-APIs validate plan permissions using middleware like:
-
-ts
-Copy
-Edit
-if (!plan.enableCreditors) {
-  return res.status(403).json({ error: "Credit feature not enabled in current plan" });
-}
+```
 📚 Related Files
 planConfig.ts (source of truth)
 
