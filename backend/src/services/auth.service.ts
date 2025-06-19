@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
+import type { StringValue } from 'ms';
 import crypto from 'crypto';
 import { UserModel } from '../models/user.model';
 import { config } from '../config/environment';
@@ -94,16 +95,13 @@ export async function authenticateTenantUser(email: string, password: string) {
  * Generate a JWT token
  */
 export function generateToken(payload: JWTPayload): string {
-  return jwt.sign(
-    payload,
-    config.jwt.secret,
-    { 
-      expiresIn: config.jwt.expiresIn,
-      algorithm: 'HS256',
-      audience: config.jwt.audience,
-      issuer: config.jwt.issuer
-    }
-  );
+  const options: SignOptions = {
+    expiresIn: config.jwt.expiresIn as StringValue,
+    algorithm: 'HS256',
+    audience: config.jwt.audience,
+    issuer: config.jwt.issuer
+  };
+  return jwt.sign(payload, config.jwt.secret, options);
 }
 
 /**
