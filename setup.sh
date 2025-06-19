@@ -1,5 +1,5 @@
 #!/bin/bash
-
+export CODEX_MODE=true
 set -e  # Exit on error
 
 # Colors
@@ -16,6 +16,11 @@ print_error() { echo -e "${RED}❌ $1${NC}"; }
 
 echo -e "${BLUE}🚀 Starting FuelSync Hub Setup...${NC}"
 echo ""
+if [ "$CI" = "true" ] || [ "$CODEX_MODE" = "true" ]; then
+  print_status "Detected CI or Codex Mode — Using test DB config"
+else
+  print_status "Detected Developer Mode — Loading from .env"
+fi
 
 # Node check
 if ! command -v node &> /dev/null; then
