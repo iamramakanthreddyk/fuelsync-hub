@@ -269,6 +269,47 @@ async function seed() {
       [uuidv4(), station2Id, 'diesel', 3.89, ownerId]
     );
     
+    // Create fuel inventory
+    console.log('Creating fuel inventory');
+
+    await executeQuery(
+      `INSERT INTO fuel_inventory (id, station_id, fuel_type, current_volume, capacity, last_updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [uuidv4(), station1Id, 'petrol', 5000, 10000, new Date()]
+    );
+
+    await executeQuery(
+      `INSERT INTO fuel_inventory (id, station_id, fuel_type, current_volume, capacity, last_updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [uuidv4(), station1Id, 'diesel', 3000, 8000, new Date()]
+    );
+
+    await executeQuery(
+      `INSERT INTO fuel_inventory (id, station_id, fuel_type, current_volume, capacity, last_updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [uuidv4(), station2Id, 'diesel', 4000, 9000, new Date()]
+    );
+
+    // Record fuel deliveries
+    console.log('Creating fuel deliveries');
+
+    await executeQuery(
+      `INSERT INTO fuel_deliveries (id, station_id, fuel_type, volume, price_per_unit, total_amount, delivery_date, supplier, invoice_number, received_by, notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [uuidv4(), station1Id, 'petrol', 5000, 3.5, 17500, new Date('2023-01-01'), 'Fuel Supplier A', 'INV-001', ownerId, 'Initial stock']
+    );
+
+    await executeQuery(
+      `INSERT INTO fuel_deliveries (id, station_id, fuel_type, volume, price_per_unit, total_amount, delivery_date, supplier, invoice_number, received_by, notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [uuidv4(), station1Id, 'diesel', 4000, 3.2, 12800, new Date('2023-01-02'), 'Fuel Supplier B', 'INV-002', ownerId, 'Initial stock']
+    );
+
+    await executeQuery(
+      `INSERT INTO fuel_deliveries (id, station_id, fuel_type, volume, price_per_unit, total_amount, delivery_date, supplier, invoice_number, received_by, notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [uuidv4(), station2Id, 'diesel', 6000, 3.3, 19800, new Date('2023-01-03'), 'Fuel Supplier A', 'INV-003', ownerId, 'Initial stock']
+    );
     console.log('Seeding completed successfully!');
   } catch (error) {
     console.error('Error seeding database:', error);
