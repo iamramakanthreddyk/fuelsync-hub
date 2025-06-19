@@ -12,15 +12,15 @@ CREATE DATABASE fuelsync;
 
 ### 2. Configure Environment Variables
 
-Copy the `.env.example` file to `.env` and update the database connection parameters:
+Set your PostgreSQL credentials as environment variables. Example:
 
 ```
-DB_HOST=fuelsync-server.postgres.database.azure.com
-DB_PORT=5432
-DB_NAME=fuelsync_db1
-DB_USER=fueladmin
-DB_PASSWORD=your_password
-DB_SSL=true
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_NAME=fuelsync_db1
+export DB_USER=postgres
+export DB_PASSWORD=postgres
+export DB_SSL=false
 ```
 
 ### 3. Check Database Connection
