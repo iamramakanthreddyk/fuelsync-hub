@@ -29,7 +29,7 @@ erDiagram
     TENANTS {
         UUID id PK
         string name
-        string plan_type
+        string subscription_plan
         string schema_name
         string contact_email
         string contact_phone
@@ -48,16 +48,6 @@ erDiagram
         boolean active
     }
 
-    PLAN_FEATURES {
-        string plan_type PK
-        integer max_stations
-        integer max_employees
-        boolean enable_creditors
-        boolean enable_reports
-        boolean enable_analytics
-        boolean enable_api_access
-        string support_level
-    }
 
     USERS {
         UUID id PK
@@ -362,7 +352,7 @@ erDiagram
 CREATE TABLE tenants (
   id UUID PRIMARY KEY,
   name TEXT NOT NULL,
-  plan_type TEXT NOT NULL,
+  subscription_plan TEXT NOT NULL,
   schema_name TEXT NOT NULL UNIQUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -390,20 +380,6 @@ CREATE TABLE plans (
 );
 ```
 
-#### Plan Features Table
-
-```sql
-CREATE TABLE plan_features (
-  plan_type TEXT PRIMARY KEY,
-  max_stations INTEGER NOT NULL,
-  max_employees INTEGER NOT NULL,
-  enable_creditors BOOLEAN NOT NULL,
-  enable_reports BOOLEAN NOT NULL,
-  enable_analytics BOOLEAN NOT NULL,
-  enable_api_access BOOLEAN NOT NULL,
-  support_level TEXT NOT NULL
-);
-```
 
 #### Admin Users Table
 

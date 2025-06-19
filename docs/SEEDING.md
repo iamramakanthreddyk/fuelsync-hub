@@ -47,7 +47,7 @@ Each tenant has:
 
 3 Pumps → 2 Nozzles per pump
 
-3 Users (1 manager, 2 attendants)
+4 Users (1 manager, 3 attendants)
 
 2 Creditors
 

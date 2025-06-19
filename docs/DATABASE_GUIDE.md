@@ -34,8 +34,8 @@ erDiagram
 
 ### Tenant Scope
 
-* `tenants` ➔ Each tenant has a schema
-* `plans`, `plan_features` ➔ Plan enforcement
+* `tenants` ➔ Each tenant has a schema (`subscription_plan` field controls limits)
+* `plans` ➔ Plan definitions used for enforcement
 * `tenant_settings` ➔ Branding, currency, theme
 
 ### Station Management
@@ -50,6 +50,8 @@ erDiagram
 * `fuel_prices` ➔ Price per fuel type
 * `fuel_deliveries` ➔ Restock records
 * `fuel_inventory` ➔ Tank levels
+* `shifts` ➔ User work shifts per station
+* `tender_entries` ➔ Cash/card/credit tallies during a shift
 * `day_reconciliations` ➔ Daily sales summary
 
 ### Credit & Payments

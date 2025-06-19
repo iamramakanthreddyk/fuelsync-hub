@@ -119,6 +119,11 @@ This document outlines the available API endpoints grouped by user roles in the 
 * `GET /api/fuel-prices/:id` — Fuel price by ID _(owner/manager)_
 * `GET /api/fuel-prices/at-date` — Price at a specific date _(owner/manager)_
 
+## 🛢 Inventory Endpoints
+
+* `GET /api/inventory?stationId=...` — Current inventory levels
+* `POST /api/inventory/delivery` — Record fuel delivery
+
 ## 👥 User-Station Assignment
 
 * `POST /api/stations/assignments` — Assign user to station _(owner)_

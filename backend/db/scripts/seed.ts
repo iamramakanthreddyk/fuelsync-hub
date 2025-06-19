@@ -176,9 +176,9 @@ async function seed() {
     ];
     for (const c of creditorData) {
       await client.query(
-        `INSERT INTO creditors (id, party_name, contact_person, contact_phone, credit_limit)
-         VALUES ($1,$2,$3,$4,$5)`,
-        [uuid(), c.name, c.contact, c.phone, c.limit]
+        `INSERT INTO creditors (id, station_id, party_name, contact_person, contact_phone, credit_limit)
+         VALUES ($1,$2,$3,$4,$5,$6)`,
+        [uuid(), stations[0].id, c.name, c.contact, c.phone, c.limit]
       );
     }
 
