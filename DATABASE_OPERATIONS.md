@@ -1,125 +1,245 @@
 # FuelSync Hub - Database Operations Guide
 
-This guide explains when and how to use the various database scripts in the FuelSync Hub project.
+This guide explains the streamlined database operations for FuelSync Hub.
 
-## Quick Reference
+## 🚀 Quick Reference
 
-| Scenario | Command | Description |
-|----------|---------|-------------|
-| **Initial Setup** | `npm run db:setup` | Complete setup of database, schemas, and seed data |
-| **Fix Data Issues** | `npm run db:fix` | Fix relationships between entities (stations, pumps, users) |
-| **Reset Database** | `npm run db:reset` | Reset database to initial state with seed data |
-| **Check Connection** | `npm run db:check` | Verify database connection |
+| Command | Description | When to Use |
+|---------|-------------|-------------|
+| `npm run db setup` | Complete database setup | First-time setup |
+| `npm run db fix` | Fix data relationships | When relationships are broken |
+| `npm run db check` | Test database connection | Troubleshooting connectivity |
+| `npm run db verify` | Verify database setup | After setup or changes |
+| `npm run db reset` | Reset to clean state | Start fresh |
 
-## Common Scenarios
+## 📁 Essential Database Files
 
-### 1. First-time Setup
+The database management has been streamlined to 4 essential files:
 
-When setting up the project for the first time:
-
-```bash
-npm run db:setup
+```
+backend/db/
+├── setup-db.ts          # Schema creation and setup
+├── seed.ts              # Data seeding (users, tenants, stations)
+├── fix-relationships.ts # Fix user-station relationships
+└── verify-seed.ts       # Verify database setup
 ```
 
-This will:
-- Create database schema
-- Set up tenant schemas
-- Create admin user
-- Seed initial data
-- Fix all relationships
+## 🔧 Common Scenarios
 
-### 2. Fixing Data Issues
-
-If you encounter issues with missing relationships (e.g., "Station ID is required" or "stations.map is not a function"):
+### 1. First-Time Setup
 
 ```bash
-npm run db:fix
+# Complete setup (recommended)
+npm run db setup
 ```
 
-This will:
-- Ensure all tenants have stations
-- Ensure all stations have pumps and nozzles
-- Ensure all users are assigned to stations
-- Create fuel prices for all stations
+This runs:
+1. Creates database schema
+2. Seeds initial data (admin, tenant, users)
+3. Fixes all relationships
+4. Verifies setup
 
-### 3. Database Verification
+### 2. Fix Data Issues
 
-To verify the database is set up correctly:
+If you encounter errors like "Station ID is required" or "stations.map is not a function":
 
 ```bash
-npm run db:verify-seed
+npm run db fix
 ```
 
-This will check that all required seed data exists.
+This ensures:
+- All users are assigned to stations
+- All stations have pumps and nozzles
+- All relationships are properly connected
 
-### 4. Resetting the Database
-
-If you need to reset the database to a clean state:
+### 3. Test Database Connection
 
 ```bash
-npm run db:reset
+npm run db check
 ```
 
-This will drop and recreate all tables and seed data.
+Use this when:
+- Setting up for the first time
+- Troubleshooting connection issues
+- Verifying .env configuration
 
-## Understanding the Data Flow
-
-1. **Tenants** are the top-level entities
-2. **Users** belong to tenants
-3. **Stations** belong to tenants
-4. **Users** are assigned to **stations** through the `user_stations` table
-5. **Pumps** belong to stations
-6. **Nozzles** belong to pumps
-7. **Sales** are recorded through nozzles
-
-## Common Issues and Solutions
-
-### "Station ID is required"
-
-This occurs when a user tries to access the dashboard without being assigned to any stations.
-
-**Solution**: Run `npm run db:fix` to ensure all users are assigned to stations.
-
-### "stations.map is not a function"
-
-This occurs when the stations data is not an array, often because the user doesn't have access to any stations.
-
-**Solution**: Run `npm run db:fix` to ensure all users are assigned to stations.
-
-### "Station must have at least one active pump"
-
-This occurs when trying to create a station without pumps.
-
-**Solution**: Run `npm run db:fix` to ensure all stations have pumps.
-
-## Advanced Operations
-
-### Adding New Tenants
-
-When adding new tenants, ensure they have:
-1. At least one station
-2. At least one pump per station
-3. At least one nozzle per pump
-4. Users assigned to stations
-
-The `db:fix` script will handle this automatically.
-
-### Database Migrations
-
-For schema changes:
+### 4. Verify Setup
 
 ```bash
-npm run db:migrate
+npm run db verify
 ```
 
-To roll back migrations:
+This checks:
+- Required tables exist
+- Seed data is present
+- Relationships are correct
+
+### 5. Reset Database
 
 ```bash
-npm run db:rollback
+npm run db reset
 ```
 
-To check migration status:
+**⚠️ Warning**: This will delete all data and recreate everything from scratch.
 
+## 🗄️ Database Schema Overview
+
+### Multi-Tenant Architecture
+
+```
+┌─────────────────┐    ┌─────────────────┐
+│   Public Schema │    │  Tenant Schema  │
+│                 │    │                 │
+│ • tenants       │    │ • stations      │
+│ • users         │    │ • pumps         │
+│ • admin_users   │    │ • nozzles       │
+│                 │    │ • sales         │
+│                 │    │ • user_stations │
+│                 │    │ • creditors     │
+└─────────────────┘    └─────────────────┘
+```
+
+### Key Relationships
+
+1. **Tenants** → **Users** (one-to-many)
+2. **Users** → **Stations** (many-to-many via user_stations)
+3. **Stations** → **Pumps** → **Nozzles** (hierarchical)
+4. **Sales** → **Nozzles** (many-to-one)
+
+## 🔐 Default Seed Data
+
+The seed script creates:
+
+### Admin User
+- **Email**: admin@fuelsync.com
+- **Password**: admin123
+- **Role**: superadmin
+
+### Demo Tenant
+- **Name**: Demo Company
+- **Email**: demo@company.com
+
+### Tenant Users
+| Role | Email | Password |
+|------|-------|----------|
+| Owner | owner@demofuel.com | password123 |
+| Manager | manager@demofuel.com | password123 |
+| Employee | employee@demofuel.com | password123 |
+
+### Sample Data
+- 1 Station with 1 Pump and 2 Nozzles (Petrol/Diesel)
+- Fuel prices for both fuel types
+- User-station assignments
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+#### "Database connection failed"
 ```bash
-npm run db:status
+# Check your .env file
+cat backend/.env
+
+# Test connection
+npm run db check
 ```
+
+#### "Station ID is required"
+```bash
+# Fix relationships
+npm run db fix
+```
+
+#### "No stations found"
+```bash
+# Reset and setup again
+npm run db reset
+```
+
+#### "Token validation failed"
+```bash
+# Clear browser storage and re-login
+# Or reset database
+npm run db reset
+```
+
+### Environment Variables
+
+Ensure your `backend/.env` file has:
+
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=fuelsync
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_SSL=false
+```
+
+## 🔄 Migration Strategy
+
+For production deployments:
+
+1. **Backup existing data** (if any)
+2. **Run setup**: `npm run db setup`
+3. **Verify**: `npm run db verify`
+4. **Test application** functionality
+
+## 📊 Database Monitoring
+
+### Check Database Status
+```bash
+# Connection test
+npm run db check
+
+# Verify data integrity
+npm run db verify
+
+# Check logs
+tail -f backend/logs/app.log
+```
+
+### Performance Tips
+- Regular VACUUM and ANALYZE on PostgreSQL
+- Monitor connection pool usage
+- Index optimization for large datasets
+
+## 🚨 Emergency Procedures
+
+### Complete Reset
+```bash
+npm run db reset
+```
+
+### Backup Before Changes
+```bash
+pg_dump fuelsync > backup_$(date +%Y%m%d_%H%M%S).sql
+```
+
+### Restore from Backup
+```bash
+psql fuelsync < backup_file.sql
+npm run db fix  # Fix any relationship issues
+```
+
+## 📝 Development Notes
+
+- All database scripts use TypeScript
+- Connection pooling is handled automatically
+- Multi-tenant isolation is enforced at the schema level
+- Generated columns (like sales.amount) are calculated automatically
+
+## 🎯 Best Practices
+
+1. **Always test connection** before running operations
+2. **Use fix command** after manual database changes
+3. **Verify setup** after any schema modifications
+4. **Backup before reset** in production environments
+5. **Monitor logs** for any database errors
+
+---
+
+For more detailed information, see:
+- [Project Structure](PROJECT_STRUCTURE.md)
+- [Troubleshooting Guide](TROUBLESHOOTING.md)
+- [User Guide](USER_GUIDE.md)

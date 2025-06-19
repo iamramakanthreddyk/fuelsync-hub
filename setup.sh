@@ -1,13 +1,13 @@
 #!/bin/bash
-export CODEX_MODE=true
+
 set -e  # Exit on error
 
-# Colors
+# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m'
+NC='\033[0m' # No Color
 
 print_status() { echo -e "${BLUE}🔧 $1${NC}"; }
 print_success() { echo -e "${GREEN}✅ $1${NC}"; }
@@ -16,100 +16,102 @@ print_error() { echo -e "${RED}❌ $1${NC}"; }
 
 echo -e "${BLUE}🚀 Starting FuelSync Hub Setup...${NC}"
 echo ""
-if [ "$CI" = "true" ] || [ "$CODEX_MODE" = "true" ]; then
-  print_status "Detected CI or Codex Mode — Using test DB config"
-else
-  print_status "Detected Developer Mode — Loading from .env"
+
+# Check Node.js
+if ! command -v node &> /dev/null; then
+    print_error "Node.js is not installed. Please install Node.js 18+ and try again."
+    exit 1
 fi
 
-# Node check
-if ! command -v node &> /dev/null; then
-  print_error "Node.js not installed"
-  exit 1
+NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
+if [ "$NODE_VERSION" -lt 18 ]; then
+    print_error "Node.js version 18+ is required. Current version: $(node --version)"
+    exit 1
 fi
 
 print_success "Node.js $(node --version) detected"
 
-# npm check
-if ! command -v npm &> /dev/null; then
-  print_error "npm not installed"
-  exit 1
-fi
-
-print_success "npm $(npm --version) detected"
-
-# Root deps
-print_status "Installing root dependencies..."
-[ -f "package.json" ] && npm install || print_warning "No root package.json found"
+# Install dependencies
+print_status "Installing dependencies..."
+npm run setup
+print_success "Dependencies installed"
 
 # Backend setup
 if [ -d "backend" ]; then
-  cd backend
-
-  print_status "Installing backend dependencies..."
-  npm install
-
-  # Environment: Codex/Test-safe setup
-  if [ "$CI" = "true" ] || [ "$CODEX_MODE" = "true" ]; then
-    print_status "Using in-memory/test database configuration (CI or Codex mode)"
-    export DB_HOST=localhost
-    export DB_PORT=5432
-    export DB_NAME=test_fuelsync
-    export DB_USER=postgres
-    export DB_PASSWORD=postgres
-    export DB_SSL=false
-  else
-    # Local dev fallback
+    print_status "Setting up backend..."
+    cd backend || exit 1
+    
+    # Check for .env file
     if [ ! -f ".env" ]; then
-      if [ -f ".env.example" ]; then
-        print_warning ".env not found → creating from example"
-        cp .env.example .env
-        print_status "Please update .env with your DB credentials"
-        read -p "Press Enter after updating .env to continue..."
-      else
-        print_error "Missing .env and .env.example. Aborting setup."
-        exit 1
-      fi
+        if [ -f ".env.example" ]; then
+            print_warning ".env file not found. Creating from .env.example..."
+            cp .env.example .env
+            print_warning "Please update the .env file with your database credentials"
+            echo "  - DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD"
+            echo ""
+            read -p "Press Enter after updating .env file to continue..."
+        else
+            print_error ".env.example file not found. Please create .env file manually."
+            exit 1
+        fi
     else
-      print_success ".env file found"
+        print_success ".env file found"
     fi
-  fi
-
-  print_status "Running DB migrations + seed..."
-  npm run db:setup || (print_error "DB setup failed" && exit 1)
-
-  print_status "Verifying seed data..."
-  npm run db:verify-seed || print_warning "Seed verification failed"
-
-  cd ..
+    
+    # Test database connection
+    print_status "Testing database connection..."
+    if npm run db:check; then
+        print_success "Database connection successful"
+    else
+        print_error "Database connection failed. Please check your .env configuration."
+        exit 1
+    fi
+    
+    # Setup database
+    print_status "Setting up database..."
+    if npm run db:setup; then
+        print_success "Database setup completed"
+    else
+        print_error "Database setup failed"
+        exit 1
+    fi
+    
+    # Verify setup
+    print_status "Verifying database setup..."
+    npm run db:verify || print_warning "Database verification had issues, but continuing..."
+    
+    cd ..
 else
-  print_error "Missing backend/ directory"
-  exit 1
+    print_error "backend folder not found."
+    exit 1
 fi
 
-# Frontend setup
-if [ -d "frontend" ]; then
-  cd frontend
-  print_status "Installing frontend dependencies..."
-  npm install
-  cd ..
-else
-  print_error "Missing frontend/ directory"
-  exit 1
-fi
-
-# Completion
 echo ""
-print_success "🎉 FuelSync Hub setup complete!"
-
+print_success "🎉 FuelSync Hub setup completed successfully!"
 echo ""
-echo -e "${BLUE}🔐 Default Credentials:${NC}"
-echo "Owner: owner@demofuel.com / password123"
-echo "Manager: manager@demofuel.com / password123"
-echo "Employee: employee@demofuel.com / password123"
-echo "Admin: admin@fuelsync.com / admin123"
-
+echo -e "${BLUE}📋 Next Steps:${NC}"
 echo ""
-echo -e "${BLUE}🧪 Dev Commands:${NC}"
-echo "Backend: cd backend && npm run dev"
-echo "Frontend: cd frontend && npm run dev"
+echo "1. Start development servers:"
+echo "   npm run dev"
+echo ""
+echo "2. Or start individually:"
+echo "   npm run dev:backend    # Port 3001"
+echo "   npm run dev:frontend   # Port 3000"
+echo ""
+echo "3. Access the application:"
+echo "   - Frontend: http://localhost:3000"
+echo "   - Backend API: http://localhost:3001"
+echo ""
+echo -e "${BLUE}🔐 Default Login Credentials:${NC}"
+echo "   - Owner: owner@demofuel.com / password123"
+echo "   - Manager: manager@demofuel.com / password123"
+echo "   - Employee: employee@demofuel.com / password123"
+echo "   - Admin: admin@fuelsync.com / admin123"
+echo ""
+echo -e "${BLUE}🛠️ Database Commands:${NC}"
+echo "   npm run db setup    # Complete setup"
+echo "   npm run db fix      # Fix relationships"
+echo "   npm run db check    # Test connection"
+echo "   npm run db verify   # Verify setup"
+echo ""
+print_success "Setup complete! Happy coding! 🚀"

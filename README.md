@@ -11,57 +11,31 @@ A comprehensive multi-tenant fuel station management platform built with Node.js
 
 ### Automated Setup (Recommended)
 
-**Unix/Linux/macOS:**
 ```bash
-chmod +x setup.sh
-./setup.sh
-```
+# Unix/Linux/macOS
+chmod +x setup.sh && ./setup.sh
 
-**Windows:**
-```cmd
+# Windows
 setup.bat
 ```
 
 ### Manual Setup
 
-1. **Install Dependencies**
-   ```bash
-   npm install
-   cd backend && npm install
-   cd ../frontend && npm install
-   ```
+```bash
+# 1. Install dependencies
+npm run setup
 
-2. **Configure Database**
-   ```bash
-   cd backend
-   cp .env.example .env
-   # Edit .env with your PostgreSQL credentials
-   ```
+# 2. Configure database
+cd backend
+cp .env.example .env
+# Edit .env with your PostgreSQL credentials
 
-3. **Setup Database**
-   ```bash
-   npm run db:setup
-   ```
+# 3. Setup database
+npm run db:setup
 
-4. **Start Development Servers**
-   
-   **Option A: Automated (Recommended)**
-   ```bash
-   # Unix/Linux/macOS
-   ./start-dev.sh
-   
-   # Windows
-   start-dev.bat
-   ```
-   
-   **Option B: Manual**
-   ```bash
-   # Terminal 1 - Backend
-   cd backend && npm run dev
-   
-   # Terminal 2 - Frontend  
-   cd frontend && npm run dev
-   ```
+# 4. Start development
+npm run dev
+```
 
 ## 🌐 Access URLs
 
@@ -78,50 +52,29 @@ setup.bat
 | Employee | employee@demofuel.com | password123 |
 | Admin | admin@fuelsync.com | admin123 |
 
-## 🛠️ Common Commands
+## 🛠️ Development Commands
 
-### Database Operations
+### Application
 ```bash
-cd backend
-
-# Fix data relationships
-npm run db:fix
-
-# Reset database
-npm run db:reset
-
-# Check database connection
-npm run db:check
-
-# Verify seed data
-npm run db:verify-seed
+npm run dev              # Start both backend and frontend
+npm run dev:backend      # Start backend only (port 3001)
+npm run dev:frontend     # Start frontend only (port 3000)
+npm run build            # Build for production
 ```
 
-### Development
+### Database Management
 ```bash
-# Backend development server
-cd backend && npm run dev
-
-# Frontend development server
-cd frontend && npm run dev
-
-# Build for production
-cd backend && npm run build
-cd frontend && npm run build
+npm run db setup         # Complete database setup
+npm run db reset         # Reset database to clean state
+npm run db check         # Test database connection
+npm run db fix           # Fix data relationships
+npm run db verify        # Verify database setup
 ```
 
-## 📁 Project Structure
-
-```
-fuelsync-hub/
-├── backend/          # Node.js/Express API
-├── frontend/         # Next.js React app
-├── docs/            # Documentation
-├── scripts/         # Utility scripts
-├── setup.sh         # Unix setup script
-├── setup.bat        # Windows setup script
-├── start-dev.sh     # Unix dev server script
-└── start-dev.bat    # Windows dev server script
+### Utilities
+```bash
+npm run setup            # Install all dependencies
+npm run clean            # Clean all node_modules and build files
 ```
 
 ## 🏗️ Architecture
@@ -131,19 +84,29 @@ fuelsync-hub/
 - **Database**: Multi-tenant PostgreSQL with schema separation
 - **Authentication**: JWT-based with role-based access control
 
-## 📚 Documentation
+## 📁 Project Structure
 
-- [Project Structure](PROJECT_STRUCTURE.md) - Detailed project organization
-- [Database Operations](DATABASE_OPERATIONS.md) - Database management guide
-- [Data Flow Diagram](DATA_FLOW_DIAGRAM.md) - System relationships
-- [User Guide](USER_GUIDE.md) - End-user documentation
-- [Troubleshooting](TROUBLESHOOTING.md) - Common issues and solutions
+```
+fuelsync-hub/
+├── backend/             # Node.js/Express API
+│   ├── src/            # Source code
+│   ├── db/             # Database scripts (4 essential files)
+│   └── package.json    # Backend dependencies
+├── frontend/           # Next.js React app
+│   ├── src/            # Source code
+│   └── package.json    # Frontend dependencies
+├── scripts/            # Utility scripts
+│   └── db.ts          # Unified database management
+├── setup.sh           # Unix setup script
+├── setup.bat          # Windows setup script
+└── package.json       # Root workspace configuration
+```
 
-## 🔧 Features
+## 🔧 Key Features
 
 ### Multi-Tenant Architecture
 - Separate data isolation per tenant
-- Role-based access control (Owner, Manager, Employee)
+- Role-based access control (Owner, Manager, Employee, Admin)
 - Scalable tenant management
 
 ### Station Management
@@ -161,38 +124,34 @@ fuelsync-hub/
 - Role-based permissions
 - Secure authentication
 
-### Dashboard & Analytics
-- Real-time KPIs
-- Sales trends and reports
-- Credit management
-
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **"Station ID is required" error**
+1. **Database connection errors**
    ```bash
-   cd backend && npm run db:fix
+   npm run db check     # Test connection
    ```
 
-2. **"stations.map is not a function" error**
+2. **Missing relationships**
    ```bash
-   cd backend && npm run db:fix
+   npm run db fix       # Fix relationships
    ```
 
-3. **Database connection issues**
-   - Ensure PostgreSQL is running
-   - Check .env credentials
-   - Run: `npm run db:check`
-
-4. **Token validation errors**
-   - Clear browser localStorage
-   - Re-login to get fresh token
+3. **Clean slate needed**
+   ```bash
+   npm run db reset     # Reset everything
+   ```
 
 ### Debug Tools
 - Visit http://localhost:3000/debug for debugging tools
 - Built-in API tester and token inspector
-- Database relationship checker
+
+## 📚 Documentation
+
+- [Database Operations](DATABASE_OPERATIONS.md) - Database management guide
+- [Project Structure](PROJECT_STRUCTURE.md) - Detailed project organization
+- [Troubleshooting](TROUBLESHOOTING.md) - Common issues and solutions
 
 ## 🤝 Contributing
 
@@ -205,19 +164,6 @@ fuelsync-hub/
 ## 📄 License
 
 This project is licensed under the ISC License.
-
-🧠 Codex Setup Note
-
-If running in Codex or CI environments, the `setup.sh` script will automatically use a test-safe, in-memory PostgreSQL configuration:
-
-
-
-## 🆘 Support
-
-For issues and questions:
-1. Check the [Troubleshooting Guide](TROUBLESHOOTING.md)
-2. Use the debug page at http://localhost:3000/debug
-3. Review the [Database Operations Guide](DATABASE_OPERATIONS.md)
 
 ---
 
