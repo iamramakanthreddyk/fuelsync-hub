@@ -1,7 +1,4 @@
-import dotenv from 'dotenv';
-import path from 'path';
-
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+// Environment variables are expected to be provided by the runtime
 
 interface Config {
   nodeEnv: string;

@@ -27,8 +27,13 @@ npm run setup
 
 # 2. Configure database
 cd backend
-cp .env.example .env
-# Edit .env with your PostgreSQL credentials
+# Set your PostgreSQL credentials as environment variables
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_NAME=test_fuelsync
+export DB_USER=postgres
+export DB_PASSWORD=postgres
+export DB_SSL=false
 
 # 3. Setup database
 npm run db:setup

@@ -1,13 +1,6 @@
 // src/config/database.ts
 import { Pool } from 'pg';
-import path from 'path';
-import dotenv from 'dotenv';
-const skipEnvLoad = process.env.CI === 'true' || process.env.CODEX_MODE === 'true' || process.env.HEADLESS === 'true';
-
-if (!skipEnvLoad) {
-  console.log('Env load skipped!!!')
-  dotenv.config({ path: path.resolve(__dirname, '../../.env') });
-}
+// Environment variables should be provided by the runtime
 
 
 // Log connection parameters (without password)

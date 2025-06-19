@@ -8,7 +8,7 @@ This error indicates that your PostgreSQL server is rejecting the connection fro
 
 **Solution:**
 
-1. **Check your .env file**:
+1. **Check your environment variables**:
    Make sure your database connection parameters are correct:
    ```
    DB_HOST=fuelsync-server.postgres.database.azure.com
