@@ -93,7 +93,7 @@ async function seed() {
 
     // 4️⃣ stations
     console.log('⛽ Seeding stations…');
-    const stationNames = ['Alpha','Bravo','Charlie'];
+    const stationNames = ['Alpha','Bravo'];
     const stations = stationNames.map(name => ({ id: uuid(), name }));
     
     for (const { id: stId, name } of stations) {
@@ -142,7 +142,7 @@ async function seed() {
            VALUES ($1,$2,$3,$4,CURRENT_DATE - INTERVAL '1 year',TRUE)`,
           [ pumpId, stId, `Pump ${i}`, `SN${Math.floor(Math.random()*90000)+10000}` ]
         );
-        for (let n = 0; n < 4; n++) {
+        for (let n = 0; n < 2; n++) {
           const nozId = uuid();
           const init  = n * 1000;
           await client.query(
@@ -163,6 +163,20 @@ async function seed() {
           [ uuid(), stId, fuel, rnd(2.5,4), ownerId ]
         );
       }
+    }
+
+    // 7️⃣➕ Create creditors
+    console.log('💳 Seeding creditors…');
+    const creditorData = [
+      { name: 'ABC Trucking', contact: 'John Smith', phone: '555-1111', limit: 5000 },
+      { name: 'XYZ Logistics', contact: 'Jane Doe', phone: '555-2222', limit: 10000 },
+    ];
+    for (const c of creditorData) {
+      await client.query(
+        `INSERT INTO creditors (id, party_name, contact_person, contact_phone, credit_limit)
+         VALUES ($1,$2,$3,$4,$5)`,
+        [uuid(), c.name, c.contact, c.phone, c.limit]
+      );
     }
 
     // 8️⃣ demo sales (skip if requested)
@@ -188,7 +202,7 @@ async function seed() {
 
       const saleCount = process.argv.find(a => a.startsWith('--sales='))
         ? Number(process.argv.find(a => a.startsWith('--sales='))!.split('=')[1])
-        : stations.length * 30 * 4;
+        : stations.length * 30 * 2;
       let made = 0;
 
       for (const dayOffset of [...Array(30).keys()]) {
@@ -196,7 +210,7 @@ async function seed() {
         for (const { id: stId } of stations) {
           const stationNozzles = nozzles.filter(n => n.station_id === stId);
           
-          for (let k = 0; k < 4 && made < saleCount; k++) {
+          for (let k = 0; k < 2 && made < saleCount; k++) {
             made++;
             const nozzle = stationNozzles[Math.floor(Math.random() * stationNozzles.length)];
             const saleTime = new Date((baseTs + k * 300) * 1000).toISOString();
