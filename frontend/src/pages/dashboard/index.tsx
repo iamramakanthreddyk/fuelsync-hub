@@ -11,13 +11,15 @@ import {
 } from '@mui/material';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../components/auth/ProtectedRoute';
-import { getUserRole, getToken } from '../../utils/authHelper';
+import { getUserRole, getToken, authHeader } from '../../utils/authHelper';
+import { useRouter } from 'next/router';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [userRole, setUserRole] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const role = getUserRole();
@@ -28,26 +30,31 @@ const Dashboard = () => {
         setLoading(true);
         setError('');
         
-        const token = getToken();
-        if (!token) {
+        const headers = authHeader();
+        if (!headers.Authorization) {
           setError('Authentication required');
           setLoading(false);
+          router.push('/login');
           return;
         }
         
-        const response = await fetch('http://localhost:3001/api/dashboard', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        console.log('Using headers:', headers);
         
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch dashboard data');
-        }
+        const response = await fetch('http://localhost:3001/api/dashboard', {
+          headers
+        });
         
         const data = await response.json();
         console.log('Dashboard data:', data);
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            console.error('Authentication error:', data);
+            router.push('/login');
+            return;
+          }
+          throw new Error(data.message || 'Failed to fetch dashboard data');
+        }
         
         if (data) {
           setDashboardData(data);
@@ -64,7 +71,7 @@ const Dashboard = () => {
     };
 
     fetchDashboardData();
-  }, []);
+  }, [router]);
 
   return (
     <ProtectedRoute>

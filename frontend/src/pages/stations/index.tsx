@@ -14,7 +14,7 @@ import StationCard from '../../components/stations/StationCard';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../components/auth/ProtectedRoute';
 import { useRouter } from 'next/router';
-import { getToken } from '../../utils/authHelper';
+import { authHeader } from '../../utils/authHelper';
 
 const StationsPage = () => {
   const [stations, setStations] = useState([]);
@@ -28,26 +28,31 @@ const StationsPage = () => {
         setLoading(true);
         setError('');
         
-        const token = getToken();
-        if (!token) {
+        const headers = authHeader();
+        if (!headers.Authorization) {
           setError('Authentication required');
           setLoading(false);
+          router.push('/login');
           return;
         }
         
-        const response = await fetch('http://localhost:3001/api/stations', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        console.log('Using headers:', headers);
         
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch stations');
-        }
+        const response = await fetch('http://localhost:3001/api/stations', {
+          headers
+        });
         
         const data = await response.json();
         console.log('Stations data:', data);
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            console.error('Authentication error:', data);
+            router.push('/login');
+            return;
+          }
+          throw new Error(data.message || 'Failed to fetch stations');
+        }
         
         if (data && Array.isArray(data)) {
           setStations(data);
@@ -68,7 +73,7 @@ const StationsPage = () => {
     };
 
     fetchStations();
-  }, []);
+  }, [router]);
 
   const handleAddStation = () => {
     router.push('/stations/new');

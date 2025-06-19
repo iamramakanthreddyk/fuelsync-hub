@@ -14,8 +14,11 @@ export const storeToken = (token) => {
     return;
   }
   
+  // Remove 'Bearer ' prefix if present
+  const cleanToken = token.startsWith('Bearer ') ? token.substring(7) : token;
+  
   try {
-    localStorage.setItem('token', token);
+    localStorage.setItem('token', cleanToken);
     console.log('Token stored successfully');
   } catch (error) {
     console.error('Error storing token:', error);
@@ -72,7 +75,6 @@ export const parseToken = (token) => {
   }
   
   try {
-    // Check if token has the correct format (three parts separated by dots)
     const parts = token.split('.');
     if (parts.length !== 3) {
       console.error('Invalid token format: not a valid JWT');
@@ -136,13 +138,6 @@ export const authHeader = () => {
   const token = getToken();
   if (!token) return {};
   
-  // Validate token format before returning
-  if (!token.match(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_.+/=]*$/)) {
-    console.error('Invalid token format in authHeader');
-    removeToken(); // Remove invalid token
-    return {};
-  }
-  
   return { Authorization: `Bearer ${token}` };
 };
 
@@ -156,10 +151,6 @@ export const debugAuth = () => {
   
   if (token) {
     console.log('Token:', token);
-    
-    // Check token format
-    const isValidFormat = token.match(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_.+/=]*$/);
-    console.log('Valid token format:', isValidFormat);
     
     const payload = parseToken(token);
     console.log('Token payload:', payload);

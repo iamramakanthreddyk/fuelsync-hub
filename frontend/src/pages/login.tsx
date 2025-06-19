@@ -36,7 +36,7 @@ const LoginPage = () => {
     try {
       console.log('Attempting login with:', { email });
       
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('http://localhost:3001/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -48,11 +48,16 @@ const LoginPage = () => {
       console.log('Login response:', data);
 
       if (response.ok && data.status === 'success' && data.data?.token) {
-        // Store token using authHelper
-        storeToken(data.data.token);
+        // Extract the actual token if it starts with "Bearer "
+        const token = data.data.token.startsWith('Bearer ') 
+          ? data.data.token.substring(7) 
+          : data.data.token;
+        
+        // Store token
+        storeToken(token);
         
         // Parse token to get user role
-        const tokenData = parseToken(data.data.token);
+        const tokenData = parseToken(token);
         console.log('Token data:', tokenData);
         
         // Redirect based on role
