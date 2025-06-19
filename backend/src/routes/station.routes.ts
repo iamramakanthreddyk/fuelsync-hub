@@ -7,6 +7,7 @@ import { validate } from '../middlewares/validation';
 import { createStationSchema } from '../models/station.schema';
 import { apiLimiter } from '../middlewares/rateLimit';
 import { PERMISSIONS } from '../config/permissions';
+import { checkStationLimit } from '../middlewares/planLimits';
 
 const router = Router();
 
@@ -90,7 +91,8 @@ router.post(
   '/',
   [
     hasPermission(PERMISSIONS.MANAGE_STATIONS),
-    validate(createStationSchema)
+    validate(createStationSchema),
+    checkStationLimit
   ],
   stationController.createStation
 );
