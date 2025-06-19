@@ -1,20 +1,23 @@
 #!/usr/bin/env ts-node
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import path from 'path';
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const DB_NAME = process.env.DB_NAME || 'fuelsync_db1';
 console.log('🧹 Cleaning database...');
 
 async function cleanDatabase() {  // Connect to postgres database to be able to drop/create our app database
   const pgPool = new Pool({
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432', 10),
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres',
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT || '5432'),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
     database: 'postgres', // Connect to default postgres database
-    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+    ssl: {
+      rejectUnauthorized: false
+    }
   });
 
   try {

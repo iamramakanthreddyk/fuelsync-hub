@@ -1,8 +1,8 @@
 // src/config/database.ts
-import { Pool } from 'pg';
 import dotenv from 'dotenv';
-
-dotenv.config();
+import path from 'path';
+import { Pool } from 'pg';
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 // Database configuration
 const pool = new Pool({
