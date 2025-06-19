@@ -8,19 +8,22 @@ Your goal is to improve, extend, or debug the project *without breaking seed log
 
 ---
 
-## 🤖 AGENT SETUP (Start Here)
+## 🤖 MANDATORY AGENT SETUP
 
-**No .env files needed - Use environment variables directly:**
+**⚠️ CRITICAL: You MUST use your own local database. DO NOT connect to external/production databases.**
 
+### Step 1: Start Your Own Database
 ```bash
-# 1. Start local database
-docker run --name fuelsync-db -p 5432:5432 \
+# Start PostgreSQL container (REQUIRED)
+docker run --name fuelsync-agent-db -p 5432:5432 \
   -e POSTGRES_DB=fuelsync_dev \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=postgres \
   -d postgres:13
+```
 
-# 2. Set environment variables
+### Step 2: Set Environment Variables (REQUIRED)
+```bash
 export DB_HOST=localhost
 export DB_PORT=5432
 export DB_NAME=fuelsync_dev
@@ -28,10 +31,18 @@ export DB_USER=postgres
 export DB_PASSWORD=postgres
 export DB_SSL=false
 export JWT_SECRET=agent-jwt-secret
+export PORT=3001
+export NODE_ENV=development
+```
 
-# 3. Setup and run
-npm install && cd backend && npm install && cd ../frontend && npm install && cd ..
-cd backend && npm run db:setup && cd ..
+### Step 3: Install and Setup
+```bash
+npm install
+cd backend && npm install
+cd ../frontend && npm install
+cd ../backend
+npm run db:setup
+cd ..
 npm run dev
 ```
 
@@ -39,32 +50,76 @@ npm run dev
 
 ---
 
-## 📁 Docs Structure (Ref: `/docs`)
+## 🚨 AGENT REQUIREMENTS
+
+### Database Rules
+- ✅ **MUST** use local PostgreSQL container
+- ✅ **MUST** set environment variables (no .env files)
+- ❌ **NEVER** connect to external/Azure/production databases
+- ❌ **NEVER** rely on existing .env files
+
+### Setup Rules
+- ✅ **MUST** start your own database first
+- ✅ **MUST** verify database connection before proceeding
+- ✅ **MUST** use provided environment variables
+- ❌ **NEVER** assume database exists
+- ❌ **NEVER** skip database setup
+
+---
+
+## 📁 Reference Documentation
 
 | File                | Purpose                                               |
 |---------------------|-------------------------------------------------------|
 | ARCHITECTURE.md     | Hierarchy of roles, data flow, station → nozzle → sale |
 | BUSINESS_RULES.md   | Core validations: readings, deltas, fuel pricing, credit |
-| PLANS.md            | Plan limits: maxStations, maxEmployees, feature flags |
 | API.md              | All REST endpoints grouped by role/module             |
-| SEEDING.md          | Seed flow: superadmin → tenant → users → sales        |
 | DATABASE_GUIDE.md   | DB tables, key constraints, example queries            |
-| TROUBLESHOOTING.md  | Known issues: seed fails, FK errors, plan bugs        |
-| AUTH.md             | JWT structure, role-based guards                      |
-| ROLES.md            | Role logic & `user_stations` relationship             |
-
-> Start your reasoning from `BUSINESS_RULES.md` for any core logic.  
-> Refer to `SEEDING.md` to safely test changes and run `npm run db:reset`.
 
 ---
 
-## ✅ ALLOWED TASKS
+## 🔧 Agent Commands
 
-- Add API routes (must match REST pattern and be role-protected)
-- Edit migrations (must be safe and included in schema docs)
-- Add plan or role guards (must use middleware)
-- Update seed data (must preserve logic described in SEEDING.md)
-- Suggest ERD improvements (see ERD.md or mermaid blocks)
+All commands require environment variables to be set first:
+
+```bash
+# Database operations
+npm run db setup    # Complete setup
+npm run db check    # Test connection
+npm run db fix      # Fix relationships
+npm run db reset    # Clean slate
+
+# Development
+npm run dev         # Start both servers
+```
+
+---
+
+## ✅ Verification Checklist
+
+Before starting work, verify:
+- [ ] PostgreSQL container is running
+- [ ] Environment variables are set
+- [ ] Database connection works: `npm run db check`
+- [ ] Application starts: `npm run dev`
+- [ ] Login works: http://localhost:3000
+
+---
+
+## 🚨 CRITICAL WARNINGS
+
+### DO NOT:
+- Connect to external databases
+- Use production credentials
+- Skip database setup
+- Rely on .env files
+- Assume existing setup
+
+### ALWAYS:
+- Start your own database
+- Set environment variables
+- Verify setup before coding
+- Use local development only
 
 ---
 
@@ -73,56 +128,14 @@ npm run dev
 1. Do **not** insert into `sales.amount` — it is auto-calculated
 2. Every station must belong to a tenant, and have a linked owner
 3. `user_stations` defines access — always check role before action
-4. If modifying pricing, validate price history logic (see fuel-pricing.md)
+4. If modifying pricing, validate price history logic
 5. Don't hardcode IDs — use UUID and match seeded schema
-
----
-
-## 🔧 Agent Commands
-
-All commands use environment variables (no .env files):
-
-```bash
-# Database
-npm run db setup    # Complete setup
-npm run db check    # Test connection
-npm run db fix      # Fix relationships
-npm run db reset    # Clean slate
-
-# Development  
-npm run dev         # Start both servers
-```
-
----
-
-## 🚨 Testing Strategy
-
-**Use local database only:**
-
-```bash
-# Test database (port 5433 to avoid conflicts)
-docker run --name fuelsync-test -p 5433:5432 \
-  -e POSTGRES_DB=fuelsync_test \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -d postgres:13
-
-# Set test environment
-export DB_PORT=5433 DB_NAME=fuelsync_test
-
-# Run tests
-npm run db:setup && npm test
-```
-
-**Do not connect to production Azure database!**
 
 ---
 
 ## ✅ READY TO BEGIN
 
-Start by scanning:
+Only proceed after completing the mandatory setup above. Start by scanning:
 - `API.md` for missing endpoints
 - `BUSINESS_RULES.md` for undocumented edge cases
-- `TROUBLESHOOTING.md` for fixes you can automate
-
-Save all work to `CHANGELOG_AI.md` if you're making large changes.
+- `DATABASE_GUIDE.md` for schema understanding

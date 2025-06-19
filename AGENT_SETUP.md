@@ -1,106 +1,80 @@
-# 🤖 Agent Setup Guide - FuelSync Hub
+# 🤖 AGENT SETUP - FuelSync Hub
 
-**For AI agents, automated systems, and headless environments**
+**MANDATORY INSTRUCTIONS FOR AI AGENTS AND AUTOMATED SYSTEMS**
 
-## 🎯 Quick Agent Setup (No .env files needed)
+## 🚨 CRITICAL REQUIREMENTS
 
-### 1. Start Local Database
+### ⚠️ YOU MUST USE YOUR OWN DATABASE
+- **DO NOT** connect to external databases
+- **DO NOT** use production credentials  
+- **DO NOT** rely on existing .env files
+- **DO NOT** assume database exists
+
+### ✅ YOU MUST SETUP YOUR OWN ENVIRONMENT
+- **MUST** start local PostgreSQL container
+- **MUST** set environment variables
+- **MUST** verify setup before proceeding
+
+---
+
+## 🔧 MANDATORY SETUP STEPS
+
+### 1. Start Your Database (REQUIRED)
 ```bash
-# Start PostgreSQL container
-docker run --name fuelsync-db -p 5432:5432 \
+# This creates YOUR database - do not skip
+docker run --name fuelsync-agent-db -p 5432:5432 \
   -e POSTGRES_DB=fuelsync_dev \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=postgres \
   -d postgres:13
 
-# Wait for database to be ready
+# Wait for database to start
 sleep 5
 ```
 
-### 2. Set Environment Variables
+### 2. Set Environment Variables (REQUIRED)
 ```bash
+# Copy these exact commands
 export DB_HOST=localhost
 export DB_PORT=5432
 export DB_NAME=fuelsync_dev
 export DB_USER=postgres
 export DB_PASSWORD=postgres
 export DB_SSL=false
+export JWT_SECRET=agent-jwt-secret
 export PORT=3001
 export NODE_ENV=development
-export JWT_SECRET=agent-jwt-secret-key
-export JWT_EXPIRES_IN=24h
 ```
 
-### 3. Setup and Run
+### 3. Install Dependencies (REQUIRED)
 ```bash
-# Install dependencies
 npm install
 cd backend && npm install
 cd ../frontend && npm install
 cd ..
+```
 
-# Setup database (uses environment variables)
+### 4. Setup Database (REQUIRED)
+```bash
 cd backend
 npm run db:setup
+cd ..
+```
 
-# Start application
+### 5. Start Application (REQUIRED)
+```bash
 npm run dev
 ```
 
-## 🔧 Agent-Friendly Commands
+---
 
-All commands work with environment variables (no .env files):
+## ✅ VERIFICATION
 
-```bash
-# Database operations
-npm run db setup    # Complete setup
-npm run db check    # Test connection  
-npm run db fix      # Fix relationships
-npm run db reset    # Clean slate
-
-# Development
-npm run dev         # Start both servers
-```
-
-## 🎯 Default Access
-
-After setup, use these credentials:
-- **URL**: http://localhost:3000
-- **Login**: owner@demofuel.com / password123
-
-## 🐳 Docker Alternative
-
-For completely isolated setup:
+After setup, verify these work:
 
 ```bash
-# Create docker-compose.yml
-cat > docker-compose.yml << EOF
-version: '3.8'
-services:
-  postgres:
-    image: postgres:13
-    environment:
-      POSTGRES_DB: fuelsync_dev
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
-EOF
-
-# Start database
-docker-compose up -d
-
-# Set environment and run
-export DB_HOST=localhost DB_PORT=5432 DB_NAME=fuelsync_dev DB_USER=postgres DB_PASSWORD=postgres DB_SSL=false
-npm run db:setup
-```
-
-## ✅ Verification
-
-Check if setup worked:
-```bash
-# Test database
-npm run db:check
+# Test database connection
+cd backend && npm run db:check
 
 # Test API
 curl http://localhost:3001/api/health
@@ -109,9 +83,60 @@ curl http://localhost:3001/api/health
 curl http://localhost:3000
 ```
 
-## 🚨 Agent Notes
+**Login**: http://localhost:3000
+- Email: owner@demofuel.com
+- Password: password123
 
-- **No .env files required** - All configuration via environment variables
-- **Self-contained** - Starts own database, no external dependencies
-- **Automated** - All commands work headlessly
-- **Predictable** - Same setup every time
+---
+
+## 🚨 AGENT COMPLIANCE
+
+### BEFORE YOU START CODING:
+1. ✅ Database container is running
+2. ✅ Environment variables are set
+3. ✅ `npm run db:check` passes
+4. ✅ Application starts successfully
+5. ✅ Login works in browser
+
+### IF SETUP FAILS:
+```bash
+# Reset everything
+docker stop fuelsync-agent-db
+docker rm fuelsync-agent-db
+
+# Start over from step 1
+```
+
+---
+
+## 🔧 AVAILABLE COMMANDS
+
+Once setup is complete:
+
+```bash
+# Database operations
+npm run db setup    # Complete setup
+npm run db check    # Test connection
+npm run db fix      # Fix relationships
+npm run db reset    # Reset to clean state
+
+# Development
+npm run dev         # Start both servers
+npm run dev:backend # Backend only
+npm run dev:frontend # Frontend only
+```
+
+---
+
+## 🎯 SUCCESS CRITERIA
+
+You have successfully set up when:
+- ✅ PostgreSQL container is running on port 5432
+- ✅ Environment variables are configured
+- ✅ Database schema is created
+- ✅ Seed data is loaded
+- ✅ Frontend accessible at http://localhost:3000
+- ✅ Backend API accessible at http://localhost:3001
+- ✅ Login works with provided credentials
+
+**Only proceed with development tasks after achieving all success criteria.**
