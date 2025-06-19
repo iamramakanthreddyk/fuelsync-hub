@@ -43,9 +43,9 @@ Each tenant has:
 
 1 Owner (role = owner)
 
-1 Station
+2 Stations
 
-2 Pumps → 2 Nozzles per pump
+3 Pumps → 2 Nozzles per pump
 
 3 Users (1 manager, 2 attendants)
 
