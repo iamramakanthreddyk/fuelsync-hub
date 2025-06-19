@@ -35,7 +35,6 @@
     "db:setup": "ts-node db/setup-db.ts && ts-node db/fixed-seed.ts && ts-node db/fix-tenant-id.ts && ts-node db/setup-admin.ts && ts-node db/seed-admin.ts && ts-node db/apply-validation-triggers.ts && ts-node db/seed-simple.ts && ts-node db/check-stations.ts && ts-node db/fix-user-stations.ts",
     "db:reset": "ts-node db/setup-db.ts && ts-node db/fixed-seed.ts && ts-node db/fix-tenant-id.ts && ts-node db/setup-admin.ts && ts-node db/seed-admin.ts && ts-node db/apply-validation-triggers.ts && ts-node db/seed-simple.ts && ts-node db/check-stations.ts && ts-node db/fix-user-stations.ts",
     "db:migrate": "ts-node db/migrate.ts",
-    "db:run-migrations": "ts-node db/run-migrations.ts",
     "db:rollback": "ts-node db/migrate.ts --rollback",
     "db:status": "ts-node db/migrate.ts --status",
     "test": "jest",

@@ -2,20 +2,14 @@
 
 ## Database Management
 
-### Migrations
-Migrations are versioned and run in order. Create new migrations in `backend/db/migrations/`:
+### Database Setup
+The full schema lives in `backend/db/schema.sql`. Use the provided scripts to
+apply and manage the database:
 
-```sql
--- Example: 001_init_schema.sql
-CREATE TYPE user_role AS ENUM ('superadmin', 'owner', 'manager', 'employee');
-...
-```
-
-### Running Migrations
 ```bash
-npm run db:migrate   # Run pending migrations
+npm run db:migrate   # Run pending migrations (if any)
 npm run db:rollback  # Rollback last batch
-npm run db:reset    # Reset and reseed database
+npm run db:reset     # Recreate schema and seed data
 ```
 
 ## API Development

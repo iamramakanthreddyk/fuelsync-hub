@@ -8,16 +8,15 @@
 - [FuelSync Hub - Implementation Plan](./FuelSync%20Hub%20-%20Implementation%20Plan)
 - [erp.md](./erp.md): Plan/feature matrix
 
-## Migrations
-- [backend/db/migrations/01_public_schema.sql](../../backend/db/migrations/01_public_schema.sql): Public/global tables
-- [backend/db/migrations/02_tenant_schema_template.sql](../../backend/db/migrations/02_tenant_schema_template.sql): Per-tenant schema
+## Database Schema
+- [backend/db/schema.sql](../../backend/db/schema.sql): Consolidated database schema
 
 ## Key Flows
 - Sales recording, reconciliation, and plan enforcement are described in the Implementation Plan and diagrams.
 
 ## How to Reset and Seed the Database
-1. Run the clean script: `psql < backend/db/scripts/clean_db.sql`
-2. Run the seed script: `ts-node backend/db/scripts/seed.ts`
+1. Navigate to the `backend` directory.
+2. Run `npm run db:reset` to recreate the schema and seed data.
 
 ## How to Generate Diagrams
 - Use PlantUML to render `.puml` files for ERD and data flow.

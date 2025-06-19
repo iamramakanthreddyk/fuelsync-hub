@@ -4,7 +4,6 @@ cd fuelsync-hub
 
 # Create backend structure
 mkdir -p backend/src/config backend/src/middlewares backend/src/services backend/src/controllers backend/src/routes backend/src/models backend/src/utils
-mkdir -p backend/db/migrations backend/db/scripts
 
 # Create frontend structure
 mkdir -p frontend/src/components/layout frontend/src/pages/auth frontend/src/pages/dashboard frontend/src/pages/stations frontend/src/pages/sales frontend/src/pages/reports frontend/src/styles frontend/src/utils

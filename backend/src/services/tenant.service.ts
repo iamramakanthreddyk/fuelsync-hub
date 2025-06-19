@@ -1,6 +1,4 @@
 import pool from '../config/database';
-import fs from 'fs';
-import path from 'path';
 import bcrypt from 'bcrypt';
 
 export const createTenant = async (
@@ -27,13 +25,8 @@ export const createTenant = async (
     );
     const schemaName = schemaResult.rows[0].schema_name;
 
-    // Apply schema template
-    const templateSQL = fs.readFileSync(
-      path.join(__dirname, '../../db/migrations/02_tenant_schema_template.sql'),
-      'utf8'
-    );
+    // Switch to the tenant schema
     await client.query(`SET search_path TO ${schemaName}`);
-    await client.query(templateSQL);
 
     // Create owner user
     const passwordHash = await bcrypt.hash(ownerPassword, 10);

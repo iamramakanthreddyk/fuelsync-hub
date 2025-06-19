@@ -8,7 +8,7 @@ try {
     
     # Run database initialization
     Write-Host "📊 Initializing database..." -ForegroundColor Yellow
-    npx ts-node db/scripts/init-db.ts
+    npx ts-node db/setup-db.ts
     
     if ($LASTEXITCODE -eq 0) {
         Write-Host "✅ Database setup completed successfully!" -ForegroundColor Green

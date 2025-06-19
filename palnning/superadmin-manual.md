@@ -22,10 +22,10 @@ This guide is for SuperAdmins responsible for maintaining, monitoring, and scali
   cd backend
   npm run db:seed
   ```
-- **Clean Database:**
+- **Reset Database:**
   ```sh
   cd backend
-  psql < db/scripts/clean_db.sql
+  npm run db:reset
   ```
 - **Migrate Database:**
   ```sh
@@ -76,7 +76,7 @@ This guide is for SuperAdmins responsible for maintaining, monitoring, and scali
 ---
 
 ## Troubleshooting
-- **Database Issues:** Use `clean_db.sql` and `seed.ts` for resets in dev/test.
+- **Database Issues:** Use `npm run db:reset` for a fresh schema and seed data in dev/test.
 - **API Issues:** Check Swagger UI and OpenAPI spec for endpoint details.
 - **Permission/Plan Issues:** Review `planConfig.ts` and middleware for enforcement logic.
 
