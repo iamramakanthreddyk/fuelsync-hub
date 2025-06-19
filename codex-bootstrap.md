@@ -55,3 +55,16 @@ Start by scanning:
 - `TROUBLESHOOTING.md` for fixes you can automate
 
 Save all work to `CHANGELOG_AI.md` if you're making large changes.
+
+
+## 🔬 Testing Strategy
+
+Before running tests or migrations:
+
+- Use `backend/.env.test`
+- Point DB to `fuelsync_test` (Docker preferred)
+- See `docs/TESTING.md` for setup
+
+Do not connect to `fuelsync-server.postgres.database.azure.com` — it's production!
+
+See [`docs/TESTING.md`](./TESTING.md) for setup instructions.
