@@ -9,6 +9,7 @@ let authToken: string;
 let stationId: string;
 let pumpId: string;
 let nozzleId: string;
+let creditorId: string;
 
 describe('Sales API', () => {
   // Setup: get auth token, create station, pump, and nozzle
@@ -58,7 +59,7 @@ describe('Sales API', () => {
       });
     
     nozzleId = nozzleRes.body.id;
-    
+
     // Set fuel price
     await request(app)
       .post('/api/fuel-prices')
@@ -69,6 +70,14 @@ describe('Sales API', () => {
         pricePerUnit: 3.50,
         effectiveFrom: new Date().toISOString()
       });
+
+    // Create a creditor for credit sales tests
+    const creditorRes = await request(app)
+      .post('/api/creditors')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ partyName: 'Test Creditor' });
+
+    creditorId = creditorRes.body.data?.id || creditorRes.body.id;
   });
 
   // Close database connection after all tests
@@ -107,14 +116,51 @@ describe('Sales API', () => {
         nozzleId
         // Missing cumulativeReading and payment info
       };
-      
+
       const res = await request(app)
         .post('/api/sales')
         .set('Authorization', `Bearer ${authToken}`)
         .send(incompleteSale);
-      
+
       expect(res.status).toBe(400);
       expect(res.body).toHaveProperty('message');
+    });
+
+    it('should create a credit sale with creditor', async () => {
+      const saleData = {
+        stationId,
+        nozzleId,
+        cumulativeReading: 1020,
+        cashReceived: 0,
+        creditGiven: 35,
+        creditPartyId: creditorId
+      };
+
+      const res = await request(app)
+        .post('/api/sales')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(saleData);
+
+      expect(res.status).toBe(201);
+      expect(res.body).toHaveProperty('creditPartyId', creditorId);
+    });
+
+    it('should fail for invalid creditor id', async () => {
+      const invalidSale = {
+        stationId,
+        nozzleId,
+        cumulativeReading: 1030,
+        cashReceived: 0,
+        creditGiven: 40,
+        creditPartyId: '00000000-0000-0000-0000-000000000000'
+      };
+
+      const res = await request(app)
+        .post('/api/sales')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(invalidSale);
+
+      expect(res.status).not.toBe(201);
     });
   });
 

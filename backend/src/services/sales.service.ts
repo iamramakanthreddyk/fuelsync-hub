@@ -75,10 +75,12 @@ export const createSale = async (
       paymentMethod = 'credit';
     }
     
+    const appliedCreditPartyId = creditGiven > 0 ? creditPartyId : null;
+
     // Insert sale record
     const saleResult = await client.query(
       `INSERT INTO sales (
-        station_id, nozzle_id, user_id, sale_volume, cumulative_reading, 
+        station_id, nozzle_id, user_id, sale_volume, cumulative_reading,
         previous_reading, fuel_price, amount, cash_received, credit_given,
         payment_method, credit_party_id, status, notes
       )
@@ -87,7 +89,7 @@ export const createSale = async (
       [
         stationId, nozzleId, userId, calculatedSaleVolume, cumulativeReading,
         previousReading, fuelPrice, amount, cashReceived, creditGiven,
-        paymentMethod, creditPartyId, 'posted', notes
+        paymentMethod, appliedCreditPartyId, 'posted', notes
       ]
     );
     
@@ -105,12 +107,12 @@ export const createSale = async (
     );
     
     // If credit given, update creditor
-    if (creditGiven > 0 && creditPartyId) {
+    if (creditGiven > 0 && appliedCreditPartyId) {
       await client.query(
         `UPDATE creditors
          SET running_balance = running_balance + $1, last_updated_at = NOW()
          WHERE id = $2`,
-        [creditGiven, creditPartyId]
+        [creditGiven, appliedCreditPartyId]
       );
     }
     
