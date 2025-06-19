@@ -14,6 +14,16 @@ This guide helps resolve common issues with FuelSync Hub.
 ```bash
 # Unix/Linux/macOS
 echo $DB_HOST $DB_PORT $DB_NAME $DB_USER
+1. **Check your environment variables**:
+   Make sure your database connection parameters are correct:
+   ```
+   DB_HOST=fuelsync-server.postgres.database.azure.com
+   DB_PORT=5432
+   DB_NAME=fuelsync_db1
+   DB_USER=fueladmin
+   DB_PASSWORD=your_password
+   DB_SSL=true
+   ```
 
 # Windows PowerShell
 echo $env:DB_HOST $env:DB_PORT $env:DB_NAME $env:DB_USER

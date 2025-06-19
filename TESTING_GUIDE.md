@@ -22,7 +22,12 @@ This guide provides step-by-step instructions for testing the FuelSync Hub platf
    ```
 3. Set up environment variables:
    ```bash
-   cp .env.example .env
+   export DB_HOST=localhost
+   export DB_PORT=5432
+   export DB_NAME=test_fuelsync
+   export DB_USER=postgres
+   export DB_PASSWORD=postgres
+   export DB_SSL=false
    ```
 4. Run database migrations and seed data:
    ```bash
@@ -411,7 +416,7 @@ This script will attempt to log in with each user type and display the results.
 **Solution**:
 1. Check the actual database schema:
    ```bash
-   ts-node -e "import { Pool } from 'pg'; import dotenv from 'dotenv'; import path from 'path'; dotenv.config({ path: path.resolve(__dirname, '.env') }); const pool = new Pool({ host: process.env.DB_HOST, port: parseInt(process.env.DB_PORT || '5432'), user: process.env.DB_USER, password: process.env.DB_PASSWORD, database: process.env.DB_NAME, ssl: { rejectUnauthorized: false } }); async function checkSchema() { try { const client = await pool.connect(); try { const result = await client.query('SELECT column_name FROM information_schema.columns WHERE table_name = \'TABLE_NAME\' ORDER BY ordinal_position'); console.log('TABLE_NAME columns:'); result.rows.forEach(row => console.log(row.column_name)); } finally { client.release(); } await pool.end(); } catch (err) { console.error('Error:', err); } } checkSchema();"
+   ts-node -e "import { Pool } from 'pg'; const pool = new Pool({ host: process.env.DB_HOST, port: parseInt(process.env.DB_PORT || '5432'), user: process.env.DB_USER, password: process.env.DB_PASSWORD, database: process.env.DB_NAME, ssl: { rejectUnauthorized: false } }); async function checkSchema() { try { const client = await pool.connect(); try { const result = await client.query('SELECT column_name FROM information_schema.columns WHERE table_name = \'TABLE_NAME\' ORDER BY ordinal_position'); console.log('TABLE_NAME columns:'); result.rows.forEach(row => console.log(row.column_name)); } finally { client.release(); } await pool.end(); } catch (err) { console.error('Error:', err); } } checkSchema();"
    ```
    Replace `TABLE_NAME` with the name of the table you want to check.
 
