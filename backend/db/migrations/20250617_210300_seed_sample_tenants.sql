@@ -200,7 +200,6 @@ INSERT INTO pumps (
 -- Create nozzles for each pump
 INSERT INTO nozzles (
   id,
-  number,
   fuel_type,
   pump_id,
   active,
@@ -209,7 +208,6 @@ INSERT INTO nozzles (
 ) VALUES
 (
   'jjjjjjjj-jjjj-jjjj-jjjj-jjjjjjjjjjjj',
-  1,
   'petrol',
   'gggggggg-gggg-gggg-gggg-gggggggggggg',
   true,
@@ -218,7 +216,6 @@ INSERT INTO nozzles (
 ),
 (
   'kkkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk',
-  2,
   'diesel',
   'gggggggg-gggg-gggg-gggg-gggggggggggg',
   true,
@@ -227,7 +224,6 @@ INSERT INTO nozzles (
 ),
 (
   'llllllll-llll-llll-llll-llllllllllll',
-  1,
   'petrol',
   'hhhhhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh',
   true,
@@ -236,7 +232,6 @@ INSERT INTO nozzles (
 ),
 (
   'mmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm',
-  2,
   'diesel',
   'hhhhhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh',
   true,
@@ -245,7 +240,6 @@ INSERT INTO nozzles (
 ),
 (
   'nnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn',
-  1,
   'petrol',
   'iiiiiiii-iiii-iiii-iiii-iiiiiiiiiiii',
   true,
@@ -254,7 +248,6 @@ INSERT INTO nozzles (
 ),
 (
   'oooooooo-oooo-oooo-oooo-oooooooooooo',
-  2,
   'diesel',
   'iiiiiiii-iiii-iiii-iiii-iiiiiiiiiiii',
   true,
