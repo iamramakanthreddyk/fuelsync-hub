@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import * as creditorService from '../services/creditor.service';
 
 interface CreditorRequestBody {
+  stationId: string;
   partyName: string;
   contactPerson?: string;
   contactPhone?: string;
@@ -21,6 +22,7 @@ interface PaymentRequestBody {
 export const createCreditor = async (req: Request, res: Response) => {
   try {
     const {
+      stationId,
       partyName,
       contactPerson,
       contactPhone,
@@ -50,6 +52,7 @@ export const createCreditor = async (req: Request, res: Response) => {
     
     const creditor = await creditorService.createCreditor(
       schemaName,
+      stationId,
       partyName,
       contactPerson,
       contactPhone,

@@ -20,8 +20,11 @@ const router = Router();
  *           schema:
  *             type: object
  *             required:
+ *               - stationId
  *               - partyName
  *             properties:
+ *               stationId:
+ *                 type: string
  *               partyName:
  *                 type: string
  *               contactPerson:
@@ -117,6 +120,8 @@ router.get('/:id', authenticateJWT, creditorController.getCreditorById);
  *           schema:
  *             type: object
  *             properties:
+ *               stationId:
+ *                 type: string
  *               partyName:
  *                 type: string
  *               contactPerson:
