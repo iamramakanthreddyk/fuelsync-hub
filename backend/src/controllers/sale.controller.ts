@@ -9,9 +9,9 @@ export const createSale = async (req: Request, res: Response) => {
       cumulativeReading, 
       saleVolume, 
       cashReceived, 
-      creditGiven, 
-      creditPartyId, 
-      notes 
+      creditGiven,
+      creditPartyId,
+      notes
     } = req.body;
     
     // Validate required fields
@@ -19,9 +19,13 @@ export const createSale = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Station ID, nozzle ID, and cumulative reading are required' });
     }
     
-    if ((cashReceived === undefined || cashReceived === null) && 
+    if ((cashReceived === undefined || cashReceived === null) &&
         (creditGiven === undefined || creditGiven === null)) {
       return res.status(400).json({ message: 'Either cash received or credit given must be specified' });
+    }
+
+    if (creditGiven && creditGiven > 0 && !creditPartyId) {
+      return res.status(400).json({ message: 'Credit party ID is required for credit transactions' });
     }
     
     // Get schema name from middleware
@@ -42,7 +46,7 @@ export const createSale = async (req: Request, res: Response) => {
       saleVolume ? parseFloat(saleVolume.toString()) : null,
       cashReceived ? parseFloat(cashReceived.toString()) : 0,
       creditGiven ? parseFloat(creditGiven.toString()) : 0,
-      creditPartyId || null,
+      creditGiven && creditGiven > 0 ? creditPartyId || null : null,
       notes || null
     );
     
