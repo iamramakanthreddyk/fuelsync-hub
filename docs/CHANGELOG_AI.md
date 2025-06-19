@@ -20,3 +20,15 @@ You may now begin.
 - Replaced planType references with subscription_plan in DATABASE_SCHEMA.md.
 - Synced PLANS.md snippet with latest PLAN_CONFIG settings.
 - Seed script now includes station_id when creating creditors.
+
+## 2025-06-22
+- Added `/api/superadmin/stats` and `/api/docs` to API.md.
+- Linked SALES to STATIONS and USERS in ERD.
+- Documented fuel_price_history table in DATABASE_GUIDE.
+- Applied plan guard `checkStationLimit` in station routes.
+
+## 2025-06-23
+- Fixed API docs to match implemented routes
+- Updated seeding guide to reflect actual data counts
+- Documented admin_sessions and admin_settings tables
+- Added admin tables to ERD diagram

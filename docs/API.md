@@ -57,7 +57,7 @@ This document outlines the available API endpoints grouped by user roles in the 
 
 ### ⛽ Operations
 
-* `POST /api/nozzle-readings` — Submit cumulative reading
+* `POST /api/nozzles/:id/readings` — Submit cumulative reading
 * `GET /api/nozzles/:id/readings` — Get historical readings
 * `POST /api/sales/manual` — Add manual sale
 * `GET /api/sales?stationId=...` — Get sales list
@@ -72,7 +72,7 @@ This document outlines the available API endpoints grouped by user roles in the 
 
 ### 📈 Dashboards
 
-* `GET /api/dashboard/station` — Owner dashboard data
+* `GET /api/dashboard` — Owner dashboard data
 * `GET /api/reconciliations` — Daily closeout reports
 
 ---
@@ -81,11 +81,10 @@ This document outlines the available API endpoints grouped by user roles in the 
 
 > Assigned to 1+ stations by owner
 
-* `GET /api/stations/assigned` — See my stations
-* `POST /api/nozzle-readings` — Enter readings
+* `POST /api/nozzles/:id/readings` — Enter readings
 * `POST /api/sales/manual` — Add manual sale
 * `POST /api/fuel-deliveries` — Record delivery
-* `GET /api/dashboard/station` — Manager-level dashboard
+* `GET /api/dashboard` — Manager-level dashboard
 * `GET /api/employees` — List attendants at station
 
 ---
@@ -94,10 +93,8 @@ This document outlines the available API endpoints grouped by user roles in the 
 
 > Limited to daily operation tasks only
 
-* `POST /api/nozzle-readings` — Submit daily reading
+* `POST /api/nozzles/:id/readings` — Submit daily reading
 * `POST /api/sales/manual` — Add sale from reading
-* `GET /api/my-station/readings` — View my reading history
-* `GET /api/my-sales` — My sales summary
 
 ---
 ## 🧾 Tender & Shift Routes
@@ -118,11 +115,6 @@ This document outlines the available API endpoints grouped by user roles in the 
 * `GET /api/fuel-prices/history` — Price history _(owner/manager)_
 * `GET /api/fuel-prices/:id` — Fuel price by ID _(owner/manager)_
 * `GET /api/fuel-prices/at-date` — Price at a specific date _(owner/manager)_
-
-## 🛢 Inventory Endpoints
-
-* `GET /api/inventory?stationId=...` — Current inventory levels
-* `POST /api/inventory/delivery` — Record fuel delivery
 
 ## 👥 User-Station Assignment
 
@@ -149,6 +141,8 @@ This document outlines the available API endpoints grouped by user roles in the 
 * `POST /api/direct-admin-auth/login` — CLI login
 * `GET /api/admin/settings` — View platform settings _(superadmin)_
 * `PUT /api/admin/settings` — Update platform settings _(superadmin)_
+* `GET /api/superadmin/stats` — Platform stats _(superadmin)_
+* `GET /api/docs` — Swagger UI
 
 > Most endpoints are role-protected and scoped to tenant context unless explicitly marked as SuperAdmin endpoints.
 

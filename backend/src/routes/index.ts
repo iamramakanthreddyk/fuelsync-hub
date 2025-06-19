@@ -14,7 +14,7 @@ import adminSettingsRoutes from './admin-settings.routes';
 import directAdminAuthRoutes from './direct-admin-auth.routes';
 import analyticsRoutes from './analytics.routes';
 import planRoutes from './plan.routes';
-import nozzleReadingRoutes from './nozzle-reading.routes';
+import nozzleReadingRoutes from './nozzleReading.routes';
 import dashboardRoutes from './dashboard.routes';
 import creditorRoutes from './creditor.routes';
 import tenderRoutes from './tender.routes';
