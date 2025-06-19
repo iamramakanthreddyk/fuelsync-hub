@@ -206,6 +206,12 @@ fuelsync-hub/
 
 This project is licensed under the ISC License.
 
+🧠 Codex Setup Note
+
+If running in Codex or CI environments, the `setup.sh` script will automatically use a test-safe, in-memory PostgreSQL configuration:
+
+
+
 ## 🆘 Support
 
 For issues and questions:
