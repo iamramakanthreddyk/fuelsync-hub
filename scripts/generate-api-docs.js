@@ -12,5 +12,5 @@ for (const [path, methods] of Object.entries(openapi.paths)) {
   }
 }
 
-fs.writeFileSync('palnning/api-summary.md', md);
+fs.writeFileSync('planning/api-summary.md', md);
 console.log('api-summary.md updated!');
