@@ -1,6 +1,7 @@
 // backend/src/controllers/dashboard.controller.ts
 import { Request, Response } from 'express';
 import { executeQuery } from '../services/db.service';
+import * as userStationService from '../services/user-station.service';
 
 // Owner/Manager dashboard KPIs and trends
 export const getDashboardData = async (req: Request, res: Response) => {
@@ -14,14 +15,41 @@ export const getDashboardData = async (req: Request, res: Response) => {
       });
     }
     
-    const { stationId } = req.query;
+    let { stationId } = req.query;
+    const userId = req.user?.id;
     
-    if (!stationId) {
-      return res.status(400).json({ 
+    if (!userId) {
+      return res.status(401).json({ 
         status: 'error',
-        code: 'MISSING_STATION_ID',
-        message: 'Station ID is required' 
+        code: 'USER_ID_MISSING',
+        message: 'User ID is required' 
       });
+    }
+    
+    // If stationId is not provided, get the first accessible station for the user
+    if (!stationId) {
+      const userStations = await userStationService.getUserAccessibleStations(schemaName, userId);
+      
+      if (userStations.length === 0) {
+        return res.status(404).json({ 
+          status: 'error',
+          code: 'NO_STATIONS_FOUND',
+          message: 'No stations found for this user' 
+        });
+      }
+      
+      stationId = userStations[0].id;
+    } else {
+      // Verify user has access to this station
+      const access = await userStationService.checkUserStationAccess(schemaName, userId, stationId as string);
+      
+      if (!access.hasAccess) {
+        return res.status(403).json({ 
+          status: 'error',
+          code: 'STATION_ACCESS_DENIED',
+          message: 'You do not have access to this station' 
+        });
+      }
     }
     
     // Get user's role
@@ -107,7 +135,7 @@ export const getDashboardData = async (req: Request, res: Response) => {
     
     // Get station details
     const stationQuery = `
-      SELECT name, address, city, state
+      SELECT id, name, address, city, state
       FROM stations
       WHERE id = $1
     `;
@@ -123,7 +151,7 @@ export const getDashboardData = async (req: Request, res: Response) => {
       ORDER BY s.name
     `;
     
-    const userStationsResult = await executeQuery(schemaName, userStationsQuery, [req.user?.id]);
+    const userStationsResult = await executeQuery(schemaName, userStationsQuery, [userId]);
     
     return res.status(200).json({
       status: 'success',
