@@ -1,4 +1,4 @@
-// backend/db/seed.ts - Consolidated seeding script
+// backend/db/seed.ts - Proper seeding with correct permissions
 import { Pool } from 'pg';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
@@ -48,6 +48,7 @@ async function seedDatabase() {
     ];
     
     const passwordHash = await bcrypt.hash('password123', 10);
+    const userIds = [];
     
     for (const user of users) {
       const userId = uuidv4();
@@ -56,18 +57,76 @@ async function seedDatabase() {
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         ON CONFLICT (email, tenant_id) DO NOTHING
       `, [userId, tenantId, user.email, passwordHash, user.role, user.firstName, user.lastName, true]);
+      
+      userIds.push({ id: userId, ...user });
     }
     
     console.log('✅ Tenant users created');
     
-    // 4. Create tenant schema
+    // 4. Create stations in PUBLIC schema
+    const stationId = uuidv4();
+    await client.query(`
+      INSERT INTO stations (id, tenant_id, name, address, city, state, zip, contact_phone)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      ON CONFLICT DO NOTHING
+    `, [stationId, tenantId, 'Main Station', '123 Main St', 'Anytown', 'ST', '12345', '555-1234']);
+    
+    // 5. Create pumps in PUBLIC schema
+    const pumpId = uuidv4();
+    await client.query(`
+      INSERT INTO pumps (id, station_id, name, serial_number)
+      VALUES ($1, $2, $3, $4)
+      ON CONFLICT DO NOTHING
+    `, [pumpId, stationId, 'Pump 1', 'SN-001']);
+    
+    // 6. Create nozzles in PUBLIC schema
+    const fuelTypes = ['petrol', 'diesel'];
+    const nozzleIds = [];
+    
+    for (const fuelType of fuelTypes) {
+      const nozzleId = uuidv4();
+      await client.query(`
+        INSERT INTO nozzles (id, pump_id, fuel_type)
+        VALUES ($1, $2, $3)
+        ON CONFLICT DO NOTHING
+      `, [nozzleId, pumpId, fuelType]);
+      
+      nozzleIds.push(nozzleId);
+      
+      // Add fuel prices in PUBLIC schema
+      await client.query(`
+        INSERT INTO fuel_price_history (station_id, fuel_type, price_per_unit)
+        VALUES ($1, $2, $3)
+        ON CONFLICT DO NOTHING
+      `, [stationId, fuelType, fuelType === 'petrol' ? 4.50 : 4.20]);
+    }
+    
+    console.log('✅ Station, pump, and nozzles created in public schema');
+    
+    // 7. Create user-station assignments in PUBLIC schema
+    for (const user of userIds) {
+      let stationRole = 'attendant';
+      if (user.role === 'owner') stationRole = 'owner';
+      if (user.role === 'manager') stationRole = 'manager';
+      
+      await client.query(`
+        INSERT INTO user_stations (id, user_id, station_id, role, active)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (user_id, station_id) DO UPDATE
+        SET role = $4, active = $5, updated_at = NOW()
+      `, [uuidv4(), user.id, stationId, stationRole, true]);
+      
+      console.log(`✅ Assigned user ${user.email} to station as ${stationRole}`);
+    }
+    
+    // 8. Create tenant schema and replicate data
     const schemaName = `tenant_${tenantId.replace(/-/g, '_')}`;
     await client.query(`CREATE SCHEMA IF NOT EXISTS ${schemaName}`);
     
-    // 5. Create tables in tenant schema
+    // Create tables in tenant schema
     const createTablesSQL = `
       CREATE TABLE IF NOT EXISTS ${schemaName}.stations (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        id UUID PRIMARY KEY,
         tenant_id UUID NOT NULL,
         name VARCHAR(255) NOT NULL,
         address TEXT,
@@ -81,8 +140,8 @@ async function seedDatabase() {
       );
       
       CREATE TABLE IF NOT EXISTS ${schemaName}.pumps (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        station_id UUID NOT NULL REFERENCES ${schemaName}.stations(id),
+        id UUID PRIMARY KEY,
+        station_id UUID NOT NULL,
         name VARCHAR(100) NOT NULL,
         serial_number VARCHAR(100),
         installation_date DATE DEFAULT CURRENT_DATE,
@@ -92,19 +151,18 @@ async function seedDatabase() {
       );
       
       CREATE TABLE IF NOT EXISTS ${schemaName}.nozzles (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        pump_id UUID NOT NULL REFERENCES ${schemaName}.pumps(id),
+        id UUID PRIMARY KEY,
+        pump_id UUID NOT NULL,
         fuel_type VARCHAR(50) NOT NULL,
-        color VARCHAR(50),
         active BOOLEAN DEFAULT true,
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       );
       
       CREATE TABLE IF NOT EXISTS ${schemaName}.user_stations (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        id UUID PRIMARY KEY,
         user_id UUID NOT NULL,
-        station_id UUID NOT NULL REFERENCES ${schemaName}.stations(id),
+        station_id UUID NOT NULL,
         role VARCHAR(50) NOT NULL,
         active BOOLEAN DEFAULT true,
         created_at TIMESTAMP DEFAULT NOW(),
@@ -112,78 +170,62 @@ async function seedDatabase() {
         UNIQUE(user_id, station_id)
       );
       
-      CREATE TABLE IF NOT EXISTS ${schemaName}.sales (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        nozzle_id UUID NOT NULL REFERENCES ${schemaName}.nozzles(id),
-        user_id UUID NOT NULL,
-        sale_volume DECIMAL(10,3) NOT NULL,
-        fuel_price DECIMAL(10,2) NOT NULL,
-        amount DECIMAL(10,2) GENERATED ALWAYS AS (sale_volume * fuel_price) STORED,
-        payment_method VARCHAR(20) NOT NULL CHECK (payment_method IN ('cash', 'card', 'upi', 'credit')),
-        status VARCHAR(20) DEFAULT 'posted' CHECK (status IN ('posted', 'voided', 'pending')),
-        recorded_at TIMESTAMP DEFAULT NOW(),
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
-      );
-      
       CREATE TABLE IF NOT EXISTS ${schemaName}.fuel_price_history (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        station_id UUID NOT NULL REFERENCES ${schemaName}.stations(id),
+        id UUID PRIMARY KEY,
+        station_id UUID NOT NULL,
         fuel_type VARCHAR(50) NOT NULL,
         price_per_unit DECIMAL(10,2) NOT NULL,
         effective_from TIMESTAMP DEFAULT NOW(),
         effective_to TIMESTAMP,
         created_at TIMESTAMP DEFAULT NOW()
       );
-      
-      CREATE TABLE IF NOT EXISTS ${schemaName}.creditors (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        party_name VARCHAR(255) NOT NULL,
-        contact_phone VARCHAR(20),
-        email VARCHAR(255),
-        credit_limit DECIMAL(12,2) DEFAULT 0,
-        running_balance DECIMAL(12,2) DEFAULT 0,
-        last_updated_at TIMESTAMP DEFAULT NOW(),
-        active BOOLEAN DEFAULT true,
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
-      );
     `;
     
     await client.query(createTablesSQL);
-    console.log('✅ Tenant schema and tables created');
     
-    // 6. Create sample station
-    const stationId = uuidv4();
+    // Copy data to tenant schema
     await client.query(`
       INSERT INTO ${schemaName}.stations (id, tenant_id, name, address, city, state, zip, contact_phone)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      ON CONFLICT (id) DO NOTHING
     `, [stationId, tenantId, 'Main Station', '123 Main St', 'Anytown', 'ST', '12345', '555-1234']);
     
-    // 7. Create pump and nozzles
-    const pumpId = uuidv4();
     await client.query(`
       INSERT INTO ${schemaName}.pumps (id, station_id, name, serial_number)
       VALUES ($1, $2, $3, $4)
+      ON CONFLICT (id) DO NOTHING
     `, [pumpId, stationId, 'Pump 1', 'SN-001']);
     
-    const fuelTypes = ['Petrol', 'Diesel'];
-    for (const fuelType of fuelTypes) {
-      const nozzleId = uuidv4();
+    for (let i = 0; i < nozzleIds.length; i++) {
+      const fuelType = fuelTypes[i];
       await client.query(`
-        INSERT INTO ${schemaName}.nozzles (id, pump_id, fuel_type, color)
-        VALUES ($1, $2, $3, $4)
-      `, [nozzleId, pumpId, fuelType, fuelType === 'Petrol' ? 'Green' : 'Black']);
+        INSERT INTO ${schemaName}.nozzles (id, pump_id, fuel_type)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (id) DO NOTHING
+      `, [nozzleIds[i], pumpId, fuelType]);
       
-      // Add fuel prices
       await client.query(`
         INSERT INTO ${schemaName}.fuel_price_history (station_id, fuel_type, price_per_unit)
         VALUES ($1, $2, $3)
-      `, [stationId, fuelType, fuelType === 'Petrol' ? 4.50 : 4.20]);
+        ON CONFLICT DO NOTHING
+      `, [stationId, fuelType, fuelType === 'petrol' ? 4.50 : 4.20]);
     }
     
-    console.log('✅ Sample station, pump, and nozzles created');
+    // Copy user-station assignments to tenant schema
+    for (const user of userIds) {
+      let stationRole = 'attendant';
+      if (user.role === 'owner') stationRole = 'owner';
+      if (user.role === 'manager') stationRole = 'manager';
+      
+      await client.query(`
+        INSERT INTO ${schemaName}.user_stations (id, user_id, station_id, role, active)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (user_id, station_id) DO UPDATE
+        SET role = $4, active = $5, updated_at = NOW()
+      `, [uuidv4(), user.id, stationId, stationRole, true]);
+    }
     
+    console.log('✅ Tenant schema created and data replicated');
     console.log('🎉 Database seeding completed successfully!');
     
   } catch (error) {

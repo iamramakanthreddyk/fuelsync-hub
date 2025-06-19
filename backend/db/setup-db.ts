@@ -1,8 +1,10 @@
 import { Pool } from 'pg';
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
 
-// Log connection parameters (without password)
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
 console.log('Database connection parameters:');
 console.log(`Host: ${process.env.DB_HOST}`);
 console.log(`Port: ${process.env.DB_PORT}`);
@@ -10,14 +12,13 @@ console.log(`Database: ${process.env.DB_NAME}`);
 console.log(`User: ${process.env.DB_USER}`);
 console.log(`SSL: ${process.env.DB_SSL}`);
 
-// Database connection
 const pool = new Pool({
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT || '5432'),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
+  ssl: { rejectUnauthorized: false }
 });
 
 // Main setup function

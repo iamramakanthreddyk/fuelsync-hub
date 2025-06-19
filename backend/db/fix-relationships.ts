@@ -1,6 +1,17 @@
 // backend/db/fix-relationships.ts - Fix data relationships
 import { Pool } from 'pg';
 import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+console.log('Database connection parameters-- fix-relations>:');
+console.log(`Host: ${process.env.DB_HOST}`);
+console.log(`Port: ${process.env.DB_PORT}`);
+console.log(`Database: ${process.env.DB_NAME}`);
+console.log(`User: ${process.env.DB_USER}`);
+console.log(`SSL: ${process.env.DB_SSL}`);
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -8,9 +19,8 @@ const pool = new Pool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
+  ssl: { rejectUnauthorized: false }
 });
-
 async function fixRelationships() {
   const client = await pool.connect();
   
@@ -38,53 +48,6 @@ async function fixRelationships() {
       
       let stations = stationsResult.rows;
       
-      // Create station if none exists
-      if (stations.length === 0) {
-        const stationId = uuidv4();
-        await client.query(`
-          INSERT INTO ${schemaName}.stations (id, tenant_id, name, address, city, state, zip, contact_phone)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        `, [stationId, tenant.id, `${tenant.name} Main Station`, '123 Main St', 'Anytown', 'ST', '12345', '555-1234']);
-        
-        stations = [{ id: stationId, name: `${tenant.name} Main Station` }];
-        console.log(`Created station: ${stationId}`);
-      }
-      
-      // Ensure stations have pumps
-      for (const station of stations) {
-        const pumpsResult = await client.query(
-          `SELECT id FROM ${schemaName}.pumps WHERE station_id = $1 AND active = true`,
-          [station.id]
-        );
-        
-        if (pumpsResult.rows.length === 0) {
-          const pumpId = uuidv4();
-          await client.query(`
-            INSERT INTO ${schemaName}.pumps (id, station_id, name, serial_number, installation_date)
-            VALUES ($1, $2, $3, $4, CURRENT_DATE)
-          `, [pumpId, station.id, 'Pump 1', `SN-${Math.floor(Math.random() * 10000)}`]);
-          
-          // Create nozzles
-          const fuelTypes = ['Petrol', 'Diesel'];
-          for (const fuelType of fuelTypes) {
-            const nozzleId = uuidv4();
-            await client.query(`
-              INSERT INTO ${schemaName}.nozzles (id, pump_id, fuel_type, color)
-              VALUES ($1, $2, $3, $4)
-            `, [nozzleId, pumpId, fuelType, fuelType === 'Petrol' ? 'Green' : 'Black']);
-            
-            // Add fuel prices
-            await client.query(`
-              INSERT INTO ${schemaName}.fuel_price_history (station_id, fuel_type, price_per_unit)
-              VALUES ($1, $2, $3)
-              ON CONFLICT DO NOTHING
-            `, [station.id, fuelType, fuelType === 'Petrol' ? 4.50 : 4.20]);
-          }
-          
-          console.log(`Created pump and nozzles for station: ${station.name}`);
-        }
-      }
-      
       // Assign users to stations
       for (const user of usersResult.rows) {
         const assignmentsResult = await client.query(`
@@ -92,7 +55,7 @@ async function fixRelationships() {
           WHERE user_id = $1 AND active = true
         `, [user.id]);
         
-        if (assignmentsResult.rows.length === 0) {
+        if (assignmentsResult.rows.length === 0 && stations.length > 0) {
           const stationsToAssign = user.role === 'employee' ? [stations[0]] : stations;
           
           for (const station of stationsToAssign) {
@@ -108,7 +71,7 @@ async function fixRelationships() {
               SET role = $4, active = $5, updated_at = NOW()
             `, [assignmentId, user.id, station.id, stationRole, true]);
             
-            console.log(`Assigned user ${user.email} to station ${station.name} as ${stationRole}`);
+            console.log(`✅ Assigned user ${user.email} to station ${station.name} as ${stationRole}`);
           }
         }
       }
