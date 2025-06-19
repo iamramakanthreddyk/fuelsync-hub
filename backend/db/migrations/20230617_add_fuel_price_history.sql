@@ -1,3 +1,4 @@
+-- UP
 -- Create fuel_price_history table if it doesn't exist
 CREATE TABLE IF NOT EXISTS fuel_price_history (
     id UUID PRIMARY KEY,
@@ -40,3 +41,12 @@ CREATE TRIGGER set_fuel_price_effective_to
 AFTER INSERT ON fuel_price_history
 FOR EACH ROW
 EXECUTE FUNCTION update_fuel_price_effective_to();
+-- DOWN
+DROP TRIGGER IF EXISTS set_fuel_price_effective_to ON fuel_price_history;
+DROP FUNCTION IF EXISTS update_fuel_price_effective_to();
+DROP INDEX IF EXISTS idx_fuel_price_history_effective_range;
+DROP INDEX IF EXISTS idx_fuel_price_history_effective_from;
+DROP INDEX IF EXISTS idx_fuel_price_history_fuel_type;
+DROP INDEX IF EXISTS idx_fuel_price_history_station_id;
+DROP TABLE IF EXISTS fuel_price_history;
+

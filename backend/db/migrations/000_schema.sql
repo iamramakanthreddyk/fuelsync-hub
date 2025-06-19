@@ -1,5 +1,4 @@
-BEGIN;
-
+-- UP
 -- Drop schema and recreate fresh
 DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public;
@@ -184,4 +183,6 @@ CREATE INDEX idx_sales_recorded_at ON sales(recorded_at);
 CREATE INDEX idx_sales_status ON sales(status);
 CREATE INDEX idx_sales_payment_method ON sales(payment_method);
 
-COMMIT;
+
+-- DOWN
+DROP SCHEMA IF EXISTS public CASCADE;
