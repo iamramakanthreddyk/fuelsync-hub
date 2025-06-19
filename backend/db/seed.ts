@@ -310,6 +310,27 @@ async function seed() {
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [uuidv4(), station2Id, 'diesel', 6000, 3.3, 19800, new Date('2023-01-03'), 'Fuel Supplier A', 'INV-003', ownerId, 'Initial stock']
     );
+
+    // Create day reconciliation
+    console.log('Creating day reconciliation');
+
+    await executeQuery(
+      `INSERT INTO day_reconciliations (id, station_id, date, total_sales, cash_total, credit_total, card_total, upi_total, finalized, created_by, notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [
+        uuidv4(),
+        station1Id,
+        new Date('2023-01-01'),
+        219.45,
+        99.75,
+        119.7,
+        0,
+        0,
+        true,
+        managerId,
+        'Initial summary'
+      ]
+    );
     console.log('Seeding completed successfully!');
   } catch (error) {
     console.error('Error seeding database:', error);
