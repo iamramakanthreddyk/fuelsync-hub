@@ -1,17 +1,20 @@
 #!/usr/bin/env ts-node
 import dotenv from 'dotenv';
+import path from 'path';
 import { Pool } from 'pg';
 import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const pool = new Pool({
-  host:     process.env.DB_HOST     ?? 'localhost',
-  port:     parseInt(process.env.DB_PORT || '5432', 10),
-  user:     process.env.DB_USER     ?? 'postgres',
-  password: process.env.DB_PASSWORD ?? 'postgres',
-  database: process.env.DB_NAME     ?? 'fuelsync_db1',
-  ssl:      process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT || '5432'),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 const uuid = () => randomUUID();

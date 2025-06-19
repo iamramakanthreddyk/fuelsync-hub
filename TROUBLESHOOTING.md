@@ -129,3 +129,28 @@ Common issues with Azure PostgreSQL:
 
 6. **Verify SSL settings**:
    The current setup uses SSL with `rejectUnauthorized: false`. This should work with Azure PostgreSQL, but if you're still having issues, you might need to configure SSL differently.
+
+### Database Connection Errors (Azure)
+
+If you encounter `ENETUNREACH` or `SELF_SIGNED_CERT` errors when connecting to the database, verify that your scripts load the environment configuration correctly:
+
+```ts
+import dotenv from 'dotenv';
+import path from 'path';
+import { Pool } from 'pg';
+
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+const pool = new Pool({
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT || '5432'),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+```
+
+This pattern ensures compatibility with Azure-hosted PostgreSQL instances where SSL is enforced.

@@ -3,7 +3,8 @@ import { Pool } from 'pg';
 import fs         from 'fs';
 import path       from 'path';
 import dotenv     from 'dotenv';
-dotenv.config();
+
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const pool = new Pool({
   host: process.env.DB_HOST,
