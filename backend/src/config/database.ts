@@ -2,7 +2,11 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import { Pool } from 'pg';
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+const skipEnvLoad = process.env.CI === 'true' || process.env.CODEX_MODE === 'true' || process.env.HEADLESS === 'true';
+
+if (!skipEnvLoad) {
+  dotenv.config({ path: path.resolve(__dirname, '../.env') });
+}
 
 // Database configuration
 const pool = new Pool({
