@@ -1,10 +1,6 @@
 import { Pool } from 'pg';
 import fs from 'fs';
 import path from 'path';
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 // Log connection parameters (without password)
 console.log('Database connection parameters:');
@@ -21,7 +17,7 @@ const pool = new Pool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  ssl: { rejectUnauthorized: false }
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
 });
 
 // Main setup function

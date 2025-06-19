@@ -1,10 +1,6 @@
 // backend/db/fix-relationships.ts - Fix data relationships
 import { Pool } from 'pg';
-import dotenv from 'dotenv';
-import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const pool = new Pool({
   host: process.env.DB_HOST,

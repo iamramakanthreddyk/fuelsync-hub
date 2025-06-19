@@ -1,156 +1,243 @@
-# Troubleshooting Guide
+# FuelSync Hub - Troubleshooting Guide
 
-## Database Connection Issues
+This guide helps resolve common issues with FuelSync Hub.
 
-### Error: No pg_hba.conf entry for host "83.221.81.131", user "fueladmin", database "fuelsync_db1", no encryption
+## 🔧 Database Issues
 
-This error indicates that your PostgreSQL server is rejecting the connection from your client. This is typically due to PostgreSQL's host-based authentication configuration.
+### Connection Problems
 
-**Solution:**
+**Error**: `ECONNREFUSED` or connection timeout
 
-1. **Check your .env file**:
-   Make sure your database connection parameters are correct:
-   ```
-   DB_HOST=fuelsync-server.postgres.database.azure.com
-   DB_PORT=5432
-   DB_NAME=fuelsync_db1
-   DB_USER=fueladmin
-   DB_PASSWORD=your_password
-   DB_SSL=true
-   ```
+**Solution**:
+1. Check PostgreSQL is running
+2. Verify environment variables:
+```bash
+# Unix/Linux/macOS
+echo $DB_HOST $DB_PORT $DB_NAME $DB_USER
 
-2. **Azure PostgreSQL Firewall Rules**:
-   - Log in to the Azure Portal
-   - Navigate to your PostgreSQL server
-   - Go to "Connection security"
-   - Add your client IP address to the firewall rules
+# Windows PowerShell
+echo $env:DB_HOST $env:DB_PORT $env:DB_NAME $env:DB_USER
 
-3. **Run the connection check script**:
-   ```bash
-   npm run db:check
-   ```
-
-## Schema Creation Issues
-
-### Error: relation "creditors" does not exist
-
-This error occurs when the database is trying to reference a table that doesn't exist yet.
-
-**Solutions:**
-
-1. **Apply schema in chunks**:
-   ```bash
-   npm run db:schema:chunks
-   ```
-   This will apply the schema in smaller chunks, making it easier to identify where the issue is occurring.
-
-2. **Debug the schema**:
-   ```bash
-   npm run db:debug
-   ```
-   This will check which tables, enums, and functions exist in the database.
-
-3. **Check for circular dependencies**:
-   The error might be caused by circular dependencies between tables. Make sure tables are created in the correct order.
-
-4. **Manually create the missing table**:
-   If needed, you can manually create the missing table:
-   ```sql
-   CREATE TABLE creditors (
-       id UUID PRIMARY KEY,
-       party_name VARCHAR(255) NOT NULL,
-       contact_person VARCHAR(255),
-       contact_phone VARCHAR(20),
-       email VARCHAR(255),
-       address TEXT,
-       credit_limit DECIMAL(10,2),
-       running_balance DECIMAL(10,2) NOT NULL DEFAULT 0,
-       notes TEXT,
-       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-       last_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-   );
-   ```
-
-## Azure PostgreSQL Specific Issues
-
-The current setup uses the following configuration for Azure PostgreSQL:
-
-```typescript
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '5432'),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+# Windows CMD
+echo %DB_HOST% %DB_PORT% %DB_NAME% %DB_USER%
 ```
 
-Common issues with Azure PostgreSQL:
-
-1. **SSL is required**: Azure PostgreSQL requires SSL connections. The current setup disables certificate validation with `rejectUnauthorized: false`.
-
-2. **Firewall rules**: Azure PostgreSQL has a firewall that blocks connections from unauthorized IP addresses. Make sure your IP is added to the allowed list.
-
-3. **Username format**: Azure PostgreSQL often requires the username to be in the format `username@server-name`. Check if your DB_USER environment variable includes the server name.
-
-4. **Connection limits**: Azure PostgreSQL has connection limits based on your pricing tier. Make sure you're not exceeding these limits.
-
-## Step-by-Step Troubleshooting
-
-1. **Check database connection**:
-   ```bash
-   npm run db:check
-   ```
-
-2. **Debug the schema**:
-   ```bash
-   npm run db:debug
-   ```
-
-3. **Apply schema in chunks**:
-   ```bash
-   npm run db:schema:chunks
-   ```
-
-4. **Check Azure PostgreSQL logs**:
-   - Log in to the Azure Portal
-   - Navigate to your PostgreSQL server
-   - Go to "Logs" to check for any error messages
-
-5. **Check firewall rules**:
-   - Log in to the Azure Portal
-   - Navigate to your PostgreSQL server
-   - Go to "Connection security"
-   - Make sure your IP address is in the allowed list
-
-6. **Verify SSL settings**:
-   The current setup uses SSL with `rejectUnauthorized: false`. This should work with Azure PostgreSQL, but if you're still having issues, you might need to configure SSL differently.
-
-### Database Connection Errors (Azure)
-
-If you encounter `ENETUNREACH` or `SELF_SIGNED_CERT` errors when connecting to the database, verify that your scripts load the environment configuration correctly:
-
-```ts
-import dotenv from 'dotenv';
-import path from 'path';
-import { Pool } from 'pg';
-
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '5432'),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+3. Test connection:
+```bash
+npm run db check
 ```
 
-This pattern ensures compatibility with Azure-hosted PostgreSQL instances where SSL is enforced.
+### Schema Issues
+
+**Error**: "column does not exist" or "table does not exist"
+
+**Solution**:
+```bash
+npm run db reset
+```
+
+### Relationship Issues
+
+**Error**: "Station ID is required" or "No stations found"
+
+**Solution**:
+```bash
+npm run db fix
+```
+
+## 🔐 Authentication Issues
+
+### Token Validation Errors
+
+**Error**: "Invalid token" or "Token expired"
+
+**Solution**:
+1. Clear browser localStorage
+2. Re-login to get fresh token
+3. Check JWT environment variables:
+```bash
+export JWT_SECRET=your-jwt-secret-key
+export JWT_EXPIRES_IN=24h
+```
+
+### Login Failures
+
+**Error**: "Invalid credentials"
+
+**Solution**:
+1. Use default credentials:
+   - Owner: owner@demofuel.com / password123
+   - Manager: manager@demofuel.com / password123
+   - Employee: employee@demofuel.com / password123
+
+2. Reset database if needed:
+```bash
+npm run db reset
+```
+
+## 🌐 Frontend Issues
+
+### "stations.map is not a function"
+
+**Cause**: User not assigned to stations
+
+**Solution**:
+```bash
+npm run db fix
+```
+
+### API Connection Errors
+
+**Error**: Network errors or CORS issues
+
+**Solution**:
+1. Ensure backend is running on port 3001
+2. Check environment variables:
+```bash
+export PORT=3001
+export NODE_ENV=development
+```
+
+## 🚀 Development Issues
+
+### npm install failures
+
+**Error**: Package installation errors
+
+**Solution**:
+```bash
+npm cache clean --force
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### TypeScript compilation errors
+
+**Error**: Type errors or compilation failures
+
+**Solution**:
+1. Check TypeScript version compatibility
+2. Clear build cache:
+```bash
+rm -rf dist .next
+npm run build
+```
+
+## 🐳 Docker Issues
+
+### PostgreSQL Container Issues
+
+**Error**: Container won't start or connect
+
+**Solution**:
+```bash
+# Stop and remove existing container
+docker stop fuelsync-postgres
+docker rm fuelsync-postgres
+
+# Start fresh container
+docker run --name fuelsync-postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres:13
+
+# Create database
+docker exec -it fuelsync-postgres psql -U postgres -c "CREATE DATABASE fuelsync_dev;"
+```
+
+## 📊 Performance Issues
+
+### Slow Database Queries
+
+**Solution**:
+1. Check database indexes
+2. Monitor connection pool usage
+3. Consider query optimization
+
+### High Memory Usage
+
+**Solution**:
+1. Check for memory leaks in Node.js
+2. Monitor database connection pools
+3. Restart services if needed
+
+## 🔍 Debug Tools
+
+### Database Debug
+
+```bash
+# Check connection
+npm run db check
+
+# Verify data
+npm run db verify
+
+# Fix relationships
+npm run db fix
+```
+
+### Frontend Debug
+
+Visit: http://localhost:3000/debug
+
+Features:
+- Token inspector
+- API tester
+- Authentication debugger
+
+### Backend Logs
+
+Check console output for:
+- Database connection status
+- Authentication attempts
+- API request/response logs
+
+## 🆘 Emergency Procedures
+
+### Complete Reset
+
+```bash
+# Set environment variables
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_NAME=fuelsync_dev
+export DB_USER=postgres
+export DB_PASSWORD=postgres
+export DB_SSL=false
+
+# Reset everything
+npm run db reset
+
+# Verify setup
+npm run db verify
+```
+
+### Backup and Restore
+
+```bash
+# Backup (if using PostgreSQL directly)
+pg_dump fuelsync_dev > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Restore
+psql fuelsync_dev < backup_file.sql
+npm run db fix
+```
+
+## 📞 Getting Help
+
+1. **Check logs** - Look at console output for error details
+2. **Use debug tools** - Visit /debug page for frontend issues
+3. **Verify environment** - Ensure all environment variables are set
+4. **Reset if needed** - Use `npm run db reset` for clean slate
+
+## 🎯 Prevention Tips
+
+1. **Always set environment variables** before running commands
+2. **Use debug tools** to verify setup
+3. **Monitor logs** for early warning signs
+4. **Keep backups** of working configurations
+5. **Test after changes** to catch issues early
+
+---
+
+For more information, see:
+- [Database Operations](DATABASE_OPERATIONS.md)
+- [Project Structure](PROJECT_STRUCTURE.md)
+- [User Guide](USER_GUIDE.md)

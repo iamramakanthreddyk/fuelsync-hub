@@ -7,8 +7,39 @@ You're working inside a multi-tenant SaaS backend built in Node.js + PostgreSQL 
 Your goal is to improve, extend, or debug the project *without breaking seed logic, validation, or multi-tenant rules*.
 
 ---
+
+## 🤖 AGENT SETUP (Start Here)
+
+**No .env files needed - Use environment variables directly:**
+
+```bash
+# 1. Start local database
+docker run --name fuelsync-db -p 5432:5432 \
+  -e POSTGRES_DB=fuelsync_dev \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -d postgres:13
+
+# 2. Set environment variables
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_NAME=fuelsync_dev
+export DB_USER=postgres
+export DB_PASSWORD=postgres
+export DB_SSL=false
+export JWT_SECRET=agent-jwt-secret
+
+# 3. Setup and run
+npm install && cd backend && npm install && cd ../frontend && npm install && cd ..
+cd backend && npm run db:setup && cd ..
+npm run dev
+```
+
+**Access**: http://localhost:3000 (owner@demofuel.com / password123)
+
+---
+
 ## 📁 Docs Structure (Ref: `/docs`)
-## 🧠 Reference Docs
 
 | File                | Purpose                                               |
 |---------------------|-------------------------------------------------------|
@@ -43,7 +74,47 @@ Your goal is to improve, extend, or debug the project *without breaking seed log
 2. Every station must belong to a tenant, and have a linked owner
 3. `user_stations` defines access — always check role before action
 4. If modifying pricing, validate price history logic (see fuel-pricing.md)
-5. Don’t hardcode IDs — use UUID and match seeded schema
+5. Don't hardcode IDs — use UUID and match seeded schema
+
+---
+
+## 🔧 Agent Commands
+
+All commands use environment variables (no .env files):
+
+```bash
+# Database
+npm run db setup    # Complete setup
+npm run db check    # Test connection
+npm run db fix      # Fix relationships
+npm run db reset    # Clean slate
+
+# Development  
+npm run dev         # Start both servers
+```
+
+---
+
+## 🚨 Testing Strategy
+
+**Use local database only:**
+
+```bash
+# Test database (port 5433 to avoid conflicts)
+docker run --name fuelsync-test -p 5433:5432 \
+  -e POSTGRES_DB=fuelsync_test \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -d postgres:13
+
+# Set test environment
+export DB_PORT=5433 DB_NAME=fuelsync_test
+
+# Run tests
+npm run db:setup && npm test
+```
+
+**Do not connect to production Azure database!**
 
 ---
 
@@ -55,16 +126,3 @@ Start by scanning:
 - `TROUBLESHOOTING.md` for fixes you can automate
 
 Save all work to `CHANGELOG_AI.md` if you're making large changes.
-
-
-## 🔬 Testing Strategy
-
-Before running tests or migrations:
-
-- Use `backend/.env.test`
-- Point DB to `fuelsync_test` (Docker preferred)
-- See `docs/TESTING.md` for setup
-
-Do not connect to `fuelsync-server.postgres.database.azure.com` — it's production!
-
-See [`docs/TESTING.md`](./TESTING.md) for setup instructions.

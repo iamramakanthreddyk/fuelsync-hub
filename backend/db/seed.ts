@@ -1,11 +1,7 @@
 // backend/db/seed.ts - Consolidated seeding script
 import { Pool } from 'pg';
-import dotenv from 'dotenv';
-import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
-
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -37,10 +33,10 @@ async function seedDatabase() {
     // 2. Create demo tenant
     const tenantId = uuidv4();
     await client.query(`
-      INSERT INTO tenants (id, name, email, subscription_plan, active)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO tenants (id, name, email, subscription_plan, active, contact_person)
+      VALUES ($1, $2, $3, $4, $5, $6)
       ON CONFLICT (email) DO NOTHING
-    `, [tenantId, 'Demo Company', 'demo@company.com', 'premium', true]);
+    `, [tenantId, 'Demo Company', 'demo@company.com', 'premium', true, 'Demo Owner']);
     
     console.log('✅ Demo tenant created');
     
@@ -58,7 +54,7 @@ async function seedDatabase() {
       await client.query(`
         INSERT INTO users (id, tenant_id, email, password_hash, role, first_name, last_name, active)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        ON CONFLICT (email) DO NOTHING
+        ON CONFLICT (email, tenant_id) DO NOTHING
       `, [userId, tenantId, user.email, passwordHash, user.role, user.firstName, user.lastName, true]);
     }
     

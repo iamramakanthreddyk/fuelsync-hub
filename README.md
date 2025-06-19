@@ -9,31 +9,66 @@ A comprehensive multi-tenant fuel station management platform built with Node.js
 - PostgreSQL 12+
 - npm
 
-### Automated Setup (Recommended)
+### Environment Setup
 
+Set these environment variables before running any commands:
+
+**Unix/Linux/macOS:**
 ```bash
-# Unix/Linux/macOS
-chmod +x setup.sh && ./setup.sh
-
-# Windows
-setup.bat
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_NAME=fuelsync_dev
+export DB_USER=postgres
+export DB_PASSWORD=postgres
+export DB_SSL=false
+export PORT=3001
+export NODE_ENV=development
+export JWT_SECRET=your-jwt-secret-key
+export JWT_EXPIRES_IN=24h
 ```
 
-### Manual Setup
+**Windows PowerShell:**
+```powershell
+$env:DB_HOST="localhost"
+$env:DB_PORT="5432"
+$env:DB_NAME="fuelsync_dev"
+$env:DB_USER="postgres"
+$env:DB_PASSWORD="postgres"
+$env:DB_SSL="false"
+$env:PORT="3001"
+$env:NODE_ENV="development"
+$env:JWT_SECRET="your-jwt-secret-key"
+$env:JWT_EXPIRES_IN="24h"
+```
+
+**Windows CMD:**
+```cmd
+set DB_HOST=localhost
+set DB_PORT=5432
+set DB_NAME=fuelsync_dev
+set DB_USER=postgres
+set DB_PASSWORD=postgres
+set DB_SSL=false
+set PORT=3001
+set NODE_ENV=development
+set JWT_SECRET=your-jwt-secret-key
+set JWT_EXPIRES_IN=24h
+```
+
+### Setup and Run
 
 ```bash
 # 1. Install dependencies
-npm run setup
+npm install
+cd backend && npm install
+cd ../frontend && npm install
+cd ..
 
-# 2. Configure database
+# 2. Setup database
 cd backend
-cp .env.example .env
-# Edit .env with your PostgreSQL credentials
-
-# 3. Setup database
 npm run db:setup
 
-# 4. Start development
+# 3. Start development servers
 npm run dev
 ```
 
@@ -97,8 +132,6 @@ fuelsync-hub/
 │   └── package.json    # Frontend dependencies
 ├── scripts/            # Utility scripts
 │   └── db.ts          # Unified database management
-├── setup.sh           # Unix setup script
-├── setup.bat          # Windows setup script
 └── package.json       # Root workspace configuration
 ```
 
