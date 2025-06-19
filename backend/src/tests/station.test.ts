@@ -131,6 +131,3 @@ describe('Station API', () => {
     });
   });
 });
-// Remove these function stubs; they are not needed when using a proper test runner
-
-
