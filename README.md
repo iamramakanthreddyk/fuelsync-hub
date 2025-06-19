@@ -6,78 +6,43 @@ A comprehensive multi-tenant fuel station management platform built with Node.js
 
 ### Prerequisites
 - Node.js 18+
-- PostgreSQL 12+
+- PostgreSQL 12+ OR Docker
 - npm
 
-### Environment Setup
+### Option 1: Automated Setup (Recommended)
 
-Set these environment variables before running any commands:
-
-**Unix/Linux/macOS:**
 ```bash
+# Set environment variables
 export DB_HOST=localhost
 export DB_PORT=5432
 export DB_NAME=fuelsync_dev
 export DB_USER=postgres
 export DB_PASSWORD=postgres
 export DB_SSL=false
-export PORT=3001
-export NODE_ENV=development
-export JWT_SECRET=your-jwt-secret-key
-export JWT_EXPIRES_IN=24h
-```
 
-**Windows PowerShell:**
-```powershell
-$env:DB_HOST="localhost"
-$env:DB_PORT="5432"
-$env:DB_NAME="fuelsync_dev"
-$env:DB_USER="postgres"
-$env:DB_PASSWORD="postgres"
-$env:DB_SSL="false"
-$env:PORT="3001"
-$env:NODE_ENV="development"
-$env:JWT_SECRET="your-jwt-secret-key"
-$env:JWT_EXPIRES_IN="24h"
-```
-
-**Windows CMD:**
-```cmd
-set DB_HOST=localhost
-set DB_PORT=5432
-set DB_NAME=fuelsync_dev
-set DB_USER=postgres
-set DB_PASSWORD=postgres
-set DB_SSL=false
-set PORT=3001
-set NODE_ENV=development
-set JWT_SECRET=your-jwt-secret-key
-set JWT_EXPIRES_IN=24h
-```
-
-### Setup and Run
-
-```bash
-# 1. Install dependencies
+# Install and setup
 npm install
 cd backend && npm install
 cd ../frontend && npm install
-cd ..
-
-# 2. Setup database
-cd backend
-# Set your PostgreSQL credentials as environment variables
-export DB_HOST=localhost
-export DB_PORT=5432
-export DB_NAME=test_fuelsync
-export DB_USER=postgres
-export DB_PASSWORD=postgres
-export DB_SSL=false
-
-# 3. Setup database
+cd ../backend
 npm run db:setup
+cd ..
+npm run dev
+```
 
-# 3. Start development servers
+### Option 2: Docker Database
+
+```bash
+# Start PostgreSQL container
+docker run --name fuelsync-db -p 5432:5432 \
+  -e POSTGRES_DB=fuelsync_dev \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -d postgres:13
+
+# Set environment variables and setup
+export DB_HOST=localhost DB_PORT=5432 DB_NAME=fuelsync_dev DB_USER=postgres DB_PASSWORD=postgres DB_SSL=false
+npm run db:setup
 npm run dev
 ```
 
@@ -108,16 +73,15 @@ npm run build            # Build for production
 
 ### Database Management
 ```bash
-npm run db setup         # Complete database setup
-npm run db reset         # Reset database to clean state
-npm run db check         # Test database connection
-npm run db fix           # Fix data relationships
-npm run db verify        # Verify database setup
+npm run db:setup         # Complete database setup with seed data
+npm run db:check         # Test database connection
+npm run db:fix           # Fix user-station relationships
+npm run db:verify        # Verify database setup
 ```
 
 ### Utilities
 ```bash
-npm run setup            # Install all dependencies
+npm install              # Install all dependencies
 npm run clean            # Clean all node_modules and build files
 ```
 
@@ -135,12 +99,14 @@ fuelsync-hub/
 ├── backend/             # Node.js/Express API
 │   ├── src/            # Source code
 │   ├── db/             # Database scripts (4 essential files)
+│   │   ├── setup-db.ts     # Schema creation
+│   │   ├── seed.ts         # Data seeding
+│   │   ├── fix-relationships.ts # Fix relationships
+│   │   └── check-connection.ts  # Test connection
 │   └── package.json    # Backend dependencies
 ├── frontend/           # Next.js React app
 │   ├── src/            # Source code
 │   └── package.json    # Frontend dependencies
-├── scripts/            # Utility scripts
-│   └── db.ts          # Unified database management
 └── package.json       # Root workspace configuration
 ```
 
@@ -172,17 +138,27 @@ fuelsync-hub/
 
 1. **Database connection errors**
    ```bash
-   npm run db check     # Test connection
+   # Check environment variables
+   echo $DB_HOST $DB_PORT $DB_NAME $DB_USER
+   
+   # Test connection
+   cd backend && npm run db:check
    ```
 
-2. **Missing relationships**
+2. **"No stations found" error**
    ```bash
-   npm run db fix       # Fix relationships
+   cd backend && npm run db:fix
    ```
 
-3. **Clean slate needed**
+3. **Permission denied errors**
    ```bash
-   npm run db reset     # Reset everything
+   cd backend && npm run db:setup
+   ```
+
+4. **Clean slate needed**
+   ```bash
+   # Reset everything
+   cd backend && npm run db:setup
    ```
 
 ### Debug Tools
@@ -194,6 +170,18 @@ fuelsync-hub/
 - [Database Operations](DATABASE_OPERATIONS.md) - Database management guide
 - [Project Structure](PROJECT_STRUCTURE.md) - Detailed project organization
 - [Troubleshooting](TROUBLESHOOTING.md) - Common issues and solutions
+- [Agent Setup](AGENT_SETUP.md) - For AI agents and automated systems
+
+## 🤖 For AI Agents
+
+Use the automated bootstrap script:
+
+```bash
+chmod +x agent-bootstrap.sh
+./agent-bootstrap.sh
+```
+
+This handles everything automatically - database, environment, dependencies, and setup.
 
 ## 🤝 Contributing
 

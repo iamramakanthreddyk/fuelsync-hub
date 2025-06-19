@@ -38,6 +38,32 @@ router.get(
 
 /**
  * @swagger
+ * /stations/{id}:
+ *   get:
+ *     summary: Get station by ID
+ *     tags: [Stations]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Station details
+ *       404:
+ *         description: Station not found
+ */
+router.get(
+  '/:id',
+  hasPermission(PERMISSIONS.MANAGE_STATIONS),
+  stationController.getStationById
+);
+
+/**
+ * @swagger
  * /stations:
  *   post:
  *     summary: Create a new station
@@ -67,6 +93,58 @@ router.post(
     validate(createStationSchema)
   ],
   stationController.createStation
+);
+
+/**
+ * @swagger
+ * /stations/{id}:
+ *   put:
+ *     summary: Update station
+ *     tags: [Stations]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Station updated successfully
+ *       404:
+ *         description: Station not found
+ */
+router.put(
+  '/:id',
+  hasPermission(PERMISSIONS.MANAGE_STATIONS),
+  stationController.updateStation
+);
+
+/**
+ * @swagger
+ * /stations/{id}:
+ *   delete:
+ *     summary: Delete station
+ *     tags: [Stations]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Station deleted successfully
+ *       404:
+ *         description: Station not found
+ */
+router.delete(
+  '/:id',
+  hasPermission(PERMISSIONS.MANAGE_STATIONS),
+  stationController.deleteStation
 );
 
 export default router;

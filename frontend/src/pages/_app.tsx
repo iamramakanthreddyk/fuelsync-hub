@@ -31,12 +31,24 @@ function MyApp({ Component, pageProps }: AppProps) {
 
     // Check authentication on route change
     const handleRouteChange = (url: string) => {
-      // Skip auth check for login and debug pages
-      if (url === '/login' || url === '/debug') {
+      // Skip auth check for public pages
+      const publicRoutes = ['/login', '/debug', '/admin/login'];
+      if (publicRoutes.includes(url)) {
         return;
       }
 
-      // Check if token is expired
+      // Handle admin routes separately
+      if (url.startsWith('/admin')) {
+        const adminToken = localStorage.getItem('adminToken');
+        if (!adminToken) {
+          console.log('Admin not authenticated, redirecting to admin login...');
+          router.push('/admin/login');
+          return;
+        }
+        return;
+      }
+
+      // Check if token is expired for regular user routes
       if (isAuthenticated() && isTokenExpired()) {
         console.log('Token expired, redirecting to login...');
         router.push('/login');
@@ -44,7 +56,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       }
 
       // Check if user is authenticated for protected routes
-      if (!isAuthenticated() && !url.startsWith('/login')) {
+      if (!isAuthenticated()) {
         console.log('User not authenticated, redirecting to login...');
         router.push('/login');
       }

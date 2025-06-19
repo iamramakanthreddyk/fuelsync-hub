@@ -1,9 +1,7 @@
 // src/services/admin-auth.service.ts
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { config } from '../config/environment';
 import pool from '../config/database';
-import { generateUUID } from '../utils/uuid';
 
 class AuthError extends Error {
   code: string;
@@ -45,36 +43,21 @@ export async function authenticateAdmin(email: string, password: string) {
       throw new AuthError('Invalid credentials', 'INVALID_CREDENTIALS');
     }
     
-    // Generate JWT token with minimal payload
+    // Generate JWT token
     const token = jwt.sign(
       {
         id: admin.id,
         email: admin.email,
-        role: admin.role
+        role: admin.role,
+        isAdmin: true
       },
-      config.admin.jwtSecret,
+      process.env.ADMIN_JWT_SECRET || 'admin-secret',
       {
-        expiresIn: config.admin.jwtExpiresIn
+        expiresIn: process.env.ADMIN_JWT_EXPIRES_IN || '12h',
+        audience: 'fuelsync-admin-api',
+        issuer: 'fuelsync-admin-auth'
       }
     );
-    
-    // Calculate expiration time
-    const expiresIn = config.admin.jwtExpiresIn;
-    const expiresInMs = expiresIn.endsWith('h')
-      ? parseInt(expiresIn) * 60 * 60 * 1000
-      : expiresIn.endsWith('m')
-      ? parseInt(expiresIn) * 60 * 1000
-      : parseInt(expiresIn) * 1000;
-    
-    const expiresAt = new Date(Date.now() + expiresInMs);
-    
-    // Store token in admin_sessions
-    const sessionQuery = `
-      INSERT INTO admin_sessions (id, admin_id, token, expires_at)
-      VALUES ($1, $2, $3, $4)
-    `;
-    
-    await pool.query(sessionQuery, [generateUUID(), admin.id, token, expiresAt]);
     
     console.log(`[ADMIN-AUTH-SERVICE] Admin authenticated successfully: ${email}`);
     
@@ -93,7 +76,7 @@ export async function authenticateAdmin(email: string, password: string) {
       }
     };
   } catch (error) {
-    console.error(`[ADMIN-AUTH-SERVICE] Authentication error: ${error}`);
+    console.error(`[ADMIN-AUTH-SERVICE] Authentication error:`, error);
     throw error;
   }
 }
@@ -103,14 +86,9 @@ export async function authenticateAdmin(email: string, password: string) {
  */
 export async function logoutAdmin(adminId: string, token: string) {
   try {
-    // Delete session
-    const query = `
-      DELETE FROM admin_sessions
-      WHERE admin_id = $1 AND token = $2
-    `;
-    
-    await pool.query(query, [adminId, token]);
-    
+    // For now, just return success since we don't have session storage
+    // In production, you'd want to blacklist the token
+    console.log(`[ADMIN-AUTH-SERVICE] Admin logged out: ${adminId}`);
     return true;
   } catch (error) {
     console.error('Admin logout error:', error);
@@ -145,22 +123,6 @@ export async function getAdminById(id: string) {
     
     const admin = result.rows[0];
     
-    // Get recent activity
-    const activityQuery = `
-      SELECT 
-        id,
-        action,
-        entity_type,
-        entity_id,
-        created_at
-      FROM admin_activity_logs
-      WHERE admin_id = $1
-      ORDER BY created_at DESC
-      LIMIT 10
-    `;
-    
-    const activityResult = await pool.query(activityQuery, [id]);
-    
     return {
       id: admin.id,
       email: admin.email,
@@ -169,8 +131,7 @@ export async function getAdminById(id: string) {
       role: admin.role,
       active: admin.active,
       createdAt: admin.created_at,
-      updatedAt: admin.updated_at,
-      recentActivity: activityResult.rows
+      updatedAt: admin.updated_at
     };
   } catch (error) {
     console.error('Get admin by ID error:', error);

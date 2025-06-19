@@ -1,159 +1,108 @@
 // frontend/src/components/layout/AdminLayout.tsx
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
 import {
   AppBar,
+  Toolbar,
+  Typography,
+  Button,
   Box,
-  CssBaseline,
-  Divider,
+  Container,
   Drawer,
-  IconButton,
   List,
   ListItem,
-  ListItemButton,
   ListItemIcon,
   ListItemText,
-  Toolbar,
-  Typography
+  ListItemButton
 } from '@mui/material';
 import {
-  Menu as MenuIcon,
-  Dashboard as DashboardIcon,
-  People as PeopleIcon,
-  Business as BusinessIcon,
-  Assessment as ReportsIcon,
-  Settings as SettingsIcon
+  Dashboard,
+  Business,
+  People,
+  Settings,
+  ExitToApp,
+  Assessment
 } from '@mui/icons-material';
-import Link from 'next/link';
-import { isAuthenticated, getUserRole } from '../../utils/authHelper';
-import LogoutButton from '../auth/LogoutButton';
-
-const drawerWidth = 240;
 
 interface AdminLayoutProps {
   children: React.ReactNode;
   title?: string;
 }
 
-const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Admin Dashboard' }) => {
-  const [mobileOpen, setMobileOpen] = useState(false);
+const drawerWidth = 240;
+
+const menuItems = [
+  { text: 'Dashboard', icon: <Dashboard />, path: '/admin/dashboard' },
+  { text: 'Tenants', icon: <Business />, path: '/admin/tenants' },
+  { text: 'Users', icon: <People />, path: '/admin/users' },
+  { text: 'Reports', icon: <Assessment />, path: '/admin/reports' },
+  { text: 'Settings', icon: <Settings />, path: '/admin/settings' },
+];
+
+export default function AdminLayout({ children, title = 'Admin Panel' }: AdminLayoutProps) {
   const router = useRouter();
 
-  useEffect(() => {
-    // Check authentication
-    if (!isAuthenticated()) {
-      console.log('User not authenticated, redirecting to login...');
-      router.push('/login');
-      return;
-    }
-
-    // Check if user is superadmin
-    const userRole = getUserRole();
-    if (userRole !== 'superadmin') {
-      console.log('User is not superadmin, redirecting to login...');
-      router.push('/login');
-    }
-  }, [router]);
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('admin');
+    router.push('/admin/login');
   };
 
-  const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, href: '/admin/dashboard' },
-    { text: 'Tenants', icon: <BusinessIcon />, href: '/admin/tenants' },
-    { text: 'Users', icon: <PeopleIcon />, href: '/admin/users' },
-    { text: 'Reports', icon: <ReportsIcon />, href: '/admin/reports' },
-    { text: 'Settings', icon: <SettingsIcon />, href: '/admin/settings' }
-  ];
-
-  const drawer = (
-    <div>
-      <Toolbar>
-        <Typography variant="h6" noWrap component="div">
-          FuelSync Admin
-        </Typography>
-      </Toolbar>
-      <Divider />
-      <List>
-        {menuItems.map((item) => (
-          <Link href={item.href} key={item.text} passHref legacyBehavior>
-            <ListItem disablePadding component="a">
-              <ListItemButton selected={router.pathname === item.href}>
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
-          </Link>
-        ))}
-      </List>
-    </div>
-  );
+  const handleNavigation = (path: string) => {
+    router.push(path);
+  };
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
-      <AppBar
-        position="fixed"
-        sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-        }}
-      >
+      {/* App Bar */}
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {title}
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            FuelSync Admin - {title}
           </Typography>
-          <LogoutButton color="inherit" />
+          <Button color="inherit" onClick={handleLogout} startIcon={<ExitToApp />}>
+            Logout
+          </Button>
         </Toolbar>
       </AppBar>
-      <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-      >
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-          sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          }}
-        >
-          {drawer}
-        </Drawer>
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          }}
-          open
-        >
-          {drawer}
-        </Drawer>
-      </Box>
-      <Box
-        component="main"
-        sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
+
+      {/* Sidebar */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+          },
+        }}
       >
         <Toolbar />
-        {children}
+        <Box sx={{ overflow: 'auto' }}>
+          <List>
+            {menuItems.map((item) => (
+              <ListItem key={item.text} disablePadding>
+                <ListItemButton
+                  selected={router.pathname === item.path}
+                  onClick={() => handleNavigation(item.path)}
+                >
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.text} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+      </Drawer>
+
+      {/* Main Content */}
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        <Toolbar />
+        <Container maxWidth="lg">
+          {children}
+        </Container>
       </Box>
     </Box>
   );
-};
-
-export default AdminLayout;
+}

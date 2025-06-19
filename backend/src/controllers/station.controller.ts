@@ -2,101 +2,21 @@
 import { Request, Response } from 'express';
 import * as stationService from '../services/station.service';
 
-export const createStation = async (req: Request, res: Response) => {
-  try {
-    const { name, address, city, state, zip, contactPhone, location, operatingHours } = req.body;
-    
-    if (!name) {
-      return res.status(400).json({ 
-        status: 'error',
-        code: 'MISSING_NAME',
-        message: 'Station name is required' 
-      });
-    }
-    
-    // Get schema name from middleware
-    const schemaName = req.schemaName;
-    if (!schemaName) {
-      return res.status(500).json({ 
-        status: 'error',
-        code: 'TENANT_CONTEXT_MISSING',
-        message: 'Tenant context not set' 
-      });
-    }
-    
-    // Get tenant ID from user
-    const tenantId = req.user?.tenant_id;
-    if (!tenantId) {
-      return res.status(400).json({ 
-        status: 'error',
-        code: 'TENANT_ID_MISSING',
-        message: 'Tenant ID is required' 
-      });
-    }
-    
-    console.log(`Creating station for tenant ${tenantId} in schema ${schemaName}`);
-    
-    const station = await stationService.createStation(
-      schemaName,
-      name,
-      address || '',
-      city || '',
-      state || '',
-      zip || '',
-      contactPhone || '',
-      location || {},
-      operatingHours || {},
-      tenantId
-    );
-    
-    // Also create the station in the public schema for consistency
-    await stationService.createStationInPublic(
-      name,
-      address || '',
-      city || '',
-      state || '',
-      zip || '',
-      contactPhone || '',
-      location || {},
-      operatingHours || {},
-      tenantId,
-      station.id
-    );
-    
-    return res.status(201).json({
-      status: 'success',
-      data: station
-    });
-  } catch (error: any) {
-    console.error('Create station error:', error);
-    return res.status(500).json({ 
-      status: 'error',
-      code: 'SERVER_ERROR',
-      message: error.message || 'Failed to create station' 
-    });
-  }
-};
-
 export const getStations = async (req: Request, res: Response) => {
   try {
-    // Get schema name from middleware
-    const schemaName = req.schemaName;
-    if (!schemaName) {
-      return res.status(500).json({ 
-        status: 'error',
-        code: 'TENANT_CONTEXT_MISSING',
-        message: 'Tenant context not set' 
-      });
-    }
+    console.log('[STATION] Getting stations for user:', req.user?.email, 'tenant:', req.user?.tenant_id);
     
-    const stations = await stationService.getStations(schemaName);
+    const tenantId = req.user?.tenant_id;
+    const stations = await stationService.getStations(tenantId);
+    
+    console.log('[STATION] Found stations:', stations.length);
     
     return res.status(200).json({
       status: 'success',
       data: stations
     });
   } catch (error: any) {
-    console.error('Get stations error:', error);
+    console.error('[STATION] Get stations error:', error);
     return res.status(500).json({ 
       status: 'error',
       code: 'SERVER_ERROR',
@@ -108,18 +28,11 @@ export const getStations = async (req: Request, res: Response) => {
 export const getStationById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const tenantId = req.user?.tenant_id;
     
-    // Get schema name from middleware
-    const schemaName = req.schemaName;
-    if (!schemaName) {
-      return res.status(500).json({ 
-        status: 'error',
-        code: 'TENANT_CONTEXT_MISSING',
-        message: 'Tenant context not set' 
-      });
-    }
+    console.log('[STATION] Getting station by ID:', id, 'for tenant:', tenantId);
     
-    const station = await stationService.getStationById(schemaName, id);
+    const station = await stationService.getStationById(id, tenantId);
     
     if (!station) {
       return res.status(404).json({ 
@@ -134,7 +47,7 @@ export const getStationById = async (req: Request, res: Response) => {
       data: station
     });
   } catch (error: any) {
-    console.error('Get station error:', error);
+    console.error('[STATION] Get station error:', error);
     return res.status(500).json({ 
       status: 'error',
       code: 'SERVER_ERROR',
@@ -143,22 +56,62 @@ export const getStationById = async (req: Request, res: Response) => {
   }
 };
 
+export const createStation = async (req: Request, res: Response) => {
+  try {
+    const { name, address, city, state, zip, contact_phone } = req.body;
+    const tenantId = req.user?.tenant_id;
+    
+    if (!name) {
+      return res.status(400).json({ 
+        status: 'error',
+        code: 'MISSING_NAME',
+        message: 'Station name is required' 
+      });
+    }
+    
+    if (!tenantId) {
+      return res.status(400).json({ 
+        status: 'error',
+        code: 'TENANT_ID_MISSING',
+        message: 'Tenant ID is required' 
+      });
+    }
+    
+    console.log('[STATION] Creating station:', name, 'for tenant:', tenantId);
+    
+    const station = await stationService.createStation(
+      name,
+      address || '',
+      city || '',
+      state || '',
+      zip || '',
+      contact_phone || '',
+      tenantId
+    );
+    
+    return res.status(201).json({
+      status: 'success',
+      data: station
+    });
+  } catch (error: any) {
+    console.error('[STATION] Create station error:', error);
+    return res.status(500).json({ 
+      status: 'error',
+      code: 'SERVER_ERROR',
+      message: error.message || 'Failed to create station' 
+    });
+  }
+};
+
 export const updateStation = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const updates = req.body;
+    const tenantId = req.user?.tenant_id;
     
-    // Get schema name from middleware
-    const schemaName = req.schemaName;
-    if (!schemaName) {
-      return res.status(500).json({ 
-        status: 'error',
-        code: 'TENANT_CONTEXT_MISSING',
-        message: 'Tenant context not set' 
-      });
-    }
+    console.log('[STATION] Updating station:', id, 'for tenant:', tenantId);
     
-    const station = await stationService.updateStation(schemaName, id, updates);
+    const station = await stationService.updateStation(id, updates, tenantId);
     
     if (!station) {
       return res.status(404).json({ 
@@ -173,7 +126,7 @@ export const updateStation = async (req: Request, res: Response) => {
       data: station
     });
   } catch (error: any) {
-    console.error('Update station error:', error);
+    console.error('[STATION] Update station error:', error);
     return res.status(500).json({ 
       status: 'error',
       code: 'SERVER_ERROR',
@@ -185,18 +138,11 @@ export const updateStation = async (req: Request, res: Response) => {
 export const deleteStation = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const tenantId = req.user?.tenant_id;
     
-    // Get schema name from middleware
-    const schemaName = req.schemaName;
-    if (!schemaName) {
-      return res.status(500).json({ 
-        status: 'error',
-        code: 'TENANT_CONTEXT_MISSING',
-        message: 'Tenant context not set' 
-      });
-    }
+    console.log('[STATION] Deleting station:', id, 'for tenant:', tenantId);
     
-    const success = await stationService.deleteStation(schemaName, id);
+    const success = await stationService.deleteStation(id, tenantId);
     
     if (!success) {
       return res.status(404).json({ 
@@ -208,7 +154,7 @@ export const deleteStation = async (req: Request, res: Response) => {
     
     return res.status(204).send();
   } catch (error: any) {
-    console.error('Delete station error:', error);
+    console.error('[STATION] Delete station error:', error);
     return res.status(500).json({ 
       status: 'error',
       code: 'SERVER_ERROR',

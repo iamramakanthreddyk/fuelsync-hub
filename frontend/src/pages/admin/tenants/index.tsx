@@ -2,60 +2,43 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import {
-  Box,
-  Button,
   Paper,
-  Typography,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  TablePagination,
+  Typography,
   Chip,
-  IconButton,
   CircularProgress,
+  Alert,
+  Box,
+  Button,
+  IconButton,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  TextField,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel
+  TextField
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Visibility as ViewIcon
-} from '@mui/icons-material';
-import AdminLayout from '@/components/layout/AdminLayout';
+import { Add, Edit, Delete } from '@mui/icons-material';
+import AdminLayout from '../../../components/layout/AdminLayout';
 
-export default function TenantsPage() {
+export default function AdminTenants() {
   const router = useRouter();
-  const [tenants, setTenants] = useState<any[]>([]);
+  const [tenants, setTenants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [openDialog, setOpenDialog] = useState(false);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [selectedTenant, setSelectedTenant] = useState<any>(null);
+  const [currentTenant, setCurrentTenant] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    contactPerson: '',
-    contactPhone: '',
-    subscriptionPlan: 'basic'
+    contact_person: '',
+    subscription_plan: 'basic'
   });
-
-  useEffect(() => {
-    fetchTenants();
-  }, []);
 
   const fetchTenants = async () => {
     try {
@@ -65,7 +48,7 @@ export default function TenantsPage() {
         return;
       }
 
-      const response = await fetch('/api/admin/tenants', {
+      const response = await fetch('http://localhost:3001/api/superadmin/tenants', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -76,42 +59,35 @@ export default function TenantsPage() {
       }
 
       const data = await response.json();
-      setTenants(data.data);
-    } catch (err: any) {
-      setError(err.message || 'An error occurred');
-      console.error('Tenants error:', err);
+      setTenants(data.data || []);
+    } catch (err) {
+      console.error('Error fetching tenants:', err);
+      setError('Failed to load tenants. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
+  useEffect(() => {
+    fetchTenants();
+  }, [router]);
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const handleOpenDialog = (tenant?: any) => {
+  const handleOpenDialog = (tenant = null) => {
     if (tenant) {
-      setSelectedTenant(tenant);
+      setCurrentTenant(tenant);
       setFormData({
         name: tenant.name,
         email: tenant.email,
-        contactPerson: tenant.contact_person,
-        contactPhone: tenant.contact_phone || '',
-        subscriptionPlan: tenant.subscription_plan
+        contact_person: tenant.contact_person || '',
+        subscription_plan: tenant.subscription_plan
       });
     } else {
-      setSelectedTenant(null);
+      setCurrentTenant(null);
       setFormData({
         name: '',
         email: '',
-        contactPerson: '',
-        contactPhone: '',
-        subscriptionPlan: 'basic'
+        contact_person: '',
+        subscription_plan: 'basic'
       });
     }
     setOpenDialog(true);
@@ -121,16 +97,7 @@ export default function TenantsPage() {
     setOpenDialog(false);
   };
 
-  const handleOpenDeleteDialog = (tenant: any) => {
-    setSelectedTenant(tenant);
-    setOpenDeleteDialog(true);
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setOpenDeleteDialog(false);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -138,17 +105,7 @@ export default function TenantsPage() {
     });
   };
 
-  const handleSelectChange = (e: any) => {
-    setFormData({
-      ...formData,
-      subscriptionPlan: e.target.value
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
+  const handleSubmit = async () => {
     try {
       const token = localStorage.getItem('adminToken');
       if (!token) {
@@ -156,46 +113,38 @@ export default function TenantsPage() {
         return;
       }
 
-      const url = selectedTenant
-        ? `/api/admin/tenants/${selectedTenant.id}`
-        : '/api/admin/tenants';
-      
-      const method = selectedTenant ? 'PUT' : 'POST';
+      const url = currentTenant
+        ? `http://localhost:3001/api/superadmin/tenants/${currentTenant.id}`
+        : 'http://localhost:3001/api/superadmin/tenants';
+
+      const method = currentTenant ? 'PATCH' : 'POST';
 
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          contactPerson: formData.contactPerson,
-          contactPhone: formData.contactPhone,
-          subscriptionPlan: formData.subscriptionPlan
-        })
+        body: JSON.stringify(formData)
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save tenant');
+        throw new Error(`Failed to ${currentTenant ? 'update' : 'create'} tenant`);
       }
 
-      // Refresh tenants list
-      fetchTenants();
       handleCloseDialog();
-    } catch (err: any) {
-      setError(err.message || 'An error occurred');
-      console.error('Save tenant error:', err);
-    } finally {
-      setLoading(false);
+      fetchTenants();
+    } catch (err) {
+      console.error('Error submitting tenant:', err);
+      setError(`Failed to ${currentTenant ? 'update' : 'create'} tenant. Please try again.`);
     }
   };
 
-  const handleDeleteTenant = async () => {
-    if (!selectedTenant) return;
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure you want to delete this tenant?')) {
+      return;
+    }
 
-    setLoading(true);
     try {
       const token = localStorage.getItem('adminToken');
       if (!token) {
@@ -203,7 +152,7 @@ export default function TenantsPage() {
         return;
       }
 
-      const response = await fetch(`/api/admin/tenants/${selectedTenant.id}`, {
+      const response = await fetch(`http://localhost:3001/api/superadmin/tenants/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -214,31 +163,14 @@ export default function TenantsPage() {
         throw new Error('Failed to delete tenant');
       }
 
-      // Refresh tenants list
       fetchTenants();
-      handleCloseDeleteDialog();
-    } catch (err: any) {
-      setError(err.message || 'An error occurred');
-      console.error('Delete tenant error:', err);
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error('Error deleting tenant:', err);
+      setError('Failed to delete tenant. Please try again.');
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'success';
-      case 'suspended':
-        return 'warning';
-      case 'deleted':
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
-
-  if (loading && tenants.length === 0) {
+  if (loading) {
     return (
       <AdminLayout title="Tenants">
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -250,12 +182,14 @@ export default function TenantsPage() {
 
   return (
     <AdminLayout title="Tenants">
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h5">Manage Tenants</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4">
+          Tenant Management
+        </Typography>
         <Button
           variant="contained"
           color="primary"
-          startIcon={<AddIcon />}
+          startIcon={<Add />}
           onClick={() => handleOpenDialog()}
         >
           Add Tenant
@@ -263,9 +197,9 @@ export default function TenantsPage() {
       </Box>
 
       {error && (
-        <Paper sx={{ p: 2, mb: 3, bgcolor: 'error.light', color: 'error.contrastText' }}>
-          <Typography>{error}</Typography>
-        </Paper>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
       )}
 
       <TableContainer component={Paper}>
@@ -277,169 +211,108 @@ export default function TenantsPage() {
               <TableCell>Contact Person</TableCell>
               <TableCell>Plan</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Created</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {tenants
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((tenant) => (
+            {tenants.length > 0 ? (
+              tenants.map((tenant) => (
                 <TableRow key={tenant.id}>
                   <TableCell>{tenant.name}</TableCell>
                   <TableCell>{tenant.email}</TableCell>
                   <TableCell>{tenant.contact_person}</TableCell>
                   <TableCell>
-                    <Chip
-                      label={tenant.subscription_plan}
+                    <Chip 
+                      label={tenant.subscription_plan} 
+                      color={tenant.subscription_plan === 'premium' ? 'primary' : 'default'}
                       size="small"
-                      color={
-                        tenant.subscription_plan === 'enterprise'
-                          ? 'primary'
-                          : tenant.subscription_plan === 'premium'
-                          ? 'secondary'
-                          : 'default'
-                      }
                     />
                   </TableCell>
                   <TableCell>
-                    <Chip
-                      label={tenant.status}
+                    <Chip 
+                      label={tenant.status || 'active'} 
+                      color={tenant.status === 'active' ? 'success' : 'default'}
                       size="small"
-                      color={getStatusColor(tenant.status) as any}
                     />
                   </TableCell>
                   <TableCell>
-                    {new Date(tenant.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      size="small"
-                      onClick={() => router.push(`/admin/tenants/${tenant.id}`)}
-                    >
-                      <ViewIcon fontSize="small" />
+                    <IconButton size="small" onClick={() => handleOpenDialog(tenant)}>
+                      <Edit fontSize="small" />
                     </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleOpenDialog(tenant)}
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleOpenDeleteDialog(tenant)}
-                    >
-                      <DeleteIcon fontSize="small" />
+                    <IconButton size="small" onClick={() => handleDelete(tenant.id)}>
+                      <Delete fontSize="small" />
                     </IconButton>
                   </TableCell>
                 </TableRow>
-              ))}
-            {tenants.length === 0 && (
+              ))
+            ) : (
               <TableRow>
-                <TableCell colSpan={7} align="center">
+                <TableCell colSpan={6} align="center">
                   No tenants found
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={tenants.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
       </TableContainer>
 
-      {/* Add/Edit Tenant Dialog */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <form onSubmit={handleSubmit}>
-          <DialogTitle>
-            {selectedTenant ? 'Edit Tenant' : 'Add New Tenant'}
-          </DialogTitle>
-          <DialogContent>
-            <TextField
-              margin="dense"
-              name="name"
-              label="Tenant Name"
-              fullWidth
-              variant="outlined"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-            />
-            <TextField
-              margin="dense"
-              name="email"
-              label="Email Address"
-              type="email"
-              fullWidth
-              variant="outlined"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-            />
-            <TextField
-              margin="dense"
-              name="contactPerson"
-              label="Contact Person"
-              fullWidth
-              variant="outlined"
-              value={formData.contactPerson}
-              onChange={handleInputChange}
-              required
-            />
-            <TextField
-              margin="dense"
-              name="contactPhone"
-              label="Contact Phone"
-              fullWidth
-              variant="outlined"
-              value={formData.contactPhone}
-              onChange={handleInputChange}
-            />
-            <FormControl fullWidth margin="dense">
-              <InputLabel>Subscription Plan</InputLabel>
-              <Select
-                value={formData.subscriptionPlan}
-                onChange={handleSelectChange}
-                label="Subscription Plan"
-              >
-                <MenuItem value="basic">Basic</MenuItem>
-                <MenuItem value="premium">Premium</MenuItem>
-                <MenuItem value="enterprise">Enterprise</MenuItem>
-              </Select>
-            </FormControl>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog}>Cancel</Button>
-            <Button type="submit" variant="contained" disabled={loading}>
-              {loading ? <CircularProgress size={24} /> : 'Save'}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
-        <DialogTitle>Confirm Delete</DialogTitle>
+      {/* Tenant Form Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>{currentTenant ? 'Edit Tenant' : 'Add Tenant'}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete tenant "{selectedTenant?.name}"? This action cannot be undone.
-          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            name="name"
+            label="Tenant Name"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={formData.name}
+            onChange={handleInputChange}
+          />
+          <TextField
+            margin="dense"
+            name="email"
+            label="Email Address"
+            type="email"
+            fullWidth
+            variant="outlined"
+            value={formData.email}
+            onChange={handleInputChange}
+          />
+          <TextField
+            margin="dense"
+            name="contact_person"
+            label="Contact Person"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={formData.contact_person}
+            onChange={handleInputChange}
+          />
+          <TextField
+            margin="dense"
+            name="subscription_plan"
+            label="Subscription Plan"
+            select
+            fullWidth
+            variant="outlined"
+            value={formData.subscription_plan}
+            onChange={handleInputChange}
+            SelectProps={{
+              native: true,
+            }}
+          >
+            <option value="basic">Basic</option>
+            <option value="premium">Premium</option>
+            <option value="enterprise">Enterprise</option>
+          </TextField>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDeleteDialog}>Cancel</Button>
-          <Button
-            onClick={handleDeleteTenant}
-            color="error"
-            variant="contained"
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} /> : 'Delete'}
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleSubmit} variant="contained" color="primary">
+            {currentTenant ? 'Update' : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>

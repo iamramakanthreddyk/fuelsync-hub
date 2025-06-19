@@ -1,8 +1,6 @@
 // src/middlewares/adminAuth.ts
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { config } from '../config/environment';
-import pool from '../config/database';
 
 // Extend Express Request type
 declare global {
@@ -36,26 +34,20 @@ export const authenticateAdmin = async (
     const token = authHeader.split(' ')[1];
 
     // Verify token
-    const jwtSecret = config.admin.jwtSecret;
+    const jwtSecret = process.env.ADMIN_JWT_SECRET || 'admin-secret';
     const decoded = jwt.verify(token, jwtSecret) as {
       id: string;
       email: string;
       role: string;
+      isAdmin?: boolean;
     };
 
-    // Check if token exists in admin_sessions
-    const query = `
-      SELECT * FROM admin_sessions
-      WHERE admin_id = $1 AND token = $2 AND expires_at > NOW()
-    `;
-
-    const result = await pool.query(query, [decoded.id, token]);
-
-    if (result.rows.length === 0) {
+    // Verify it's an admin token
+    if (!decoded.isAdmin && decoded.role !== 'superadmin') {
       return res.status(401).json({
         status: 'error',
-        code: 'INVALID_TOKEN',
-        message: 'Invalid or expired token'
+        code: 'UNAUTHORIZED',
+        message: 'Admin access required'
       });
     }
 
@@ -66,19 +58,14 @@ export const authenticateAdmin = async (
       role: decoded.role
     };
 
-    // Update last_used_at
-    await pool.query(
-      'UPDATE admin_sessions SET last_used_at = NOW() WHERE admin_id = $1 AND token = $2',
-      [decoded.id, token]
-    );
-
+    console.log(`[ADMIN-AUTH] Admin authenticated: ${decoded.email}`);
     next();
   } catch (error) {
     console.error('Admin authentication error:', error);
     return res.status(401).json({
       status: 'error',
       code: 'UNAUTHORIZED',
-      message: 'Not authenticated'
+      message: 'Invalid or expired token'
     });
   }
 };

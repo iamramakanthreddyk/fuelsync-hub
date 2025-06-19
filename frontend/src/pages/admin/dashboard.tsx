@@ -2,26 +2,27 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import {
-  Box,
   Grid,
   Paper,
   Typography,
   Card,
   CardContent,
   CardHeader,
-  Divider,
+  CircularProgress,
+  Alert,
+  Box,
   List,
   ListItem,
   ListItemText,
-  CircularProgress,
-  Alert
+  Divider
 } from '@mui/material';
-import AdminLayout from '@/components/layout/AdminLayout';
 import { Business, SupervisorAccount, Storage } from '@mui/icons-material';
+import AdminLayout from '../../components/layout/AdminLayout';
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [stats, setStats] = useState<any>({
+  const [admin, setAdmin] = useState(null);
+  const [stats, setStats] = useState({
     tenantCount: 0,
     userCount: 0,
     stationCount: 0,
@@ -31,41 +32,83 @@ export default function AdminDashboard() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem('adminToken');
+        
         if (!token) {
           router.push('/admin/login');
           return;
         }
 
-        const response = await fetch('/api/admin/dashboard', {
+        // Fetch admin info
+        const adminResponse = await fetch('http://localhost:3001/api/admin-auth/me', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch dashboard data');
+        if (!adminResponse.ok) {
+          localStorage.removeItem('adminToken');
+          localStorage.removeItem('admin');
+          router.push('/admin/login');
+          return;
         }
 
-        const data = await response.json();
-        setStats(data.data);
-      } catch (err: any) {
+        const adminData = await adminResponse.json();
+        setAdmin(adminData.data);
+
+        // Fetch dashboard stats
+        const statsResponse = await fetch('http://localhost:3001/api/superadmin/stats', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json();
+          setStats(statsData.data || {
+            tenantCount: 0,
+            userCount: 0,
+            stationCount: 0,
+            recentTenants: []
+          });
+        }
+
+        // If stats endpoint fails, fetch tenants to get count
+        else {
+          const tenantsResponse = await fetch('http://localhost:3001/api/superadmin/tenants', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          if (tenantsResponse.ok) {
+            const tenantsData = await tenantsResponse.json();
+            const tenants = tenantsData.data || [];
+            
+            setStats({
+              tenantCount: tenants.length,
+              userCount: 0,
+              stationCount: 0,
+              recentTenants: tenants.slice(0, 5)
+            });
+          }
+        }
+      } catch (err) {
         console.error('Dashboard error:', err);
-        setError(err.message || 'An error occurred');
+        setError('Failed to load dashboard data');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDashboardData();
+    fetchData();
   }, [router]);
 
   if (loading) {
     return (
-      <AdminLayout title="Admin Dashboard">
+      <AdminLayout title="Dashboard">
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <CircularProgress />
         </Box>
@@ -74,7 +117,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <AdminLayout title="Admin Dashboard">
+    <AdminLayout title="Dashboard">
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
@@ -107,7 +150,7 @@ export default function AdminDashboard() {
             />
             <CardContent>
               <Typography variant="h3" align="center">
-                {stats.userCount}
+                {stats.userCount || '—'}
               </Typography>
             </CardContent>
           </Card>
@@ -122,15 +165,37 @@ export default function AdminDashboard() {
             />
             <CardContent>
               <Typography variant="h3" align="center">
-                {stats.stationCount}
+                {stats.stationCount || '—'}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
 
+        {/* Admin Info */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Admin Information
+            </Typography>
+            {admin && (
+              <>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Name:</strong> {admin.firstName} {admin.lastName}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Email:</strong> {admin.email}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Role:</strong> {admin.role}
+                </Typography>
+              </>
+            )}
+          </Paper>
+        </Grid>
+
         {/* Recent Tenants */}
-        <Grid item xs={12}>
-          <Paper sx={{ p: 2 }}>
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Recent Tenants
             </Typography>
@@ -138,22 +203,17 @@ export default function AdminDashboard() {
             
             {stats.recentTenants && stats.recentTenants.length > 0 ? (
               <List>
-                {stats.recentTenants.map((tenant: any) => (
-                  <ListItem
-                    key={tenant.id}
-                    divider
-                    button
-                    onClick={() => router.push(`/admin/tenants/${tenant.id}`)}
-                  >
+                {stats.recentTenants.map((tenant) => (
+                  <ListItem key={tenant.id} divider>
                     <ListItemText
                       primary={tenant.name}
-                      secondary={`${tenant.subscription_plan} plan • Created: ${new Date(tenant.created_at).toLocaleDateString()}`}
+                      secondary={`${tenant.email} • ${tenant.subscription_plan || 'basic'} plan`}
                     />
                   </ListItem>
                 ))}
               </List>
             ) : (
-              <Typography variant="body2" color="textSecondary" align="center">
+              <Typography variant="body2" color="text.secondary" align="center">
                 No tenants found
               </Typography>
             )}

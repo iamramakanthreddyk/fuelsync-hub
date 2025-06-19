@@ -28,9 +28,8 @@ export default function AdminLogin() {
     try {
       console.log('Attempting admin login with:', { email });
       
-      // Use the direct admin auth endpoint
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-      const response = await fetch(`${apiUrl}/direct-admin-auth/login`, {
+      // Use the admin auth endpoint
+      const response = await fetch('http://localhost:3001/api/admin-auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,7 +43,7 @@ export default function AdminLogin() {
       }
 
       const data = await response.json();
-      console.log('Login successful:', data);
+      console.log('Admin login successful:', data);
 
       // Store token and user data
       localStorage.setItem('adminToken', data.data.token);
@@ -53,7 +52,7 @@ export default function AdminLogin() {
       // Redirect to admin dashboard
       router.push('/admin/dashboard');
     } catch (err: any) {
-      console.error('Login error:', err);
+      console.error('Admin login error:', err);
       setError(err.message || 'An error occurred during login');
     } finally {
       setLoading(false);

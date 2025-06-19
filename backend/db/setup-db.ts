@@ -3,9 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-console.log('Database connection parameters:');
+console.log('Database connection parameters in setup !!!!!:');
 console.log(`Host: ${process.env.DB_HOST}`);
 console.log(`Port: ${process.env.DB_PORT}`);
 console.log(`Database: ${process.env.DB_NAME}`);

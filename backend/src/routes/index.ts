@@ -14,12 +14,13 @@ import adminSettingsRoutes from './admin-settings.routes';
 import directAdminAuthRoutes from './direct-admin-auth.routes';
 import analyticsRoutes from './analytics.routes';
 import planRoutes from './plan.routes';
-import nozzleReadingRoutes from './nozzleReading.routes';
+import nozzleReadingRoutes from './nozzle-reading.routes';
 import dashboardRoutes from './dashboard.routes';
 import creditorRoutes from './creditor.routes';
 import tenderRoutes from './tender.routes';
 import fuelPriceRoutes from './fuel-price.routes';
 import userStationRoutes from './user-station.routes';
+import superadminRoutes from './superadmin.routes';
 
 const router = Router();
 
@@ -44,6 +45,7 @@ router.use('/creditors', creditorRoutes);
 router.use('/tender', tenderRoutes);
 router.use('/fuel-prices', fuelPriceRoutes);
 router.use('/user-stations', userStationRoutes);
+router.use('/superadmin', superadminRoutes);
 router.use(dashboardRoutes);
 
 export default router;
