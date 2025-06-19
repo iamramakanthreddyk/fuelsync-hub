@@ -2,13 +2,9 @@ import { Pool } from 'pg';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 
 // Load environment variables
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
-
-const execPromise = promisify(exec);
 
 // Log connection parameters (without password)
 console.log('Database connection parameters:');
