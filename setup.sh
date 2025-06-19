@@ -40,24 +40,38 @@ print_success "Dependencies installed"
 if [ -d "backend" ]; then
     print_status "Setting up backend..."
     cd backend || exit 1
-    
-    # Check for .env file
+    # Environment: Codex/Test-safe setup
+    if [ "$CI" = "true" ] || [ "$CODEX_MODE" = "true" ]; then
+    print_status "Using in-memory/test database configuration (CI or Codex mode)"
+    export DB_HOST=localhost
+    export DB_PORT=5432
+    export DB_NAME=test_fuelsync
+    export DB_USER=postgres
+    export DB_PASSWORD=postgres
+    export DB_SSL=false
+    else
+    # Local dev fallback
     if [ ! -f ".env" ]; then
         if [ -f ".env.example" ]; then
-            print_warning ".env file not found. Creating from .env.example..."
-            cp .env.example .env
-            print_warning "Please update the .env file with your database credentials"
-            echo "  - DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD"
-            echo ""
-            read -p "Press Enter after updating .env file to continue..."
+        print_warning ".env not found → creating from example"
+        cp .env.example .env
+
+        # 👇 This should be skipped in headless mode
+        if [ -t 0 ]; then
+            print_warning "Please update .env with your DB credentials"
+            read -p "Press Enter after updating .env to continue..."
         else
-            print_error ".env.example file not found. Please create .env file manually."
-            exit 1
+            print_warning "Headless mode detected — skipping .env prompt"
+        fi
+        else
+        print_error "Missing .env and .env.example. Aborting setup."
+        exit 1
         fi
     else
         print_success ".env file found"
     fi
-    
+    fi
+
     # Test database connection
     print_status "Testing database connection..."
     if npm run db:check; then
