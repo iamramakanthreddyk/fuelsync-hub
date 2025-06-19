@@ -100,6 +100,50 @@ This document outlines the available API endpoints grouped by user roles in the 
 * `GET /api/my-sales` — My sales summary
 
 ---
+## 🧾 Tender & Shift Routes
+
+* `POST /api/tender/shifts` — Open a new shift _(attendant/manager)_
+* `POST /api/tender/shifts/:id/close` — Close my shift _(attendant/manager)_
+* `GET /api/tender/shifts/active` — Current user's open shift _(all roles)_
+* `GET /api/tender/shifts/:id` — View shift by ID _(owner/manager)_
+* `GET /api/tender/shifts` — List shifts with filters _(owner/manager)_
+* `POST /api/tender/tender-entries` — Record tender entry _(attendant/manager)_
+* `GET /api/tender/shifts/:shiftId/tender-entries` — Entries for a shift _(owner/manager)_
+* `GET /api/tender/shifts/:shiftId/summary` — Shift totals _(owner/manager)_
+
+## 💲 Fuel Price Endpoints
+
+* `POST /api/fuel-prices` — Create fuel price _(owner)_
+* `GET /api/fuel-prices/current` — Current prices for a station _(owner/manager/attendant)_
+* `GET /api/fuel-prices/history` — Price history _(owner/manager)_
+* `GET /api/fuel-prices/:id` — Fuel price by ID _(owner/manager)_
+* `GET /api/fuel-prices/at-date` — Price at a specific date _(owner/manager)_
+
+## 👥 User-Station Assignment
+
+* `POST /api/stations/assignments` — Assign user to station _(owner)_
+* `DELETE /api/stations/users/:userId/stations/:stationId` — Remove from station _(owner)_
+* `PATCH /api/stations/users/:userId/stations/:stationId/role` — Update station role _(owner)_
+* `GET /api/stations/:stationId/users` — Users for a station _(owner/manager)_
+* `GET /api/stations/users/:userId/assignments` — Stations for a user _(owner)_
+
+## 📊 Analytics & Plan Management
+
+* `GET /api/analytics/tenant` — Sales analytics for tenant _(owner/manager)_
+* `GET /api/analytics/global` — Platform analytics _(superadmin)_
+* `GET /api/plans` — List all plans _(superadmin)_
+* `GET /api/plans/:tenantId` — View tenant plan _(superadmin)_
+* `PUT /api/plans/:tenantId` — Set custom plan _(superadmin)_
+* `DELETE /api/plans/:tenantId` — Remove custom plan _(superadmin)_
+
+## 🔑 Admin Auth & Settings
+
+* `POST /api/admin-auth/login` — Admin login
+* `POST /api/admin-auth/logout` — End admin session _(requires token)_
+* `GET /api/admin-auth/me` — Current admin info
+* `POST /api/direct-admin-auth/login` — CLI login
+* `GET /api/admin/settings` — View platform settings _(superadmin)_
+* `PUT /api/admin/settings` — Update platform settings _(superadmin)_
 
 > Most endpoints are role-protected and scoped to tenant context unless explicitly marked as SuperAdmin endpoints.
 
