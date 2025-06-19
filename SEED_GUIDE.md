@@ -15,7 +15,7 @@ Before seeding data, it's important to understand the database schema:
 
 2. **Key findings**:
    - The `sales` table has a generated column `amount` that is calculated from `sale_volume` and `fuel_price`
-   - The `creditors` table requires `party_name` and other fields
+   - The `creditors` table requires `station_id`, `party_name` and other fields
    - The `creditor_payments` table links payments to creditors
 
 ## Seeding Data
@@ -23,7 +23,7 @@ Before seeding data, it's important to understand the database schema:
 ### Simple Seed Script
 
 The `simple-seed.ts` script creates:
-- A creditor with proper fields
+- A creditor with proper fields linked to a station
 - A credit sale with proper fields (excluding generated columns)
 - A payment linked to the creditor
 

@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 interface Creditor {
   id: string;
+  station_id: string;
   party_name: string;
   contact_person?: string;
   contact_phone?: string;
@@ -29,6 +30,7 @@ interface Payment {
 
 export const createCreditor = async (
   schemaName: string,
+  stationId: string,
   partyName: string,
   contactPerson?: string,
   contactPhone?: string,
@@ -42,12 +44,12 @@ export const createCreditor = async (
     
     const result = await client.query(
       `INSERT INTO creditors (
-        id, party_name, contact_person, contact_phone, email, address, 
+        id, station_id, party_name, contact_person, contact_phone, email, address,
         credit_limit, running_balance, notes
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *`,
       [
-        id, partyName, contactPerson || null, contactPhone || null, 
+        id, stationId, partyName, contactPerson || null, contactPhone || null,
         email || null, address || null, creditLimit || null, 0, notes || null
       ]
     );

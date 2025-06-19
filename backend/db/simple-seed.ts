@@ -67,12 +67,13 @@ async function simpleSeed() {
     const creditorId = generateUUID();
     await client.query(`
       INSERT INTO creditors (
-        id, 
-        party_name, 
-        contact_person, 
-        contact_phone, 
-        email, 
-        address, 
+        id,
+        station_id,
+        party_name,
+        contact_person,
+        contact_phone,
+        email,
+        address,
         credit_limit, 
         running_balance, 
         notes, 
@@ -80,10 +81,11 @@ async function simpleSeed() {
         updated_at, 
         last_updated_at
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
       )
     `, [
       creditorId,
+      stationId,
       'ABC Company',
       'John Doe',
       '555-4444',

@@ -200,6 +200,7 @@ CREATE TABLE IF NOT EXISTS nozzle_readings (
 -- Create creditors table before sales table to avoid circular dependency
 CREATE TABLE IF NOT EXISTS creditors (
     id UUID PRIMARY KEY,
+    station_id UUID NOT NULL REFERENCES stations(id) ON DELETE CASCADE,
     party_name VARCHAR(255) NOT NULL,
     contact_person VARCHAR(255),
     contact_phone VARCHAR(20),
@@ -370,6 +371,7 @@ CREATE INDEX IF NOT EXISTS idx_fuel_price_history_effective_range ON fuel_price_
 CREATE INDEX IF NOT EXISTS idx_sales_station ON sales(station_id);
 CREATE INDEX IF NOT EXISTS idx_sales_user ON sales(user_id);
 CREATE INDEX IF NOT EXISTS idx_sales_recorded_at ON sales(recorded_at);
+CREATE INDEX IF NOT EXISTS idx_creditors_station_id ON creditors(station_id);
 CREATE INDEX IF NOT EXISTS idx_creditor_payments_creditor_id ON creditor_payments(creditor_id);
 CREATE INDEX IF NOT EXISTS idx_shifts_station_id ON shifts(station_id);
 CREATE INDEX IF NOT EXISTS idx_shifts_user_id ON shifts(user_id);

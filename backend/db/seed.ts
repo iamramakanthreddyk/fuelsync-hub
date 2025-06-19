@@ -237,15 +237,15 @@ async function seed() {
     console.log('Creating creditors');
     
     await executeQuery(
-      `INSERT INTO creditors (id, party_name, contact_person, contact_phone, credit_limit)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [creditor1Id, 'ABC Trucking', 'John Smith', '555-1111', 5000]
+      `INSERT INTO creditors (id, station_id, party_name, contact_person, contact_phone, credit_limit)`
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [creditor1Id, station1Id, 'ABC Trucking', 'John Smith', '555-1111', 5000]
     );
     
     await executeQuery(
-      `INSERT INTO creditors (id, party_name, contact_person, contact_phone, credit_limit)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [creditor2Id, 'XYZ Logistics', 'Jane Doe', '555-2222', 10000]
+      `INSERT INTO creditors (id, station_id, party_name, contact_person, contact_phone, credit_limit)`
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [creditor2Id, station2Id, 'XYZ Logistics', 'Jane Doe', '555-2222', 10000]
     );
     
     // Create fuel prices

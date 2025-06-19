@@ -39,6 +39,7 @@ Content-Type: application/json
 Authorization: Bearer <token>
 
 {
+  "stationId": "<station-id>",
   "partyName": "ABC Trucking Company",
   "contactPerson": "John Smith",
   "contactPhone": "555-123-4567",
@@ -69,6 +70,7 @@ Authorization: Bearer <token>
 ```sql
 CREATE TABLE creditors (
   id UUID PRIMARY KEY,
+  station_id UUID NOT NULL REFERENCES stations(id),
   party_name VARCHAR(255) NOT NULL,
   contact_person VARCHAR(255),
   contact_phone VARCHAR(20),
