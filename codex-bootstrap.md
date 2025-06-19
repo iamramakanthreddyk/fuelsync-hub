@@ -1,69 +1,29 @@
 # 🚀 Welcome to FuelSync Hub — ERP for Fuel Stations
 
-You're working inside a multi-tenant SaaS backend built in Node.js + PostgreSQL + React. The `/docs` folder contains 100% of the project architecture, API surface, DB schema, validation rules, and seed flows.
+You're working inside a multi-tenant SaaS backend built in Node.js + PostgreSQL + React.
 
-## 🔍 OBJECTIVE
+## 🤖 AGENT QUICK START
 
-Your goal is to improve, extend, or debug the project *without breaking seed logic, validation, or multi-tenant rules*.
+**One command setup - everything automated:**
 
----
-
-## 🤖 MANDATORY AGENT SETUP
-
-**⚠️ CRITICAL: You MUST use your own local database. DO NOT connect to external/production databases.**
-
-### Step 1: Start Your Own Database
 ```bash
-# Start PostgreSQL container (REQUIRED)
-docker run --name fuelsync-agent-db -p 5432:5432 \
-  -e POSTGRES_DB=fuelsync_dev \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -d postgres:13
+chmod +x agent-bootstrap.sh
+./agent-bootstrap.sh
 ```
 
-### Step 2: Set Environment Variables (REQUIRED)
-```bash
-export DB_HOST=localhost
-export DB_PORT=5432
-export DB_NAME=fuelsync_dev
-export DB_USER=postgres
-export DB_PASSWORD=postgres
-export DB_SSL=false
-export JWT_SECRET=agent-jwt-secret
-export PORT=3001
-export NODE_ENV=development
-```
+This script will:
+- ✅ Start PostgreSQL database automatically
+- ✅ Set all environment variables automatically  
+- ✅ Install all dependencies
+- ✅ Setup database schema and seed data
+- ✅ Verify everything works
 
-### Step 3: Install and Setup
+**Then start coding:**
 ```bash
-npm install
-cd backend && npm install
-cd ../frontend && npm install
-cd ../backend
-npm run db:setup
-cd ..
 npm run dev
 ```
 
 **Access**: http://localhost:3000 (owner@demofuel.com / password123)
-
----
-
-## 🚨 AGENT REQUIREMENTS
-
-### Database Rules
-- ✅ **MUST** use local PostgreSQL container
-- ✅ **MUST** set environment variables (no .env files)
-- ❌ **NEVER** connect to external/Azure/production databases
-- ❌ **NEVER** rely on existing .env files
-
-### Setup Rules
-- ✅ **MUST** start your own database first
-- ✅ **MUST** verify database connection before proceeding
-- ✅ **MUST** use provided environment variables
-- ❌ **NEVER** assume database exists
-- ❌ **NEVER** skip database setup
 
 ---
 
@@ -78,9 +38,7 @@ npm run dev
 
 ---
 
-## 🔧 Agent Commands
-
-All commands require environment variables to be set first:
+## 🔧 Available Commands
 
 ```bash
 # Database operations
@@ -92,34 +50,6 @@ npm run db reset    # Clean slate
 # Development
 npm run dev         # Start both servers
 ```
-
----
-
-## ✅ Verification Checklist
-
-Before starting work, verify:
-- [ ] PostgreSQL container is running
-- [ ] Environment variables are set
-- [ ] Database connection works: `npm run db check`
-- [ ] Application starts: `npm run dev`
-- [ ] Login works: http://localhost:3000
-
----
-
-## 🚨 CRITICAL WARNINGS
-
-### DO NOT:
-- Connect to external databases
-- Use production credentials
-- Skip database setup
-- Rely on .env files
-- Assume existing setup
-
-### ALWAYS:
-- Start your own database
-- Set environment variables
-- Verify setup before coding
-- Use local development only
 
 ---
 
@@ -135,7 +65,7 @@ Before starting work, verify:
 
 ## ✅ READY TO BEGIN
 
-Only proceed after completing the mandatory setup above. Start by scanning:
+After running `./agent-bootstrap.sh`, start by scanning:
 - `API.md` for missing endpoints
 - `BUSINESS_RULES.md` for undocumented edge cases
 - `DATABASE_GUIDE.md` for schema understanding
