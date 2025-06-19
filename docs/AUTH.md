@@ -1,248 +1,106 @@
-# FuelSync Hub Authentication System
+Authentication & Authorization in FuelSync Hub
+This guide explains how login, session handling, and role-based access control work across tenants.
 
-This document describes the authentication system used in FuelSync Hub.
+🧑‍💼 SuperAdmin Authentication
+SuperAdmins exist in the public.admin_users table.
 
-## Overview
+Login via /superadmin page
 
-FuelSync Hub uses JWT (JSON Web Token) based authentication for both tenant users and admin users. The authentication flow is as follows:
+Validated using encrypted password hash
 
-1. User logs in with email and password
-2. Server validates credentials and issues a JWT token
-3. Client stores the token and includes it in subsequent requests
-4. Server validates the token for each protected request
+Session stored in admin-only session store or JWT
 
-## Token Format
+🏢 Tenant User Authentication
+Tenant users (owners, managers, attendants):
 
-JWT tokens contain the following claims:
+Exist in per-tenant users table (e.g., acme.users)
 
-```json
+Log in via /login
+
+Auth flow:
+
+plaintext
+Copy
+Edit
+[login] → validate email/password → get tenant schema → issue tenant-scoped session
+✅ Session Tracking
+Each login is recorded in user_sessions:
+
+sql
+Copy
+Edit
+user_id → login_time → logout_time → ip/device info
+🧾 Role-Based Access Control
+Role field stored in user_stations:
+
+ts
+Copy
+Edit
 {
-  "id": "user-uuid",
-  "role": "owner|manager|employee|superadmin",
-  "tenant_id": "tenant-uuid",  // Not present for admin users
-  "email": "user@example.com",
-  "iat": 1234567890,
-  "exp": 1234567890,
-  "aud": "fuelsync-tenant-api|fuelsync-admin-api",
-  "iss": "fuelsync-auth|fuelsync-admin-auth"
+  user_id: UUID,
+  station_id: UUID,
+  role: 'owner' | 'manager' | 'attendant'
 }
-```
+Middleware enforces role-level access:
 
-## Authentication Endpoints
+Owners → full tenant control
 
-### Tenant Authentication
+Managers → partial station ops
 
-#### Login
+Attendants → restricted to sales entry
 
-```
-POST /api/auth/login
-```
+🛡 Auth Middleware Samples
+ts
+Copy
+Edit
+checkAuth(req, res, next) // general JWT validation
+checkRole('owner')        // ensures only owners can access
+checkStationAccess(user_id, station_id) // ensures binding
+🔒 Technical Notes
+Passwords hashed using bcrypt
 
-Request:
-```json
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
+Sessions stored as JWTs (or optional Redis session store)
 
-Response:
-```json
-{
-  "status": "success",
-  "data": {
-    "token": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "user": {
-      "id": "user-uuid",
-      "email": "user@example.com",
-      "role": "owner",
-      "tenant_id": "tenant-uuid",
-      "tenant_name": "Example Tenant",
-      "first_name": "John",
-      "last_name": "Doe"
-    }
-  }
-}
-```
+SuperAdmins and Tenant Users are fully separated
 
-#### Register
+Cross-tenant access is not allowed
 
-```
-POST /api/auth/register
-```
+Always use getUserFromToken() before trusting any frontend identity.
 
-Request:
-```json
-{
-  "name": "New Tenant",
-  "email": "owner@example.com",
-  "password": "password123",
-  "planType": "basic|premium|enterprise"
-}
-```
+📘 README.md (Final Entry Point)
+We'll update this to reflect all doc links, setup instructions, and developer orientation. Here's the final content block to add to the repo root README:
 
-Response:
-```json
-{
-  "status": "success",
-  "data": {
-    "message": "Tenant created successfully",
-    "tenant": {
-      "id": "tenant-uuid",
-      "name": "New Tenant",
-      "planType": "basic"
-    }
-  }
-}
-```
+md
+Copy
+Edit
+# 🛠 FuelSync Hub — Developer Docs
 
-#### Get Current User
+This repo powers the ERP backend for Fuel Station SaaS.
 
-```
-GET /api/auth/me
-```
+## 📚 Docs Index
 
-Headers:
-```
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
+| Doc Name         | Purpose                                         |
+| ---------------- | ----------------------------------------------- |
+| `ARCHITECTURE.md`| System structure, users, features               |
+| `PRODUCT_STORY.md`| Explainer version for onboarding/devs         |
+| `PLANS.md`       | Pricing, limits, and feature flags              |
+| `ROLES.md`       | Access control matrix for users                 |
+| `SEEDING.md`     | How to populate DB with test/demo data          |
+| `AUTH.md`        | Login, sessions, auth middleware                 |
+| `API.md`         | REST API breakdown by feature + role            |
+| `DATABASE_GUIDE.md` | DB structure, ERD, and responsibilities     |
+| `TROUBLESHOOTING.md`| Migrations, seed bugs, test issues           |
 
-Response:
-```json
-{
-  "status": "success",
-  "data": {
-    "user": {
-      "id": "user-uuid",
-      "email": "user@example.com",
-      "role": "owner",
-      "tenant_id": "tenant-uuid",
-      "tenant_name": "Example Tenant",
-      "first_name": "John",
-      "last_name": "Doe",
-      "active": true
-    }
-  }
-}
-```
+## 🧪 Dev Setup
 
-#### Logout
+```bash
+git clone ...
+npm install
+npm run db:migrate
+npm run db:seed
+npm run dev
+Visit:
 
-```
-POST /api/auth/logout
-```
+Swagger Docs: http://localhost:3001/docs
 
-Headers:
-```
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-Response:
-```json
-{
-  "status": "success",
-  "data": {
-    "message": "Logged out successfully"
-  }
-}
-```
-
-### Admin Authentication
-
-#### Login
-
-```
-POST /api/admin/login
-```
-
-Request:
-```json
-{
-  "email": "admin@example.com",
-  "password": "adminpassword"
-}
-```
-
-Response:
-```json
-{
-  "status": "success",
-  "data": {
-    "token": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "user": {
-      "id": "admin-uuid",
-      "email": "admin@example.com",
-      "role": "superadmin"
-    }
-  }
-}
-```
-
-## Error Responses
-
-All authentication endpoints return standardized error responses:
-
-```json
-{
-  "status": "error",
-  "code": "ERROR_CODE",
-  "message": "Human-readable error message"
-}
-```
-
-Common error codes:
-- `INVALID_CREDENTIALS`: Email or password is incorrect
-- `USER_NOT_FOUND`: User not found
-- `ACCOUNT_SETUP_INCOMPLETE`: User account setup is incomplete
-- `INVALID_AUTH_HEADER`: Invalid authorization header format
-- `NO_TOKEN`: No token provided
-- `TOKEN_EXPIRED`: Token has expired
-- `INVALID_TOKEN`: Token validation failed
-- `INVALID_TOKEN_CLAIMS`: Token is missing required claims
-- `NOT_AUTHENTICATED`: User is not authenticated
-- `INSUFFICIENT_PERMISSIONS`: User does not have required permissions
-
-## Frontend Implementation
-
-The frontend stores JWT tokens in localStorage and includes them in API requests using the Authorization header:
-
-```typescript
-// Request interceptor to add auth token
-api.interceptors.request.use(
-  (config) => {
-    const isAdminRoute = config.url?.startsWith('/admin');
-    const token = localStorage.getItem(isAdminRoute ? 'admin_token' : 'token');
-    
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  }
-);
-```
-
-## Role-Based Access Control
-
-The backend provides a `requireRole` middleware to restrict access to endpoints based on user roles:
-
-```typescript
-// Example usage
-router.get('/sensitive-endpoint', authenticateJWT, requireRole(['owner', 'manager']), controller.handler);
-```
-
-The frontend uses a `ProtectedRoute` component to restrict access to pages based on user roles:
-
-```tsx
-// Example usage
-<ProtectedRoute requiredRoles={['owner']}>
-  <OwnerOnlyComponent />
-</ProtectedRoute>
-```
-
-## Security Considerations
-
-1. JWT tokens are signed using HMAC-SHA256 (HS256) algorithm
-2. Tokens include audience and issuer claims to prevent token misuse
-3. Tokens expire after a configurable period (default: 24 hours for tenant users, 12 hours for admin users)
-4. Sensitive routes are protected with role-based access control
-5. Rate limiting is applied to authentication endpoints to prevent brute force attacks
+SuperAdmin: http://localhost:3001/superadmin
