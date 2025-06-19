@@ -65,11 +65,23 @@ This document outlines the available API endpoints grouped by user roles in the 
 * `POST /api/fuel-deliveries` — Log fuel stock delivery
 
 ### 💳 Credit
+* `GET /api/creditors` — List all creditors
+* `PATCH /api/creditors/:id` — Update creditor
+* `GET /api/creditors/:id/payments` — Payment history
 
 * `POST /api/creditors` — Add credit customer
 * `GET /api/creditors/:id` — View credit customer
 * `POST /api/creditors/:id/payments` — Log a payment
 
+### 🕒 Tender Shifts
+* `POST /api/tender/shifts` — Open shift
+* `POST /api/tender/shifts/:id/close` — Close shift
+* `GET /api/tender/shifts/active` — Get my active shift
+* `GET /api/tender/shifts/:id` — Get shift by ID
+* `GET /api/tender/shifts` — List shifts
+* `GET /api/tender/shifts/:shiftId/summary` — Shift summary
+* `POST /api/tender/tender-entries` — Record tender entry
+* `GET /api/tender/shifts/:shiftId/tender-entries` — Shift tender entries
 ### 📈 Dashboards
 
 * `GET /api/dashboard/station` — Owner dashboard data

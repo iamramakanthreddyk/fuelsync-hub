@@ -9,4 +9,9 @@ erDiagram
     STATIONS ||--o{ FUEL_PRICES : "sets"
     STATIONS ||--o{ CREDITORS : "manages"
     CREDITORS ||--o{ CREDIT_PAYMENTS : "makes"
+    STATIONS ||--o{ FUEL_PRICE_HISTORY : "tracks"
+    STATIONS ||--o{ SHIFTS : "operates"
+    SHIFTS ||--o{ TENDER_ENTRIES : "logs"
+    STATIONS ||--o{ FUEL_DELIVERIES : "receives"
+    STATIONS ||--o{ DAY_RECONCILIATIONS : "records"
 ```

@@ -46,7 +46,7 @@ WHERE r.reading < last.prev;
 | Plan Setting      | Enforced By                                       |
 | ----------------- | ------------------------------------------------- |
 | `maxStations`     | `beforeCreateStation()` in backend controller     |
-| `maxEmployees`    | Checked in user creation service                  |
+| `maxUsers`    | Checked in user creation service                  |
 | `enableCreditors` | Conditional route guards (e.g., `/api/creditors`) |
 | `enableReports`   | Frontend + backend feature flags                  |
 | `enableApiAccess` | API key generation is gated                       |

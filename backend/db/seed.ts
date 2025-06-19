@@ -250,6 +250,18 @@ async function seed() {
     
     // Create fuel prices
     console.log('Creating fuel prices');
+
+    // Seed fuel inventory for station1
+    await executeQuery(
+      `INSERT INTO fuel_inventory (id, station_id, fuel_type, current_volume, capacity, last_updated_at)`,
+      [uuidv4(), station1Id, 'diesel', 5000, 10000, new Date()]
+    );
+
+    // Seed one fuel delivery
+    await executeQuery(
+      `INSERT INTO fuel_deliveries (id, station_id, fuel_type, volume, price_per_unit, total_amount, delivery_date, received_by)`,
+      [uuidv4(), station1Id, 'diesel', 2000, 3.5, 7000, new Date(), ownerId]
+    );
     
     await executeQuery(
       `INSERT INTO fuel_price_history (id, station_id, fuel_type, price_per_unit, created_by)
@@ -269,6 +281,7 @@ async function seed() {
       [uuidv4(), station2Id, 'diesel', 3.89, ownerId]
     );
     
+    // inventory & delivery seeded above
     console.log('Seeding completed successfully!');
   } catch (error) {
     console.error('Error seeding database:', error);

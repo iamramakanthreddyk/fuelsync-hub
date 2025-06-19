@@ -13,6 +13,7 @@ This file captures common bugs, data pitfalls, and developer workflows when work
 | `stations.map` crash on frontend       | Empty or `null` stations on login → always ensure seed assigns at least one station per owner         |
 | Missing foreign key: `credit_party_id` | Ensure all FKs in sales → creditors are defined in schema and migration                               |
 | Plan enforcement not working           | `planConfig.ts` mismatch or middleware not checking → validate plan guards per route                  |
+| Missing tables `fuel_inventory` or `fuel_deliveries` | Run latest migrations to create inventory and delivery tables |
 
 ---
 
