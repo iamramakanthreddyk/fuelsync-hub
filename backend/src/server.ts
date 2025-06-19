@@ -6,7 +6,7 @@ import pool from './config/database';
 
 let server: Server;
 
-const startServer = () => {
+export const startServer = () => {
   server = app.listen(config.port, () => {
     console.log(`Server running on port ${config.port}`);
     console.log(`API docs → http://localhost:${config.port}/api-docs`);
@@ -49,4 +49,8 @@ const startServer = () => {
   });
 };
 
-startServer();
+if (require.main === module) {
+  startServer();
+}
+
+export default app;

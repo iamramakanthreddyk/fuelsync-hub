@@ -7,8 +7,7 @@ The full schema lives in `backend/db/schema.sql`. Use the provided scripts to
 apply and manage the database:
 
 ```bash
-npm run db:migrate   # Run pending migrations (if any)
-npm run db:rollback  # Rollback last batch
+npm run db:setup     # Apply schema and seed data
 npm run db:reset     # Recreate schema and seed data
 ```
 

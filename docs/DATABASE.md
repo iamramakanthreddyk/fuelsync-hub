@@ -85,8 +85,9 @@ SELECT
 ## Common Commands
 
 ```bash
-# Apply migrations
-npm run db:migrate
+
+# Setup database
+npm run db:setup
 
 # Validate schema
 npm run db:validate

@@ -94,16 +94,14 @@ export async function authenticateTenantUser(email: string, password: string) {
  * Generate a JWT token
  */
 export function generateToken(payload: JWTPayload): string {
-  return jwt.sign(
-    payload,
-    config.jwt.secret,
-    { 
-      expiresIn: config.jwt.expiresIn,
-      algorithm: 'HS256',
-      audience: config.jwt.audience,
-      issuer: config.jwt.issuer
-    }
-  );
+  const options: jwt.SignOptions = {
+    expiresIn: config.jwt.expiresIn as jwt.SignOptions['expiresIn'],
+    algorithm: 'HS256',
+    audience: config.jwt.audience,
+    issuer: config.jwt.issuer
+  };
+
+  return jwt.sign(payload, config.jwt.secret as jwt.Secret, options);
 }
 
 /**

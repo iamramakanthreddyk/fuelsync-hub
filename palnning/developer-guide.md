@@ -36,8 +36,7 @@ This guide is for developers integrating with, extending, or contributing to Fue
 3. **Database Setup:**
    ```sh
    cd backend
-   npm run db:migrate
-   npm run db:seed
+   npm run db:setup
    ```
 4. **Run the App:**
    ```sh

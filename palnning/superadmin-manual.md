@@ -27,10 +27,10 @@ This guide is for SuperAdmins responsible for maintaining, monitoring, and scali
   cd backend
   npm run db:reset
   ```
-- **Migrate Database:**
+- **Setup Database:**
   ```sh
   cd backend
-  npm run db:migrate
+  npm run db:setup
   ```
 
 ### Documentation

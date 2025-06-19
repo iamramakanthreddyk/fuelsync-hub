@@ -343,9 +343,9 @@ INSERT INTO users (
    ```bash
    cp .env.example .env
    ```
-4. Run database migrations:
+4. Setup the database schema and seed data:
    ```bash
-   npm run db:migrate
+   npm run db:setup
    ```
 5. Start the development server:
    ```bash
