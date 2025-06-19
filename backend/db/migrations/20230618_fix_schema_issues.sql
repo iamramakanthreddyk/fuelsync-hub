@@ -1,3 +1,4 @@
+-- UP
 -- This migration fixes any schema issues and ensures all required tables exist
 
 -- Create station_user_role enum if it doesn't exist
@@ -164,3 +165,21 @@ CREATE TRIGGER set_fuel_price_effective_to
 AFTER INSERT ON fuel_price_history
 FOR EACH ROW
 EXECUTE FUNCTION update_fuel_price_effective_to();
+-- DOWN
+DROP TRIGGER IF EXISTS set_fuel_price_effective_to ON fuel_price_history;
+DROP FUNCTION IF EXISTS update_fuel_price_effective_to();
+DROP INDEX IF EXISTS idx_creditor_payments_creditor_id;
+DROP INDEX IF EXISTS idx_user_stations_active;
+DROP INDEX IF EXISTS idx_user_stations_station_id;
+DROP INDEX IF EXISTS idx_user_stations_user_id;
+DROP TABLE IF EXISTS fuel_price_history;
+DROP TABLE IF EXISTS tender_entries;
+DROP TABLE IF EXISTS shifts;
+DROP TABLE IF EXISTS creditor_payments;
+DROP TABLE IF EXISTS creditors;
+DROP TABLE IF EXISTS user_stations;
+DROP TYPE IF EXISTS creditor_payment_method;
+DROP TYPE IF EXISTS shift_status;
+DROP TYPE IF EXISTS tender_type;
+DROP TYPE IF EXISTS station_user_role;
+
