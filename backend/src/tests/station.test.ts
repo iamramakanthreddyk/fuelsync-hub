@@ -125,12 +125,16 @@ describe('Station API', () => {
       const listRes = await request(app)
         .get('/api/stations')
         .set('Authorization', `Bearer ${authToken}`);
-      
+
       const deletedStation = listRes.body.find((s: any) => s.id === stationId);
       expect(deletedStation).toBeUndefined();
+
+      // Verify the station cannot be retrieved directly
+      const getRes = await request(app)
+        .get(`/api/stations/${stationId}`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(getRes.status).toBe(404);
     });
   });
 });
-// Remove these function stubs; they are not needed when using a proper test runner
-
-
