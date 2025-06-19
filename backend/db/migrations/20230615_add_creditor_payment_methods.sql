@@ -1,3 +1,4 @@
+-- UP
 -- Add new payment methods to the payment_method type if it doesn't already include them
 DO $$
 BEGIN
@@ -44,3 +45,8 @@ CREATE TABLE IF NOT EXISTS creditor_payments (
 
 -- Create index on creditor_id for faster lookups
 CREATE INDEX IF NOT EXISTS idx_creditor_payments_creditor_id ON creditor_payments(creditor_id);
+-- DOWN
+DROP INDEX IF EXISTS idx_creditor_payments_creditor_id;
+DROP TABLE IF EXISTS creditor_payments;
+DROP TYPE IF EXISTS creditor_payment_method;
+

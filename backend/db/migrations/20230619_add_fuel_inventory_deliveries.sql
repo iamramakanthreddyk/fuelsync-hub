@@ -1,3 +1,4 @@
+-- UP
 -- Create fuel_inventory table if it doesn't exist
 CREATE TABLE IF NOT EXISTS fuel_inventory (
     id UUID PRIMARY KEY,
@@ -59,3 +60,13 @@ CREATE TABLE IF NOT EXISTS day_reconciliations (
 
 -- Index for day_reconciliations
 CREATE INDEX IF NOT EXISTS idx_day_reconciliations_station_id ON day_reconciliations(station_id);
+
+-- DOWN
+DROP INDEX IF EXISTS idx_day_reconciliations_station_id;
+DROP INDEX IF EXISTS idx_fuel_deliveries_received_by;
+DROP INDEX IF EXISTS idx_fuel_deliveries_station_id;
+DROP INDEX IF EXISTS idx_fuel_inventory_station_id;
+DROP TABLE IF EXISTS day_reconciliations;
+DROP TABLE IF EXISTS fuel_deliveries;
+DROP TABLE IF EXISTS fuel_inventory;
+

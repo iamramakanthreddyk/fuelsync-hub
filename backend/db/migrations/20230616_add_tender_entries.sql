@@ -1,3 +1,4 @@
+-- UP
 -- Create tender_type enum if it doesn't exist
 DO $$
 BEGIN
@@ -53,3 +54,16 @@ CREATE INDEX IF NOT EXISTS idx_tender_entries_shift_id ON tender_entries(shift_i
 CREATE INDEX IF NOT EXISTS idx_tender_entries_station_id ON tender_entries(station_id);
 CREATE INDEX IF NOT EXISTS idx_tender_entries_user_id ON tender_entries(user_id);
 CREATE INDEX IF NOT EXISTS idx_tender_entries_tender_type ON tender_entries(tender_type);
+-- DOWN
+DROP INDEX IF EXISTS idx_tender_entries_tender_type;
+DROP INDEX IF EXISTS idx_tender_entries_user_id;
+DROP INDEX IF EXISTS idx_tender_entries_station_id;
+DROP INDEX IF EXISTS idx_tender_entries_shift_id;
+DROP INDEX IF EXISTS idx_shifts_status;
+DROP INDEX IF EXISTS idx_shifts_user_id;
+DROP INDEX IF EXISTS idx_shifts_station_id;
+DROP TABLE IF EXISTS tender_entries;
+DROP TABLE IF EXISTS shifts;
+DROP TYPE IF EXISTS shift_status;
+DROP TYPE IF EXISTS tender_type;
+
