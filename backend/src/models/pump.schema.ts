@@ -1,8 +1,17 @@
-import Joi from 'joi';
+import { z } from 'zod';
 
-export const createPumpSchema = Joi.object({
-  stationId: Joi.string().uuid().required(),
-  name: Joi.string().min(2).max(100).required(),
-  type: Joi.string().valid('diesel', 'petrol', 'other').required(),
-  status: Joi.string().valid('active', 'inactive').optional()
+/**
+ * Validation schema for creating a pump. Fields align with the
+ * `pumps` table columns defined in the database schema.
+ */
+export const createPumpSchema = z.object({
+  stationId: z.string().uuid(),
+  name: z.string().min(2).max(100),
+  serialNumber: z.string().min(1).max(100),
+  installationDate: z.string(),
+  lastMaintenanceDate: z.string().optional(),
+  nextMaintenanceDate: z.string().optional(),
+  status: z.string().optional()
 });
+
+export type CreatePumpInput = z.infer<typeof createPumpSchema>;

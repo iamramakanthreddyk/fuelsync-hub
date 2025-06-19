@@ -43,7 +43,8 @@ describe('Sales API', () => {
       .send({
         stationId,
         name: 'Test Pump',
-        serialNumber: 'TP123'
+        serialNumber: 'TP123',
+        installationDate: '2023-01-01'
       });
     
     pumpId = pumpRes.body.id;
