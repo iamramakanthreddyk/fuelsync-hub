@@ -123,6 +123,7 @@ async function seed() {
        VALUES ($1,$2,$3,'superadmin','System','Admin',TRUE)`,
       [adminId, 'admin@fuelsync.com', adminPw]
     );
+    console.log(`   ↳ Created admin user with ID: ${adminId}`);
 
     // 2️⃣ Create tenant first
     console.log('🏢 Creating tenant…');
@@ -144,6 +145,7 @@ async function seed() {
         'State'
       ]
     );
+    console.log(`   ↳ Created tenant with ID: ${tenantId}`);
 
     // 3️⃣ Create users with tenant_id
     console.log('👥 Seeding users…');
@@ -175,6 +177,9 @@ async function seed() {
         empIds[2], e3pw, tenantId
       ]
     );
+    console.log(
+      `   ↳ Created users: owner=${ownerId}, manager=${managerId}, employees=${empIds.join(', ')}`
+    );
 
     // 4️⃣ stations
     console.log('⛽ Seeding stations…');
@@ -187,7 +192,7 @@ async function seed() {
            (id,tenant_id,name,address,city,state,zip,contact_phone)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
         [
-          stId, 
+          stId,
           tenantId,
           `${name} Station`,
           `${name} Ave`,
@@ -197,6 +202,7 @@ async function seed() {
           '555-0000'
         ]
       );
+      console.log(`   ↳ Station ${name} created with ID: ${stId}`);
 
       // 5️⃣ user_stations
       await client.query(
@@ -208,6 +214,7 @@ async function seed() {
         [ uuid(), ownerId, stId,
           uuid(), managerId, stId ]
       );
+      console.log(`     • Assigned owner ${ownerId} and manager ${managerId} to station ${stId}`);
 
       for (const empId of empIds) {
         await client.query(
@@ -216,6 +223,7 @@ async function seed() {
            VALUES ($1,$2,$3,'attendant',TRUE)`,
           [ uuid(), empId, stId ]
         );
+        console.log(`       - Assigned employee ${empId} to station ${stId}`);
       }
 
       // 6️⃣ pumps + nozzles
@@ -227,6 +235,7 @@ async function seed() {
            VALUES ($1,$2,$3,$4,CURRENT_DATE - INTERVAL '1 year',TRUE)`,
           [ pumpId, stId, `Pump ${i}`, `SN${Math.floor(Math.random()*90000)+10000}` ]
         );
+        console.log(`       - Pump ${i} created with ID: ${pumpId} for station ${stId}`);
         for (let n = 0; n < 2; n++) {
           const nozId = uuid();
           const init  = n * 1000;
@@ -236,6 +245,7 @@ async function seed() {
              VALUES ($1,$2,$3,$4,$4,TRUE)`,
             [ nozId, pumpId, FUEL_TYPES[n], init ]
           );
+          console.log(`         ↳ Nozzle ${nozId} (${FUEL_TYPES[n]}) added to pump ${pumpId}`);
         }
       }
 
@@ -247,6 +257,7 @@ async function seed() {
            VALUES ($1,$2,$3,$4,CURRENT_DATE,$5,TRUE)`,
           [ uuid(), stId, fuel, rnd(2.5,4), ownerId ]
         );
+        console.log(`       - Price set for ${fuel} at station ${stId}`);
       }
     }
 
@@ -257,11 +268,13 @@ async function seed() {
       { name: 'XYZ Logistics', contact: 'Jane Doe', phone: '555-2222', limit: 10000 },
     ];
     for (const c of creditorData) {
+      const credId = uuid();
       await client.query(
         `INSERT INTO creditors (id, station_id, party_name, contact_person, contact_phone, credit_limit)
          VALUES ($1,$2,$3,$4,$5,$6)`,
-        [uuid(), stations[0].id, c.name, c.contact, c.phone, c.limit]
+        [credId, stations[0].id, c.name, c.contact, c.phone, c.limit]
       );
+      console.log(`   ↳ Creditor ${c.name} inserted with ID: ${credId}`);
     }
 
     // 8️⃣ demo sales (skip if requested)
@@ -270,6 +283,7 @@ async function seed() {
       const saleArg = process.argv.find(a => a.startsWith('--sales='));
       const saleCount = saleArg ? Number(saleArg.split('=')[1]) : undefined;
       await generateDemoSales(client, stations, empIds, 30, saleCount);
+      console.log(`   ↳ Demo sales generated${saleCount ? ` (${saleCount} records)` : ''}`);
     }
 
     await client.query('COMMIT');
