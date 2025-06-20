@@ -53,7 +53,9 @@ erDiagram
 * `sales.voided_by` ➔ links to `users.id`
 * `fuel_prices` ➔ Price per fuel type
 * `fuel_price_history` ➔ Historical prices per station
+* `fuel_price_history.created_by` ➔ links to `users.id`
 * `fuel_deliveries` ➔ Restock records
+* `fuel_deliveries.received_by` ➔ links to `users.id`
 * `fuel_inventory` ➔ Tank levels
 * `shifts` ➔ User work shifts per station
 * `tender_entries` ➔ Cash/card/credit tallies during a shift
