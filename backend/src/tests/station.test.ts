@@ -7,6 +7,7 @@ import { afterAll, beforeAll, expect } from '@jest/globals';
 // Mock data
 let authToken: string;
 let stationId: string;
+let ownerId: string;
 
 const testStation = {
   name: 'Test Station',
@@ -29,6 +30,7 @@ describe('Station API', () => {
       });
     
     authToken = res.body.token;
+    ownerId = res.body.user.id;
   });
 
   // Close database connection after all tests
@@ -42,13 +44,22 @@ describe('Station API', () => {
         .post('/api/stations')
         .set('Authorization', `Bearer ${authToken}`)
         .send(testStation);
-      
+
       expect(res.status).toBe(201);
       expect(res.body).toHaveProperty('id');
       expect(res.body).toHaveProperty('name', testStation.name);
-      
+
       // Save ID for future tests
       stationId = res.body.id;
+
+      const usersRes = await request(app)
+        .get(`/api/user-stations/station/${stationId}/users`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(usersRes.status).toBe(200);
+      const ownerAssignment = usersRes.body.data.find((u: any) => u.user_id === ownerId);
+      expect(ownerAssignment).toBeDefined();
+      expect(ownerAssignment.assignment_role).toBe('owner');
     });
 
     it('should return 400 if name is missing', async () => {
