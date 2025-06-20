@@ -37,7 +37,15 @@ export const PLAN_CONFIG = {
     maxUsers: 5,
     exportData: false,
     advancedReports: false,
-    apiAccess: false
+    apiAccess: false,
+    manageStations: true,
+    managePumps: true,
+    manageNozzles: true,
+    managePrices: true,
+    manageUsers: false,
+    recordSales: true,
+    reconcile: true,
+    viewReports: true,
   },
   premium: {
     maxStations: 5,
@@ -46,7 +54,15 @@ export const PLAN_CONFIG = {
     maxUsers: 20,
     exportData: true,
     advancedReports: true,
-    apiAccess: false
+    apiAccess: false,
+    manageStations: true,
+    managePumps: true,
+    manageNozzles: true,
+    managePrices: true,
+    manageUsers: true,
+    recordSales: true,
+    reconcile: true,
+    viewReports: true,
   },
   enterprise: {
     maxStations: 999,
@@ -55,7 +71,15 @@ export const PLAN_CONFIG = {
     maxUsers: 999,
     exportData: true,
     advancedReports: true,
-    apiAccess: true
+    apiAccess: true,
+    manageStations: true,
+    managePumps: true,
+    manageNozzles: true,
+    managePrices: true,
+    manageUsers: true,
+    recordSales: true,
+    reconcile: true,
+    viewReports: true,
   }
 }
 ```
@@ -67,3 +91,14 @@ SEEDING.md (simulate plans)
 ROLES.md (which roles can use features)
 
 API.md (routes gated by plan)
+
+---
+
+## 🔒 Server Guard Middleware
+
+Plan limits are enforced in the backend using middleware:
+
+- `checkPumpLimit` blocks new pumps if a station has reached `maxPumpsPerStation`.
+- `checkNozzleLimit` blocks new nozzles if a pump has reached `maxNozzlesPerPump`.
+
+These guards read plan settings from `planConfig.ts` and return `403` errors when limits are exceeded.
