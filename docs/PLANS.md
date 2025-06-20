@@ -37,7 +37,15 @@ export const PLAN_CONFIG = {
     maxUsers: 5,
     exportData: false,
     advancedReports: false,
-    apiAccess: false
+    apiAccess: false,
+    manageStations: true,
+    managePumps: true,
+    manageNozzles: true,
+    managePrices: true,
+    manageUsers: false,
+    recordSales: true,
+    reconcile: true,
+    viewReports: true,
   },
   premium: {
     maxStations: 5,
@@ -46,7 +54,15 @@ export const PLAN_CONFIG = {
     maxUsers: 20,
     exportData: true,
     advancedReports: true,
-    apiAccess: false
+    apiAccess: false,
+    manageStations: true,
+    managePumps: true,
+    manageNozzles: true,
+    managePrices: true,
+    manageUsers: true,
+    recordSales: true,
+    reconcile: true,
+    viewReports: true,
   },
   enterprise: {
     maxStations: 999,
@@ -55,7 +71,15 @@ export const PLAN_CONFIG = {
     maxUsers: 999,
     exportData: true,
     advancedReports: true,
-    apiAccess: true
+    apiAccess: true,
+    manageStations: true,
+    managePumps: true,
+    manageNozzles: true,
+    managePrices: true,
+    manageUsers: true,
+    recordSales: true,
+    reconcile: true,
+    viewReports: true,
   }
 }
 ```

@@ -49,8 +49,16 @@ This document outlines the available API endpoints grouped by user roles in the 
 ### 🛠 Setup
 
 * `POST /api/stations` — Create a station
-* `POST /api/pumps` — Add a pump to a station _(guarded by `checkPumpLimit`)_
-* `POST /api/nozzles` — Add a nozzle to a pump _(guarded by `checkNozzleLimit`)_
+* `POST /api/pumps` — Add a pump to a station
+* `GET /api/pumps/:id` — Get pump details
+* `PATCH /api/pumps/:id` — Update pump
+* `DELETE /api/pumps/:id` — Remove pump
+* `GET /api/pumps/station/:stationId` — Pumps for a station
+* `POST /api/nozzles` — Add a nozzle to a pump
+* `GET /api/nozzles/:id` — Get nozzle details
+* `PATCH /api/nozzles/:id` — Update nozzle
+* `GET /api/nozzles/pump/:pumpId` — Nozzles for a pump
+* `GET /api/nozzles/station/:stationId` — Nozzles for a station
 * `POST /api/users` — Create a new employee (manager/attendant)
 * `PATCH /api/users/:id` — Update employee
 * `DELETE /api/users/:id` — Deactivate employee
@@ -59,6 +67,9 @@ This document outlines the available API endpoints grouped by user roles in the 
 
 * `POST /api/nozzles/:id/readings` — Submit cumulative reading
 * `GET /api/nozzles/:id/readings` — Get historical readings
+* `GET /api/stations/:stationId/nozzle-readings/previous` — Previous day's readings
+* `GET /api/stations/:stationId/fuel-prices` — Current prices for station nozzles
+* `POST /api/stations/:stationId/nozzle-readings` — Submit today's readings
 * `POST /api/sales/manual` — Add manual sale
 * `GET /api/sales?stationId=...` — Get sales list
 * `POST /api/fuel-prices` — Add/update fuel price
