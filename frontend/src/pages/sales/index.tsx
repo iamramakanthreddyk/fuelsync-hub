@@ -21,6 +21,7 @@ import DashboardLayout from '../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../components/auth/ProtectedRoute';
 import { useRouter } from 'next/router';
 import { authHeader } from '../../utils/authHelper';
+import { apiFetch } from '../../services/api';
 
 const SalesPage = () => {
   const [sales, setSales] = useState([]);
@@ -44,8 +45,8 @@ const SalesPage = () => {
         
         console.log('Using headers:', headers);
         
-        const response = await fetch('http://localhost:3001/api/sales', {
-          headers
+        const response = await apiFetch('/sales', {
+          headers,
         });
         
         const data = await response.json();

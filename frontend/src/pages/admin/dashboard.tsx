@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import { Business, SupervisorAccount, Storage } from '@mui/icons-material';
 import AdminLayout from '../../components/layout/AdminLayout';
+import { apiFetch } from '../../services/api';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -42,7 +43,7 @@ export default function AdminDashboard() {
         }
 
         // Fetch admin info
-        const adminResponse = await fetch('http://localhost:3001/api/admin-auth/me', {
+        const adminResponse = await apiFetch('/admin-auth/me', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -59,7 +60,7 @@ export default function AdminDashboard() {
         setAdmin(adminData.data);
 
         // Fetch dashboard stats
-        const statsResponse = await fetch('http://localhost:3001/api/superadmin/stats', {
+        const statsResponse = await apiFetch('/superadmin/stats', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -77,7 +78,7 @@ export default function AdminDashboard() {
 
         // If stats endpoint fails, fetch tenants to get count
         else {
-          const tenantsResponse = await fetch('http://localhost:3001/api/superadmin/tenants', {
+          const tenantsResponse = await apiFetch('/superadmin/tenants', {
             headers: {
               'Authorization': `Bearer ${token}`
             }

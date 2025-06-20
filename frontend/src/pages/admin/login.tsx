@@ -12,6 +12,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import { LockOutlined } from '@mui/icons-material';
+import { apiFetch } from '../../services/api';
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function AdminLogin() {
       console.log('Attempting admin login with:', { email });
       
       // Use the admin auth endpoint
-      const response = await fetch('http://localhost:3001/api/admin-auth/login', {
+      const response = await apiFetch('/admin-auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

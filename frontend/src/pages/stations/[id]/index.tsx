@@ -28,6 +28,7 @@ import {
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../../components/auth/ProtectedRoute';
 import { authHeader } from '../../../utils/authHelper';
+import { apiFetch } from '../../../services/api';
 
 // TabPanel component for tab content
 function TabPanel(props) {
@@ -76,8 +77,8 @@ const StationDetailPage = () => {
         }
         
         // Fetch station details
-        const stationResponse = await fetch(`http://localhost:3001/api/stations/${id}`, {
-          headers
+        const stationResponse = await apiFetch(`/stations/${id}`, {
+          headers,
         });
         
         if (!stationResponse.ok) {
@@ -96,8 +97,8 @@ const StationDetailPage = () => {
           setStation(stationData.data || stationData);
           
           // Fetch pumps for this station
-          const pumpsResponse = await fetch(`http://localhost:3001/api/stations/${id}/pumps`, {
-            headers
+          const pumpsResponse = await apiFetch(`/stations/${id}/pumps`, {
+            headers,
           });
           
           if (pumpsResponse.ok) {
@@ -145,9 +146,9 @@ const StationDetailPage = () => {
     
     try {
       const headers = authHeader();
-      const response = await fetch(`http://localhost:3001/api/stations/${id}`, {
+      const response = await apiFetch(`/stations/${id}`, {
         method: 'DELETE',
-        headers
+        headers,
       });
       
       if (response.ok) {

@@ -20,6 +20,7 @@ import { Save as SaveIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-materia
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../../components/auth/ProtectedRoute';
 import { authHeader } from '../../../utils/authHelper';
+import { apiFetch } from '../../../services/api';
 
 const NewSalePage = () => {
   const router = useRouter();
@@ -53,8 +54,8 @@ const NewSalePage = () => {
           return;
         }
         
-        const response = await fetch('http://localhost:3001/api/stations', {
-          headers
+        const response = await apiFetch('/stations', {
+          headers,
         });
         
         if (!response.ok) {
@@ -98,8 +99,8 @@ const NewSalePage = () => {
   const fetchPumps = async (stationId) => {
     try {
       const headers = authHeader();
-      const response = await fetch(`http://localhost:3001/api/stations/${stationId}/pumps`, {
-        headers
+      const response = await apiFetch(`/stations/${stationId}/pumps`, {
+        headers,
       });
       
       if (!response.ok) {
@@ -138,8 +139,8 @@ const NewSalePage = () => {
   const fetchNozzles = async (pumpId) => {
     try {
       const headers = authHeader();
-      const response = await fetch(`http://localhost:3001/api/pumps/${pumpId}/nozzles`, {
-        headers
+      const response = await apiFetch(`/pumps/${pumpId}/nozzles`, {
+        headers,
       });
       
       if (!response.ok) {
@@ -220,7 +221,7 @@ const NewSalePage = () => {
         fuel_price: parseFloat(sale.fuel_price)
       };
       
-      const response = await fetch('http://localhost:3001/api/sales', {
+      const response = await apiFetch('/sales', {
         method: 'POST',
         headers: {
           ...headers,
