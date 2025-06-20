@@ -19,14 +19,6 @@ import {
 } from '@mui/material';
 import StationSelector from '../components/common/StationSelector';
 
-// Import the AuthDebugger component if it exists
-let AuthDebugger;
-try {
-  AuthDebugger = require('../componentsdebug/AuthDebugger').default;
-} catch (error) {
-  console.error('AuthDebugger component not found:', error);
-}
-
 const DebugPage = () => {
   const [token, setToken] = useState('');
   const [apiResponse, setApiResponse] = useState(null);
@@ -220,11 +212,6 @@ const DebugPage = () => {
         </Grid>
       </Grid>
       
-      {AuthDebugger && (
-        <Box sx={{ mt: 3 }}>
-          <AuthDebugger />
-        </Box>
-      )}
     </Container>
   );
 };
