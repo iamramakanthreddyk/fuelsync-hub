@@ -30,7 +30,8 @@ Copy
 Edit
 --tenant=test_tenant      # Reseeds only one tenant
 --plan=premium            # Use specific plan type
---includeSales=true       # Add sales & readings (default: true)
+--sales=50                # Number of sample sales to generate
+--skip-sales              # Do not create any sales records
 --demo=true               # Loads dummy creditors & payments
 👤 Seeded Roles & Data
 SuperAdmin
@@ -52,17 +53,6 @@ Each tenant has:
 No creditors by default
 
 Fuel Prices per nozzle
-
-⛽ Sample Reading-to-Sale Flow
-The script also simulates:
-
-plaintext
-Copy
-Edit
-Day 1: nozzle_reading = 1000.0
-Day 1: later → 1050.0 → delta = 50 → sale record
-Day 2: → 1100.0 → delta = 50 → sale record
-Auto-calculates fuel price, volume, and amount.
 
 🔐 Plan Simulation
 Seeding auto-selects plan type:
