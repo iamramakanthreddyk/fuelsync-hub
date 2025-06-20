@@ -52,5 +52,7 @@ You may now begin.
 - Documented all plan feature flags in PLANS.md to match `planConfig.ts`
 
 ## 2025-06-26
+- Removed undocumented endpoints from API docs: `GET /api/nozzles/:id/readings`,
+  `POST /api/sales/manual`, and `POST /api/fuel-deliveries`.
 - `db:setup` now seeds 30 days of demo sales by reusing the script logic.
 - Updated SEEDING guide with sales seeding behavior and flags.

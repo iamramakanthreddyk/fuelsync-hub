@@ -66,14 +66,11 @@ This document outlines the available API endpoints grouped by user roles in the 
 ### ⛽ Operations
 
 * `POST /api/nozzles/:id/readings` — Submit cumulative reading
-* `GET /api/nozzles/:id/readings` — Get historical readings
 * `GET /api/stations/:stationId/nozzle-readings/previous` — Previous day's readings
 * `GET /api/stations/:stationId/fuel-prices` — Current prices for station nozzles
 * `POST /api/stations/:stationId/nozzle-readings` — Submit today's readings
-* `POST /api/sales/manual` — Add manual sale
 * `GET /api/sales?stationId=...` — Get sales list
 * `POST /api/fuel-prices` — Add/update fuel price
-* `POST /api/fuel-deliveries` — Log fuel stock delivery
 
 ### 💳 Credit
 
@@ -93,8 +90,6 @@ This document outlines the available API endpoints grouped by user roles in the 
 > Assigned to 1+ stations by owner
 
 * `POST /api/nozzles/:id/readings` — Enter readings
-* `POST /api/sales/manual` — Add manual sale
-* `POST /api/fuel-deliveries` — Record delivery
 * `GET /api/dashboard` — Manager-level dashboard
 * `GET /api/employees` — List attendants at station
 
@@ -105,7 +100,6 @@ This document outlines the available API endpoints grouped by user roles in the 
 > Limited to daily operation tasks only
 
 * `POST /api/nozzles/:id/readings` — Submit daily reading
-* `POST /api/sales/manual` — Add sale from reading
 
 ---
 ## 🧾 Tender & Shift Routes
