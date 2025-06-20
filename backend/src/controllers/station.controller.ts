@@ -1,6 +1,7 @@
 // src/controllers/station.controller.ts
 import { Request, Response } from 'express';
 import * as stationService from '../services/station.service';
+import * as userStationService from '../services/user-station.service';
 
 export const getStations = async (req: Request, res: Response) => {
   try {
@@ -88,7 +89,25 @@ export const createStation = async (req: Request, res: Response) => {
       contact_phone || '',
       tenantId
     );
-    
+
+    const schemaName = req.schemaName;
+    const userId = req.user?.id;
+
+    if (!schemaName || !userId) {
+      return res.status(500).json({
+        status: 'error',
+        code: 'TENANT_CONTEXT_MISSING',
+        message: 'Tenant context not set'
+      });
+    }
+
+    await userStationService.assignUserToStation(
+      schemaName,
+      userId,
+      station.id,
+      'owner'
+    );
+
     return res.status(201).json({
       status: 'success',
       data: station
