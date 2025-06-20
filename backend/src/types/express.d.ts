@@ -23,6 +23,16 @@ declare global {
       schemaName?: string;
 
       /**
+       * Tenant ID derived from JWT
+       */
+      tenantId?: string;
+
+      /**
+       * Tenant name derived from JWT
+       */
+      tenantName?: string;
+
+      /**
        * User's role at the station (for station-specific operations)
        */
       stationRole?: string;
