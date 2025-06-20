@@ -6,7 +6,8 @@ This guide explains the streamlined database operations for FuelSync Hub.
 
 | Command | Description | When to Use |
 |---------|-------------|-------------|
-| `npm run db:setup` | Complete database setup with seed data | First-time setup or reset |
+| `npm run db reset` | Drop & recreate the database then seed | Clean slate before development |
+| `npm run db:setup` | Complete database setup with seed data | First-time setup or when the DB is empty |
 | `npm run db:check` | Test database connection | Troubleshooting connectivity |
 | `npm run db:fix` | Fix user-station relationships | When users can't access stations |
 | `npm run db:verify` | Verify database setup | After setup or changes |
@@ -22,6 +23,71 @@ backend/db/
 ├── fix-relationships.ts # Fix user-station relationships
 └── check-connection.ts  # Test database connection
 ```
+
+## 📂 File Reference
+
+### backend/db/
+
+| File | Purpose |
+|------|---------|
+| `admin-schema.sql` | Defines superadmin tables and default admin settings |
+| `check-connection.ts` | Verifies database connectivity |
+| `fix-relationships.ts` | Repairs user-to-station assignments |
+| `schema.sql` | Core public schema used by `setup-db.ts` |
+| `schema-info.json` | JSON dump of table metadata |
+| `validation-triggers.sql` | Triggers enforcing data integrity |
+| `setup-db.ts` | Applies `schema.sql` to create tables |
+| `seed.ts` | Seeds demo data and creates tenant schema |
+| `verify-seed.ts` | Prints sample rows to verify seeding |
+| `migrations/` | Incremental SQL migrations |
+| `schema/` | Contains `complete_schema.sql` snapshot |
+| `scripts/` | Utility scripts described below |
+
+### backend/db/scripts/
+
+| File | Purpose |
+|------|---------|
+| `clean_db.sql` | Truncates tables for a fresh start |
+| `clean_db.ts` | Drops and recreates the database |
+| `create_tenant.sql` | Function to provision a tenant schema |
+| `init-db.ts` | Runs full initialization (schema, migrations, seed) |
+| `migrate.ts` | Applies base schema and all migrations |
+| `reset-db.ts` | Calls `clean_db.ts`, `migrate.ts`, then `seed.ts` |
+| `reset_schema.sql` | Drops and recreates the public schema only |
+| `rollback.ts` | Rolls back the last migration batch |
+| `schema-snapshot.ts` | Exports the current schema to JSON |
+| `seed.ts` | Advanced seeding script with options |
+| `salees.json` | Example snapshot of the `sales` table |
+| `update-schema.ts` | Uses `psql` to apply schema and migrations |
+| `validate-schema.ts` | Checks required tables and data rules |
+| `validate.ts` | Runs custom validation queries |
+
+### Setup and Reset Internals
+
+The root command `npm run db` delegates to scripts in `backend`. When you run:
+
+```bash
+npm run db setup
+```
+
+It invokes `npm run db:setup` inside `backend/package.json`, which runs:
+
+1. `ts-node db/setup-db.ts`
+2. `ts-node db/seed.ts`
+3. `ts-node db/fix-relationships.ts`
+
+Likewise, running:
+
+```bash
+npm run db reset
+```
+
+calls `npm run db:reset` in the backend. That sequence executes:
+
+1. `ts-node db/scripts/clean_db.ts`
+2. `ts-node db/setup-db.ts`
+3. `ts-node db/seed.ts`
+4. `ts-node db/fix-relationships.ts`
 
 ## 🔧 Environment Setup
 
@@ -52,6 +118,15 @@ set DB_USER=postgres
 set DB_PASSWORD=postgres
 set DB_SSL=false
 ```
+
+## 📝 Example Workflow
+
+```bash
+npm run db reset   # drop & recreate DB, then seed
+npm run db setup   # apply schema and seed (assumes clean DB)
+```
+
+If seeding fails for any reason, re-run `npm run db reset` to start from a clean state.
 
 ## 🔧 Common Scenarios
 
@@ -189,6 +264,14 @@ cd backend && npm run db:setup
 # Or reset database
 cd backend && npm run db:setup
 ```
+
+#### "Seeding failed" errors
+If you encounter duplicate key or other seeding errors, run:
+
+```bash
+npm run db reset
+```
+This drops and recreates the database before seeding.
 
 ### Environment Variables
 
