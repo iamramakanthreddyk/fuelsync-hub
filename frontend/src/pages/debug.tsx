@@ -20,7 +20,8 @@ import {
 import StationSelector from '../components/common/StationSelector';
 import type { SelectChangeEvent } from '@mui/material/Select';
 
-const DebugPage = () => {
+// Only load debug tools in non-production environments
+const DebugPageContent = () => {
   const [token, setToken] = useState('');
   const [apiResponse, setApiResponse] = useState(null);
   const [apiError, setApiError] = useState(null);
@@ -215,6 +216,13 @@ const DebugPage = () => {
       
     </Container>
   );
+};
+
+const DebugPage = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return null;
+  }
+  return <DebugPageContent />;
 };
 
 export default DebugPage;

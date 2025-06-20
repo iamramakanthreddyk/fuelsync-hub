@@ -34,7 +34,9 @@ function AppContent({ Component, pageProps }: AppProps) {
     // Check authentication on route change
     const handleRouteChange = (url: string) => {
       // Skip auth check for public pages
-      const publicRoutes = ['/login', '/debug', '/admin/login'];
+      const publicRoutes = process.env.NODE_ENV === 'production'
+        ? ['/login', '/admin/login']
+        : ['/login', '/debug', '/admin/login'];
       if (publicRoutes.includes(url)) {
         return;
       }
