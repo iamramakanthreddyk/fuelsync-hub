@@ -86,6 +86,8 @@ CREATE TABLE creditors (
 ```
 
 ### credit_payments table
+Note: Earlier versions named this table `creditor_payments`. The schema now uses
+`credit_payments` consistently.
 ```sql
 CREATE TABLE credit_payments (
   id UUID PRIMARY KEY,

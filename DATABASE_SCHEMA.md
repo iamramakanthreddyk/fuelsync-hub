@@ -635,6 +635,8 @@ CREATE TABLE sales (
 ```
 
 #### Credit Payments Table
+This table was previously called `creditor_payments`. Older migrations may still
+reference the former name.
 
 ```sql
 CREATE TABLE credit_payments (

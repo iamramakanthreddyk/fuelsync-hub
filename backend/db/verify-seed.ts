@@ -53,7 +53,7 @@ async function verifySeed() {
     // Check payments
     const paymentsQuery = `
       SELECT id, creditor_id, amount, payment_method, reference_number, recorded_by
-      FROM creditor_payments
+      FROM credit_payments
       ORDER BY created_at DESC
       LIMIT 5
     `;

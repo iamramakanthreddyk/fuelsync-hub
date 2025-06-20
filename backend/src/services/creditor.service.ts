@@ -194,7 +194,7 @@ export const recordPayment = async (
     // Insert payment record
     const paymentId = uuidv4();
     const paymentResult = await client.query(
-      `INSERT INTO creditor_payments (
+      `INSERT INTO credit_payments (
         id, creditor_id, amount, payment_method, reference_number,
         recorded_by, notes
       ) VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -224,7 +224,7 @@ export const getPaymentHistory = async (
 ): Promise<Payment[]> => {
   const query = `
     SELECT cp.*, u.first_name || ' ' || u.last_name as recorded_by_name
-    FROM creditor_payments cp
+    FROM credit_payments cp
     JOIN users u ON cp.recorded_by = u.id
     WHERE cp.creditor_id = $1
     ORDER BY cp.created_at DESC

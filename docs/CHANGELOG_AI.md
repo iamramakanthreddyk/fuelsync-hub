@@ -56,3 +56,8 @@ You may now begin.
   `POST /api/sales/manual`, and `POST /api/fuel-deliveries`.
 - `db:setup` now seeds 30 days of demo sales by reusing the script logic.
 - Updated SEEDING guide with sales seeding behavior and flags.
+
+## 2025-06-27
+- Standardized payment table name across code and docs.
+- Added migration to rename `creditor_payments` to `credit_payments`.
+- Updated docs to note the change.
