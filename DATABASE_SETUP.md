@@ -35,13 +35,13 @@ This will display your connection parameters and test the connection.
 
 ### 4. Run Database Setup
 
-Once the connection is working, run the setup script:
+Once the connection is working, run the reset command for a clean slate:
 
 ```bash
-npm run db:setup
+npm run db reset
 ```
 
-This will create the schema and seed the database with initial data.
+This command cleans the database before seeding to avoid duplicate key errors such as `admin_users_email_key`.
 
 ## Troubleshooting Connection Issues
 

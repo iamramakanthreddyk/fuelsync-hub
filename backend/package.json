@@ -8,7 +8,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "db:setup": "ts-node db/setup-db.ts && ts-node db/seed.ts && ts-node db/fix-relationships.ts",
-    "db:reset": "ts-node db/setup-db.ts && ts-node db/seed.ts && ts-node db/fix-relationships.ts",
+    "db:reset": "ts-node db/scripts/clean_db.ts && ts-node db/setup-db.ts && ts-node db/seed.ts && ts-node db/fix-relationships.ts",
     "db:check": "ts-node db/check-connection.ts",
     "db:fix": "ts-node db/fix-relationships.ts",
     "db:verify": "ts-node db/verify-seed.ts",

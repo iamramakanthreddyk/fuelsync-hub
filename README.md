@@ -25,10 +25,12 @@ npm install
 cd backend && npm install
 cd ../frontend && npm install
 cd ../backend
-npm run db:setup
+npm run db reset
 cd ..
 npm run dev
 ```
+
+Running `npm run db reset` cleans the database before seeding. This prevents duplicate key errors like `admin_users_email_key` when starting over.
 
 ### Option 2: Docker Database
 
@@ -42,9 +44,11 @@ docker run --name fuelsync-db -p 5432:5432 \
 
 # Set environment variables and setup
 export DB_HOST=localhost DB_PORT=5432 DB_NAME=fuelsync_dev DB_USER=postgres DB_PASSWORD=postgres DB_SSL=false
-npm run db:setup
+npm run db reset
 npm run dev
 ```
+
+`npm run db reset` ensures the container starts with a clean database so seeding works without duplicate key conflicts.
 
 ## 🌐 Access URLs
 
@@ -73,7 +77,8 @@ npm run build            # Build for production
 
 ### Database Management
 ```bash
-npm run db:setup         # Complete database setup with seed data
+npm run db reset         # Clean DB then seed
+npm run db:setup         # Setup without cleaning
 npm run db:check         # Test database connection
 npm run db:fix           # Fix user-station relationships
 npm run db:verify        # Verify database setup
@@ -152,14 +157,16 @@ fuelsync-hub/
 
 3. **Permission denied errors**
    ```bash
-   cd backend && npm run db:setup
+   cd backend && npm run db reset
    ```
+   Cleaning the database helps prevent duplicate key errors like `admin_users_email_key`.
 
 4. **Clean slate needed**
    ```bash
    # Reset everything
-   cd backend && npm run db:setup
+   cd backend && npm run db reset
    ```
+   This drops and recreates the database before seeding.
 
 ### Debug Tools
 - Visit http://localhost:3000/debug for debugging tools
