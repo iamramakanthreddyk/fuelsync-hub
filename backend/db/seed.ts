@@ -1,8 +1,8 @@
 // backend/db/seed.ts - Fixed TypeScript seed
-import { Pool } from 'pg';
 import { generateDemoSales } from './scripts/seed';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
+import pool from './dbPool';
 
 interface User {
   id: string;
@@ -12,14 +12,6 @@ interface User {
   lastName: string;
 }
 
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '5432'),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
-});
 
 async function seedDatabase() {
   const client = await pool.connect();
