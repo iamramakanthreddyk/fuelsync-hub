@@ -18,6 +18,7 @@ import {
   ListItemText
 } from '@mui/material';
 import StationSelector from '../components/common/StationSelector';
+import type { SelectChangeEvent } from '@mui/material/Select';
 
 const DebugPage = () => {
   const [token, setToken] = useState('');
@@ -65,8 +66,8 @@ const DebugPage = () => {
     }
   };
 
-  const handleStationChange = (event) => {
-    setSelectedStation(event.target.value);
+  const handleStationChange = (event: SelectChangeEvent<string>) => {
+    setSelectedStation(event.target.value as string);
   };
 
   const parseJwt = (token) => {

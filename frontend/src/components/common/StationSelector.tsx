@@ -1,70 +1,93 @@
-// frontend/src/components/common/StationSelector.jsx
+// frontend/src/components/common/StationSelector.tsx
 import React, { useState, useEffect } from 'react';
 import { FormControl, InputLabel, Select, MenuItem, CircularProgress, FormHelperText } from '@mui/material';
-import { getToken } from '../../utils/authHelper';
+import type { SelectChangeEvent } from '@mui/material/Select';
+import type { Station } from '../../types/api';
 
-const StationSelector = ({ value, onChange, required = false, disabled = false, label = "Station" }) => {
-  const [stations, setStations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+interface StationSelectorProps {
+  value: string;
+  onChange?: (event: SelectChangeEvent<string>) => void;
+  required?: boolean;
+  disabled?: boolean;
+  label?: string;
+}
+
+interface StationSelectorState {
+  stations: Station[];
+  loading: boolean;
+  error: string | null;
+}
+
+const StationSelector: React.FC<StationSelectorProps> = ({
+  value,
+  onChange,
+  required = false,
+  disabled = false,
+  label = 'Station',
+}) => {
+  const [state, setState] = useState<StationSelectorState>({
+    stations: [],
+    loading: true,
+    error: null,
+  });
 
   useEffect(() => {
     const fetchStations = async () => {
       try {
-        setLoading(true);
-        setError(null);
-        
+        setState(prev => ({ ...prev, loading: true, error: null }));
+
         const token = localStorage.getItem('token');
         if (!token) {
-          setError('Authentication required');
-          setLoading(false);
+          setState(prev => ({ ...prev, loading: false, error: 'Authentication required' }));
           return;
         }
-        
+
         console.log('Fetching stations...');
         const response = await fetch('/api/stations', {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
-        
+
         if (!response.ok) {
           const errorData = await response.json();
           console.error('Error fetching stations:', errorData);
-          setError(`Failed to fetch stations: ${errorData.message || response.statusText}`);
-          setLoading(false);
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            error: `Failed to fetch stations: ${errorData.message || response.statusText}`,
+          }));
           return;
         }
-        
+
         const data = await response.json();
         console.log('Stations data:', data);
-        
+
         if (data.status === 'success' && Array.isArray(data.data)) {
-          setStations(data.data);
+          setState({ stations: data.data, loading: false, error: null });
         } else if (data.data && Array.isArray(data.data)) {
-          setStations(data.data);
+          setState({ stations: data.data, loading: false, error: null });
         } else {
           console.error('Invalid stations data format:', data);
-          setError('Invalid data format received from server');
-          setStations([]);
+          setState({ stations: [], loading: false, error: 'Invalid data format received from server' });
         }
       } catch (err) {
         console.error('Error fetching stations:', err);
-        setError(`Error: ${err.message}`);
-        setStations([]);
-      } finally {
-        setLoading(false);
+        const message = err instanceof Error ? `Error: ${err.message}` : 'Unknown error';
+        setState({ stations: [], loading: false, error: message });
       }
     };
 
     fetchStations();
   }, []);
 
-  const handleChange = (event) => {
+  const handleChange = (event: SelectChangeEvent<string>) => {
     if (onChange) {
       onChange(event);
     }
   };
+
+  const { stations, loading, error } = state;
 
   return (
     <FormControl fullWidth required={required} disabled={disabled || loading} error={!!error}>
