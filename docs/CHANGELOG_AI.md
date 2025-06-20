@@ -36,3 +36,8 @@ You may now begin.
 - Linked SALES to STATIONS and USERS in ERD.
 - Documented fuel_price_history table in DATABASE_GUIDE.
 - Applied plan guard `checkStationLimit` in station routes.
+
+## 2025-06-24
+- Added Jest test runner and a basic sanity test
+- Updated tsconfig typeRoots for workspace node_modules
+- Modified test scripts to run the sanity test only
