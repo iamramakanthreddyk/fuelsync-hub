@@ -45,11 +45,13 @@ WHERE r.reading < last.prev;
 
 | Plan Setting      | Enforced By                                       |
 | ----------------- | ------------------------------------------------- |
-| `maxStations`     | `beforeCreateStation()` in backend controller     |
-| `maxEmployees`    | Checked in user creation service                  |
-| `enableCreditors` | Conditional route guards (e.g., `/api/creditors`) |
-| `enableReports`   | Frontend + backend feature flags                  |
-| `enableApiAccess` | API key generation is gated                       |
+| `maxStations`        | `beforeCreateStation()` in backend controller            |
+| `maxPumpsPerStation` | `checkPumpLimit` middleware in pump routes              |
+| `maxNozzlesPerPump`  | `checkNozzleLimit` middleware in nozzle routes          |
+| `maxEmployees`       | Checked in user creation service                         |
+| `enableCreditors`    | Conditional route guards (e.g., `/api/creditors`)        |
+| `enableReports`      | Frontend + backend feature flags                         |
+| `enableApiAccess`    | API key generation is gated                              |
 
 **Plan source:** `planConfig.ts` → read at runtime per tenant.
 
