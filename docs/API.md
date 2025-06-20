@@ -142,6 +142,7 @@ This document outlines the available API endpoints grouped by user roles in the 
 * `GET /api/admin/settings` — View platform settings _(superadmin)_
 * `PUT /api/admin/settings` — Update platform settings _(superadmin)_
 * `GET /api/superadmin/stats` — Platform stats _(superadmin)_
+* `GET /api/admin/reports/usage` — Platform usage reports _(superadmin)_
 * `GET /api/docs` — Swagger UI
 
 > Most endpoints are role-protected and scoped to tenant context unless explicitly marked as SuperAdmin endpoints.

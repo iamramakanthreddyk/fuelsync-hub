@@ -32,3 +32,7 @@ You may now begin.
 - Updated seeding guide to reflect actual data counts
 - Documented admin_sessions and admin_settings tables
 - Added admin tables to ERD diagram
+- Added `GET /api/admin/reports/usage` and `/api/docs` to API.md.
+- Linked SALES to STATIONS and USERS in ERD.
+- Documented fuel_price_history table in DATABASE_GUIDE.
+- Applied plan guard `checkStationLimit` in station routes.
