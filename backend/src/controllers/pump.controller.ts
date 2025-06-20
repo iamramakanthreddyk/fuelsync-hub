@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as pumpService from '../services/pump.service';
+import * as stationService from '../services/station.service';
 
 export const createPump = async (req: Request, res: Response) => {
   try {
@@ -9,12 +10,19 @@ export const createPump = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Station ID, name, serial number and installation date are required' });
     }
     
-    // Get schema name from middleware
+    // Get schema name and tenant ID from middleware
     const schemaName = req.schemaName;
-    if (!schemaName) {
+    const tenantId = req.user?.tenant_id;
+    if (!schemaName || !tenantId) {
       return res.status(500).json({ message: 'Tenant context not set' });
     }
-    
+
+    // Verify station belongs to tenant
+    const station = await stationService.getStationById(stationId, tenantId);
+    if (!station) {
+      return res.status(404).json({ message: 'Station not found' });
+    }
+
     const pump = await pumpService.createPump(
       schemaName,
       stationId,
