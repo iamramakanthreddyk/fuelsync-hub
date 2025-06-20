@@ -11,12 +11,19 @@ This guide helps resolve common issues with FuelSync Hub.
 **Solution**:
 1. Check PostgreSQL is running
 2. Verify environment variables:
-```bash
-# Unix/Linux/macOS
-echo $DB_HOST $DB_PORT $DB_NAME $DB_USER
-1. **Check your environment variables**:
-   Make sure your database connection parameters are correct:
+   ```bash
+   # Unix/Linux/macOS
+   echo $DB_HOST $DB_PORT $DB_NAME $DB_USER
+
+   # Windows PowerShell
+   echo $env:DB_HOST $env:DB_PORT $env:DB_NAME $env:DB_USER
+
+   # Windows CMD
+   echo %DB_HOST% %DB_PORT% %DB_NAME% %DB_USER%
    ```
+
+   Example Azure configuration:
+   ```bash
    DB_HOST=fuelsync-server.postgres.database.azure.com
    DB_PORT=5432
    DB_NAME=fuelsync_db1
@@ -25,17 +32,11 @@ echo $DB_HOST $DB_PORT $DB_NAME $DB_USER
    DB_SSL=true
    ```
 
-# Windows PowerShell
-echo $env:DB_HOST $env:DB_PORT $env:DB_NAME $env:DB_USER
-
-# Windows CMD
-echo %DB_HOST% %DB_PORT% %DB_NAME% %DB_USER%
-```
-
+   **Note:** This Azure example is for production or backup scenarios only. For development and testing, use a local PostgreSQL instance as described in [docs/TESTING.md](docs/TESTING.md).
 3. Test connection:
-```bash
-npm run db check
-```
+   ```bash
+   npm run db check
+   ```
 
 ### Schema Issues
 
