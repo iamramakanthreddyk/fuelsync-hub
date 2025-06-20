@@ -34,8 +34,8 @@ export const setTenantContext = async (
     req.tenantName = req.user.tenant_name;
     
     // Set schema name for database operations
-    // Format: tenant_[uuid with hyphens replaced by underscores]
-    req.schemaName = `tenant_${req.user.tenant_id.replace(/-/g, '_')}`;
+    // For this environment we store all data in the public schema
+    req.schemaName = 'public';
     
     // Log tenant context for debugging
     console.log(`Tenant context set: ${req.schemaName}`);

@@ -107,9 +107,11 @@ CREATE TABLE IF NOT EXISTS pumps (
     name VARCHAR(50) NOT NULL,
     serial_number VARCHAR(100),
     installation_date DATE DEFAULT CURRENT_DATE,
+    last_maintenance_date DATE,
     active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP,
     UNIQUE(station_id, name)
 );
 
@@ -117,9 +119,29 @@ CREATE TABLE IF NOT EXISTS nozzles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     pump_id UUID NOT NULL REFERENCES pumps(id) ON DELETE CASCADE,
     fuel_type VARCHAR(50) NOT NULL,
+    initial_reading NUMERIC(12,3) NOT NULL,
+    current_reading NUMERIC(12,3) NOT NULL,
+    last_reading_date TIMESTAMP,
+    status VARCHAR(50) DEFAULT 'active',
     active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP,
+    CONSTRAINT valid_readings CHECK (current_reading >= initial_reading)
+);
+
+CREATE TABLE IF NOT EXISTS fuel_prices (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    station_id UUID NOT NULL REFERENCES stations(id),
+    fuel_type VARCHAR(50) NOT NULL,
+    price_per_unit NUMERIC(10,3) NOT NULL,
+    effective_from TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    effective_to TIMESTAMP,
+    created_by UUID NOT NULL REFERENCES users(id),
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT positive_price CHECK (price_per_unit > 0)
 );
 
 CREATE TABLE IF NOT EXISTS fuel_price_history (
@@ -129,6 +151,7 @@ CREATE TABLE IF NOT EXISTS fuel_price_history (
     price_per_unit DECIMAL(10,2) NOT NULL,
     effective_from TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     effective_to TIMESTAMP,
+    created_by UUID NOT NULL REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT positive_price CHECK (price_per_unit > 0)
 );
@@ -146,18 +169,43 @@ CREATE TABLE IF NOT EXISTS creditors (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE OR REPLACE FUNCTION calc_sale_amount(volume NUMERIC, price NUMERIC)
+RETURNS NUMERIC AS $$
+BEGIN
+    RETURN ROUND(volume * price, 2);
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
 CREATE TABLE IF NOT EXISTS sales (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    station_id UUID NOT NULL REFERENCES stations(id),
     nozzle_id UUID NOT NULL REFERENCES nozzles(id),
     user_id UUID NOT NULL REFERENCES users(id),
-    sale_volume DECIMAL(10,3) NOT NULL,
-    fuel_price DECIMAL(10,2) NOT NULL,
-    amount DECIMAL(10,2) GENERATED ALWAYS AS (sale_volume * fuel_price) STORED,
+    recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    sale_volume NUMERIC(12,3) NOT NULL,
+    cumulative_reading NUMERIC(12,3) NOT NULL,
+    previous_reading NUMERIC(12,3) NOT NULL,
+    fuel_price NUMERIC(10,3) NOT NULL,
+    amount NUMERIC(10,2) GENERATED ALWAYS AS (calc_sale_amount(sale_volume, fuel_price)) STORED,
+    cash_received NUMERIC(10,2) DEFAULT 0,
+    credit_given NUMERIC(10,2) DEFAULT 0,
+    credit_party_id UUID REFERENCES creditors(id),
     payment_method payment_method NOT NULL,
-    status sale_status NOT NULL DEFAULT 'posted',
-    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status sale_status NOT NULL DEFAULT 'pending',
+    notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT valid_sale_readings CHECK (cumulative_reading > previous_reading),
+    CONSTRAINT valid_sale_volume CHECK (ABS(sale_volume - (cumulative_reading - previous_reading)) < 0.001)
+);
+
+CREATE TABLE IF NOT EXISTS nozzle_readings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nozzle_id UUID NOT NULL REFERENCES nozzles(id),
+    reading NUMERIC(12,3) NOT NULL,
+    recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    recorded_by UUID NOT NULL REFERENCES users(id),
+    notes TEXT
 );
 
 COMMIT;

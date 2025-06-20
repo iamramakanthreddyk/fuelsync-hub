@@ -60,13 +60,13 @@ export const checkPumpLimit = async (req: Request, res: Response, next: NextFunc
   }
   
   try {
-    const schemaName = req.schemaName as string;
-    if (!schemaName) return sendError(res, 400, 'Schema name is required');
+    const tenantId = user.tenant_id;
+    if (!tenantId) return sendError(res, 400, 'Tenant ID is required');
     const planType = getPlanType(user);
     const { stationId } = req.body;
     if (!stationId) return sendError(res, 400, 'Station ID is required');
     const limits = PLAN_CONFIG[planType as PlanType];
-    const pumpCount = await getPumpCount(schemaName, stationId as string);
+    const pumpCount = await getPumpCount(tenantId, stationId as string);
     if (pumpCount >= limits.maxPumpsPerStation) {
       return sendError(res, 403, `You have reached the maximum number of pumps (${limits.maxPumpsPerStation}) per station allowed on your ${planType} plan.`, {
         limit: limits.maxPumpsPerStation,
@@ -95,13 +95,13 @@ export const checkNozzleLimit = async (req: Request, res: Response, next: NextFu
   }
   
   try {
-    const schemaName = req.schemaName as string;
-    if (!schemaName) return sendError(res, 400, 'Schema name is required');
+    const tenantId = user.tenant_id;
+    if (!tenantId) return sendError(res, 400, 'Tenant ID is required');
     const planType = getPlanType(user);
     const { pumpId } = req.body;
     if (!pumpId) return sendError(res, 400, 'Pump ID is required');
     const limits = PLAN_CONFIG[planType as PlanType];
-    const nozzleCount = await getNozzleCount(schemaName, pumpId as string);
+    const nozzleCount = await getNozzleCount(tenantId, pumpId as string);
     if (nozzleCount >= limits.maxNozzlesPerPump) {
       return sendError(res, 403, `You have reached the maximum number of nozzles (${limits.maxNozzlesPerPump}) per pump allowed on your ${planType} plan.`, {
         limit: limits.maxNozzlesPerPump,

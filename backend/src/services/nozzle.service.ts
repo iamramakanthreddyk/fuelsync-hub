@@ -110,3 +110,13 @@ export const recordNozzleReading = async (
     return result.rows[0];
   });
 };
+
+export const deleteNozzle = async (schemaName: string, nozzleId: string) => {
+  const query = `
+    UPDATE nozzles
+    SET active = false, deleted_at = NOW(), updated_at = NOW()
+    WHERE id = $1 AND active = true
+    RETURNING id`;
+  const result = await executeQuery(schemaName, query, [nozzleId]);
+  return result.rows.length > 0;
+};

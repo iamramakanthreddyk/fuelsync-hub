@@ -569,7 +569,7 @@ CREATE TABLE nozzle_readings (
   id UUID PRIMARY KEY,
   nozzle_id UUID NOT NULL REFERENCES nozzles(id),
   reading NUMERIC(12,3) NOT NULL,
-  recorded_at TIMESTAMP NOT NULL,
+  recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   recorded_by UUID NOT NULL REFERENCES users(id),
   notes TEXT
 );
@@ -582,10 +582,28 @@ CREATE TABLE fuel_prices (
   id UUID PRIMARY KEY,
   station_id UUID NOT NULL REFERENCES stations(id),
   fuel_type TEXT NOT NULL,
-  price_per_unit NUMERIC(10,2) NOT NULL,
-  effective_from TIMESTAMP NOT NULL,
+  price_per_unit NUMERIC(10,3) NOT NULL,
+  effective_from TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   effective_to TIMESTAMP,
   created_by UUID NOT NULL REFERENCES users(id),
+  active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### Fuel Price History Table
+
+```sql
+CREATE TABLE fuel_price_history (
+  id UUID PRIMARY KEY,
+  station_id UUID NOT NULL REFERENCES stations(id),
+  fuel_type TEXT NOT NULL,
+  price_per_unit NUMERIC(10,2) NOT NULL,
+  effective_from TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  effective_to TIMESTAMP,
+  created_by UUID NOT NULL REFERENCES users(id),
+  notes TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -621,16 +639,19 @@ CREATE TABLE sales (
   sale_volume NUMERIC(12,3) NOT NULL,
   cumulative_reading NUMERIC(12,3),
   previous_reading NUMERIC(12,3),
-  fuel_price NUMERIC(10,2) NOT NULL,
-  amount NUMERIC(10,2) NOT NULL,
-  cash_received NUMERIC(10,2),
-  credit_given NUMERIC(10,2),
-  payment_method TEXT NOT NULL,
+  fuel_price NUMERIC(10,3) NOT NULL,
+  amount NUMERIC(10,2) GENERATED ALWAYS AS (calc_sale_amount(sale_volume, fuel_price)) STORED,
+  cash_received NUMERIC(10,2) DEFAULT 0,
+  credit_given NUMERIC(10,2) DEFAULT 0,
+  payment_method payment_method NOT NULL,
   credit_party_id UUID REFERENCES creditors(id),
   status TEXT NOT NULL,
   notes TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  voided_by UUID REFERENCES users(id),
+  voided_at TIMESTAMP,
+  void_reason TEXT
 );
 ```
 
