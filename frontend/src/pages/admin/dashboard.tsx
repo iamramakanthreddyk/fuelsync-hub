@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { Business, SupervisorAccount, Storage } from '@mui/icons-material';
 import AdminLayout from '../../components/layout/AdminLayout';
-import { apiFetch } from '../../services/api';
+import { api } from '../../utils/api';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -43,58 +43,42 @@ export default function AdminDashboard() {
         }
 
         // Fetch admin info
-        const adminResponse = await apiFetch('/admin-auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (!adminResponse.ok) {
+        try {
+          const adminData = await api.get('/admin-auth/me', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setAdmin(adminData.data);
+        } catch {
           localStorage.removeItem('adminToken');
           localStorage.removeItem('admin');
           router.push('/admin/login');
           return;
         }
 
-        const adminData = await adminResponse.json();
-        setAdmin(adminData.data);
-
         // Fetch dashboard stats
-        const statsResponse = await apiFetch('/superadmin/stats', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (statsResponse.ok) {
-          const statsData = await statsResponse.json();
-          setStats(statsData.data || {
-            tenantCount: 0,
-            userCount: 0,
-            stationCount: 0,
-            recentTenants: []
+        try {
+          const statsData = await api.get('/superadmin/stats', {
+            headers: { Authorization: `Bearer ${token}` },
           });
-        }
-
-        // If stats endpoint fails, fetch tenants to get count
-        else {
-          const tenantsResponse = await apiFetch('/superadmin/tenants', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-
-          if (tenantsResponse.ok) {
-            const tenantsData = await tenantsResponse.json();
-            const tenants = tenantsData.data || [];
-            
-            setStats({
-              tenantCount: tenants.length,
+          setStats(
+            statsData.data || {
+              tenantCount: 0,
               userCount: 0,
               stationCount: 0,
-              recentTenants: tenants.slice(0, 5)
-            });
-          }
+              recentTenants: [],
+            }
+          );
+        } catch {
+          const tenantsData = await api.get('/superadmin/tenants', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const tenants = tenantsData.data || [];
+          setStats({
+            tenantCount: tenants.length,
+            userCount: 0,
+            stationCount: 0,
+            recentTenants: tenants.slice(0, 5),
+          });
         }
       } catch (err) {
         console.error('Dashboard error:', err);

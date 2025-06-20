@@ -28,7 +28,7 @@ import {
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../../components/auth/ProtectedRoute';
 import { authHeader } from '../../../utils/authHelper';
-import { apiFetch } from '../../../services/api';
+import { api } from '../../../utils/api';
 
 // TabPanel component for tab content
 function TabPanel(props) {
@@ -77,34 +77,17 @@ const StationDetailPage = () => {
         }
         
         // Fetch station details
-        const stationResponse = await apiFetch(`/stations/${id}`, {
-          headers,
-        });
-        
-        if (!stationResponse.ok) {
-          if (stationResponse.status === 401) {
-            router.push('/login');
-            return;
-          }
-          const errorData = await stationResponse.json();
-          throw new Error(errorData.message || 'Failed to fetch station details');
-        }
-        
-        const stationData = await stationResponse.json();
+        const stationData = await api.get(`/stations/${id}`, { headers });
         console.log('Station data:', stationData);
         
         if (stationData && (stationData.id || stationData.data?.id)) {
           setStation(stationData.data || stationData);
           
           // Fetch pumps for this station
-          const pumpsResponse = await apiFetch(`/stations/${id}/pumps`, {
-            headers,
-          });
-          
-          if (pumpsResponse.ok) {
-            const pumpsData = await pumpsResponse.json();
+          try {
+            const pumpsData = await api.get(`/stations/${id}/pumps`, { headers });
             console.log('Pumps data:', pumpsData);
-            
+
             if (pumpsData && Array.isArray(pumpsData.data)) {
               setPumps(pumpsData.data);
             } else if (pumpsData && Array.isArray(pumpsData)) {
@@ -113,8 +96,8 @@ const StationDetailPage = () => {
               console.warn('Invalid pumps data format:', pumpsData);
               setPumps([]);
             }
-          } else {
-            console.warn('Failed to fetch pumps:', await pumpsResponse.text());
+          } catch (err) {
+            console.warn('Failed to fetch pumps:', err);
             setPumps([]);
           }
         } else {
@@ -146,17 +129,8 @@ const StationDetailPage = () => {
     
     try {
       const headers = authHeader();
-      const response = await apiFetch(`/stations/${id}`, {
-        method: 'DELETE',
-        headers,
-      });
-      
-      if (response.ok) {
-        router.push('/stations');
-      } else {
-        const errorData = await response.json();
-        alert(`Failed to delete station: ${errorData.message || 'Unknown error'}`);
-      }
+      await api.delete(`/stations/${id}`, { headers });
+      router.push('/stations');
     } catch (err) {
       console.error('Error deleting station:', err);
       alert(`Error: ${err.message}`);

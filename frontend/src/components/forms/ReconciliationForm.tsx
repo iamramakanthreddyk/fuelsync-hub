@@ -13,7 +13,7 @@ import {
   Paper,
   Divider
 } from '@mui/material';
-import { apiGet } from '../../utils/api';
+import { api } from '../../utils/api';
 
 interface Station {
   id: string;
@@ -75,7 +75,7 @@ const ReconciliationForm: React.FC<ReconciliationFormProps> = ({
   useEffect(() => {
     const fetchStations = async () => {
       try {
-        const data = await apiGet<Station[]>('/stations');
+        const data = await api.get<Station[]>('/stations');
         setStations(data);
       } catch (error) {
         console.error('Error fetching stations:', error);
@@ -95,7 +95,7 @@ const ReconciliationForm: React.FC<ReconciliationFormProps> = ({
       setLoading(prev => ({ ...prev, dailyTotals: true }));
       
       try {
-        const data = await apiGet<DailySalesTotals>(
+        const data = await api.get<DailySalesTotals>(
           `/reconciliations/daily-totals?stationId=${formData.stationId}&date=${formData.date}`
         );
         

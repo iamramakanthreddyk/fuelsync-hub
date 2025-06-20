@@ -1,6 +1,6 @@
 import { Paper, Typography, Grid } from '@mui/material';
 import { useState, useEffect } from 'react';
-import { apiGet } from '../../utils/api';
+import { api } from '../../utils/api';
 
 interface SystemHealth {
   db_size_mb: number;
@@ -13,7 +13,7 @@ export default function SystemHealth() {
   const [health, setHealth] = useState<SystemHealth | null>(null);
 
   useEffect(() => {
-    apiGet('/admin/system-health').then((data) => setHealth(data as SystemHealth));
+    api.get('/admin/system-health').then((data) => setHealth(data as SystemHealth));
   }, []);
 
   if (!health) return null;

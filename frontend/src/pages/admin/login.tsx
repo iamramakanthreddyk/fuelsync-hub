@@ -12,7 +12,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import { LockOutlined } from '@mui/icons-material';
-import { apiFetch } from '../../services/api';
+import { api } from '../../utils/api';
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -30,20 +30,7 @@ export default function AdminLogin() {
       console.log('Attempting admin login with:', { email });
       
       // Use the admin auth endpoint
-      const response = await apiFetch('/admin-auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
-      }
-
-      const data = await response.json();
+      const data = await api.post('/admin-auth/login', { email, password });
       console.log('Admin login successful:', data);
 
       // Store token and user data

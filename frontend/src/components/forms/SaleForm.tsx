@@ -13,7 +13,7 @@ import {
   Paper,
   Divider
 } from '@mui/material';
-import { apiGet } from '../../utils/api';
+import { api } from '../../utils/api';
 
 interface Station {
   id: string;
@@ -89,7 +89,7 @@ const SaleForm: React.FC<SaleFormProps> = ({
   useEffect(() => {
     const fetchStations = async () => {
       try {
-        const data = await apiGet<Station[]>('/stations');
+        const data = await api.get<Station[]>('/stations');
         setStations(data);
       } catch (error) {
         console.error('Error fetching stations:', error);
@@ -109,7 +109,7 @@ const SaleForm: React.FC<SaleFormProps> = ({
       setLoading(prev => ({ ...prev, creditors: true }));
       
       try {
-        const data = await apiGet<Creditor[]>(`/creditors?stationId=${formData.stationId}`);
+        const data = await api.get<Creditor[]>(`/creditors?stationId=${formData.stationId}`);
         setCreditors(data);
       } catch (error) {
         console.error('Error fetching creditors:', error);
@@ -130,7 +130,7 @@ const SaleForm: React.FC<SaleFormProps> = ({
       setFormData(prev => ({ ...prev, nozzleId: '' }));
       
       try {
-        const data = await apiGet<Nozzle[]>(`/nozzles/station/${formData.stationId}`);
+        const data = await api.get<Nozzle[]>(`/nozzles/station/${formData.stationId}`);
         setNozzles(data);
       } catch (error) {
         console.error('Error fetching nozzles:', error);
@@ -149,10 +149,10 @@ const SaleForm: React.FC<SaleFormProps> = ({
       
       try {
         // Get nozzle details
-        const nozzle = await apiGet<Nozzle>(`/nozzles/${formData.nozzleId}`);
+        const nozzle = await api.get<Nozzle>(`/nozzles/${formData.nozzleId}`);
         
         // Get current fuel price
-        const priceResponse = await apiGet<{ pricePerUnit: number }>(
+        const priceResponse = await api.get<{ pricePerUnit: number }>(
           `/fuel-prices?stationId=${formData.stationId}&fuelType=${nozzle.fuelType}`
         );
         

@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { apiGet, apiPost } from './api';
+import { api } from './api';
 import { ApiResponse, LoginResponseData, RegisterResponseData, User, UserResponseData } from '../types/api';
 
 /**
@@ -9,7 +9,7 @@ import { ApiResponse, LoginResponseData, RegisterResponseData, User, UserRespons
 export const login = async (email: string, password: string, isAdmin = false): Promise<LoginResponseData> => {
   try {
     const endpoint = isAdmin ? '/admin/login' : '/auth/login';
-    const response = await apiPost<ApiResponse<LoginResponseData>>(endpoint, { email, password });
+    const response = await api.post<ApiResponse<LoginResponseData>>(endpoint, { email, password });
     
     if (response.status !== 'success' || !response.data) {
       throw new Error(response.message || 'Login failed');
@@ -36,7 +36,7 @@ export const register = async (
   subscriptionPlan: string
 ): Promise<RegisterResponseData> => {
   try {
-    const response = await apiPost<ApiResponse<RegisterResponseData>>(
+    const response = await api.post<ApiResponse<RegisterResponseData>>(
       '/auth/register',
       { name, email, password, subscriptionPlan }
     );
@@ -57,7 +57,7 @@ export const register = async (
 export const logout = async (isAdmin = false): Promise<void> => {
   try {
     // Call logout endpoint to clear server-side session/cookies
-    await apiPost<ApiResponse<{ message: string }>>('/auth/logout');
+    await api.post<ApiResponse<{ message: string }>>('/auth/logout');
   } catch (error) {
     console.error('Logout API call failed:', error);
   } finally {
@@ -146,7 +146,7 @@ export const useAuth = (isAdminSection = false) => {
     }
     
     try {
-      const response = await apiGet<ApiResponse<UserResponseData>>('/auth/me');
+      const response = await api.get<ApiResponse<UserResponseData>>('/auth/me');
       
       if (response.status !== 'success' || !response.data) {
         throw new Error('Failed to get user data');

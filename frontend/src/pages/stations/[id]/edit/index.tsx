@@ -18,7 +18,7 @@ import { Save as SaveIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-materia
 import DashboardLayout from '../../../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../../../components/auth/ProtectedRoute';
 import { authHeader } from '../../../../utils/authHelper';
-import { apiFetch } from '../../../../services/api';
+import { api } from '../../../../utils/api';
 
 const StationEditPage = () => {
   const router = useRouter();
@@ -53,20 +53,7 @@ const StationEditPage = () => {
           return;
         }
         
-        const response = await apiFetch(`/stations/${id}`, {
-          headers,
-        });
-        
-        if (!response.ok) {
-          if (response.status === 401) {
-            router.push('/login');
-            return;
-          }
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch station details');
-        }
-        
-        const data = await response.json();
+        const data = await api.get(`/stations/${id}`, { headers });
         console.log('Station data:', data);
         
         if (data && (data.id || data.data?.id)) {
@@ -114,19 +101,16 @@ const StationEditPage = () => {
         return;
       }
       
-      const response = await apiFetch(`/stations/${id}`, {
-        method: 'PUT',
-        headers: {
-          ...headers,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(station)
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update station');
-      }
+      await api.put(
+        `/stations/${id}`,
+        station,
+        {
+          headers: {
+            ...headers,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
       
       router.push(`/stations/${id}`);
     } catch (err) {
