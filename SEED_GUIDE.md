@@ -20,6 +20,14 @@ Before seeding data, it's important to understand the database schema:
 
 ## Seeding Data
 
+Before running any seeding commands, ensure the database is in a clean state by executing:
+
+```bash
+npm run db reset
+```
+
+This prevents duplicate key errors such as the `admin_users_email_key` issue that can occur when seeding on top of existing data.
+
 ### Simple Seed Script
 
 The `simple-seed.ts` script creates:
