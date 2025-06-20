@@ -29,6 +29,8 @@ erDiagram
 ### User Access
 
 * `admin_users` ➔ Superadmin login/auth
+* `admin_sessions` ➔ Tracks admin login tokens
+* `admin_settings` ➔ Platform configuration
 * `users` ➔ Tenant users (owner, manager, attendant)
 * `user_stations` ➔ Links users to stations + roles
 

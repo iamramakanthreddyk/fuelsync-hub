@@ -1,6 +1,8 @@
 ```mermaid
 erDiagram
     ADMIN_USERS ||--o{ ADMIN_ACTIVITY_LOGS : "logs"
+    ADMIN_USERS ||--o{ ADMIN_SESSIONS : "sessions"
+    ADMIN_SETTINGS ||--|| ADMIN_USERS : "configured_by"
     USERS ||--o{ USER_STATIONS : "works_at"
     STATIONS ||--o{ USER_STATIONS : "has_staff"
     STATIONS ||--o{ PUMPS : "has"

@@ -43,13 +43,13 @@ Each tenant has:
 
 1 Owner (role = owner)
 
-2 Stations
+1 Station
 
-3 Pumps → 2 Nozzles per pump
+1 Pump → 2 Nozzles
 
-4 Users (1 manager, 3 attendants)
+3 Users (owner, manager, attendant)
 
-2 Creditors
+No creditors by default
 
 Fuel Prices per nozzle
 
