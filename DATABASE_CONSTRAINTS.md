@@ -1,138 +1,162 @@
 # FuelSync Hub - Database Constraints & Triggers Documentation
 
-## 🚨 Critical Database Constraints
+## 🚨 **CRITICAL: Immediate Trigger Behavior**
 
-This document explains the database triggers and constraints that must be satisfied during seeding and operations.
+⚠️ **The database triggers fire IMMEDIATELY on INSERT/UPDATE, NOT at transaction commit.**
 
-### 🔗 **Foreign Key Dependencies**
+This means you cannot create a station and then add a pump - the trigger fires before the pump exists.
 
-The database has a complex dependency chain that must be respected during deletion and creation:
+## 🔗 **Complete Foreign Key Dependencies**
+
+Based on actual database analysis, the complete dependency chain is:
 
 ```
-admin_activity_logs → admin_users
-sales → nozzles, users
-fuel_price_history → stations, users (created_by)
-nozzles → pumps
-pumps → stations
-user_stations → users, stations
-creditors → stations (optional)
-stations → tenants
-users → tenants
+Level 1 (Most Dependent):
+├── admin_activity_logs → admin_users
+├── admin_sessions → admin_users  
+├── admin_notifications → admin_users
+├── sales → nozzles, users
+├── tender_entries → shifts, users
+├── shifts → users, stations
+├── day_reconciliations → stations, users
+├── nozzle_readings → nozzles, users
+└── creditor_payments → creditors, users
+
+Level 2 (Operational Data):
+├── fuel_price_history → stations, users
+└── fuel_prices → stations, users (CRITICAL - was missing!)
+
+Level 3 (Equipment Hierarchy):
+├── nozzles → pumps
+└── pumps → stations
+
+Level 4 (Relationships):
+├── user_stations → users, stations
+└── creditors → stations (optional)
+
+Level 5 (Core Entities):
+├── stations → tenants
+└── users → tenants
+
+Level 6 (Independent):
+├── tenants
+├── admin_users
+├── admin_settings
+└── migrations
 ```
 
-### 🎯 **Business Rule Triggers**
+## 🎯 **Business Rule Triggers**
 
-#### 1. **Tenant Constraint**
+### 1. **Tenant Constraint**
 - **Trigger**: `check_tenant_has_station()`
 - **Rule**: Each tenant must have at least one active station
-- **Impact**: Cannot create tenant without immediately creating a station
+- **Fires**: IMMEDIATELY on tenant INSERT/UPDATE
+- **Impact**: Cannot create tenant without active station existing
 
-#### 2. **Station Constraint**
+### 2. **Station Constraint**
 - **Trigger**: `check_station_has_pump()`
 - **Rule**: Each station must have at least one active pump
-- **Impact**: Cannot create station without immediately creating a pump
+- **Fires**: IMMEDIATELY on station INSERT/UPDATE
+- **Impact**: Cannot create station without active pump existing
 
-#### 3. **Pump Constraint** (Implied)
-- **Rule**: Each pump should have at least one nozzle for operations
-- **Impact**: Best practice to create nozzles immediately after pump
+### 3. **Discovered Tables**
+The database contains these tables (21 total):
+- `admin_activity_logs`, `admin_notifications`, `admin_sessions`, `admin_settings`
+- `admin_users`, `creditor_payments`, `creditors`, `day_reconciliations`
+- `fuel_price_history`, `fuel_prices` ⚠️ **TWO fuel price tables!**
+- `migrations`, `nozzle_readings`, `nozzles`, `pumps`
+- `sales`, `shifts`, `stations`, `tenants`, `tender_entries`
+- `user_stations`, `users`
 
-### 🛠️ **Seeding Strategy**
+## 🛠️ **Seeding Strategy for Immediate Triggers**
 
-To satisfy all constraints, the seeding process follows this **exact order**:
+Since triggers fire immediately, we use this approach:
 
-#### Phase 1: Independent Entities
+### Phase 1: Independent Entities
 1. **Admin Users** (no dependencies)
-2. **Tenants** (no dependencies, but triggers will check for stations)
 
-#### Phase 2: User Creation
-3. **Users** (depends on tenants, may be referenced by fuel_price_history)
+### Phase 2: Pre-create Dependencies
+2. **Users** (with temporary tenant_id to avoid tenant constraint)
 
-#### Phase 3: Complete Station Hierarchy (Single Transaction)
-4. **Station** (depends on tenant)
-5. **Pump** (depends on station, satisfies station trigger)
-6. **Nozzles** (depends on pump, completes hierarchy)
+### Phase 3: Complete Hierarchy Creation
+3. **Station + Pump + Nozzles** (in nested transaction)
+   ```sql
+   BEGIN;
+   INSERT INTO stations (...);
+   INSERT INTO pumps (..., active=true);  -- IMMEDIATELY satisfies station trigger
+   INSERT INTO nozzles (..., active=true);
+   COMMIT;
+   ```
 
-#### Phase 4: Operational Data
-7. **Fuel Price History** (depends on station, users)
-8. **User-Station Assignments** (depends on users, stations)
+### Phase 4: Tenant Creation
+4. **Tenant** (station already exists to satisfy constraint)
+5. **Update users** with actual tenant_id
 
-#### Phase 5: Schema Replication
-9. **Tenant Schemas** (create and populate)
+### Phase 5: Operational Data
+6. **Fuel Prices** (both tables: fuel_price_history AND fuel_prices)
+7. **User-Station Assignments**
 
-### 🔄 **Reset Strategy**
+### Phase 6: Schema Replication
+8. **Tenant Schemas** (create and populate)
 
-Deletion must follow **reverse dependency order**:
+## 🔄 **Reset Strategy - Complete Deletion Order**
 
 ```sql
--- Most dependent first
+-- Level 1: Most dependent
 DELETE FROM admin_activity_logs;
+DELETE FROM admin_sessions;
+DELETE FROM admin_notifications;
 DELETE FROM sales;
+DELETE FROM tender_entries;
+DELETE FROM shifts;
+DELETE FROM day_reconciliations;
+DELETE FROM nozzle_readings;
+DELETE FROM creditor_payments;
+
+-- Level 2: Operational data (BOTH fuel price tables!)
 DELETE FROM fuel_price_history;
+DELETE FROM fuel_prices;  -- This was missing and caused issues!
+
+-- Level 3: Equipment hierarchy
 DELETE FROM nozzles;
 DELETE FROM pumps;
+
+-- Level 4: Relationships
 DELETE FROM user_stations;
 DELETE FROM creditors;
+
+-- Level 5: Core entities
 DELETE FROM stations;
 DELETE FROM users;
+
+-- Level 6: Independent
 DELETE FROM tenants;
 DELETE FROM admin_users;
+DELETE FROM admin_settings;
+DELETE FROM migrations;
 ```
 
-### ⚠️ **Common Pitfalls**
+## ⚠️ **Critical Issues Discovered**
 
-#### 1. **Creating Station Without Pump**
-```sql
--- ❌ This will fail
-INSERT INTO stations (...);
--- Trigger fires: "Station must have at least one active pump"
+### 1. **Missing fuel_prices Table**
+- There are TWO fuel price tables: `fuel_price_history` AND `fuel_prices`
+- The reset script was only clearing `fuel_price_history`
+- `fuel_prices` had 18 rows and was blocking station/user deletion
+- **Solution**: Clear both tables in deletion order
 
--- ✅ Correct approach
-BEGIN;
-INSERT INTO stations (...);
-INSERT INTO pumps (...);
-COMMIT; -- Triggers check constraints here
-```
+### 2. **Immediate Trigger Firing**
+- Triggers fire on INSERT, not at COMMIT
+- Cannot create station then pump - must create pump immediately
+- **Solution**: Use nested transactions with immediate pump creation
 
-#### 2. **Creating Tenant Without Station**
-```sql
--- ❌ This will fail
-INSERT INTO tenants (...);
--- Trigger fires: "Tenant must have at least one active station"
+### 3. **Tenant-Station Circular Dependency**
+- Tenant needs station (trigger)
+- Station needs tenant (foreign key)
+- **Solution**: Create station with temporary tenant_id, then create actual tenant
 
--- ✅ Correct approach
-BEGIN;
-INSERT INTO tenants (...);
-INSERT INTO stations (...);
-INSERT INTO pumps (...); -- To satisfy station trigger
-COMMIT;
-```
+## 🎯 **Verification Queries**
 
-#### 3. **Incomplete Deletion**
-```sql
--- ❌ This will fail
-DELETE FROM stations;
--- Error: "violates foreign key constraint fuel_prices_station_id_fkey"
-
--- ✅ Correct approach
-DELETE FROM fuel_price_history; -- Delete references first
-DELETE FROM stations;
-```
-
-### 🎯 **Azure PostgreSQL Limitations**
-
-#### Cannot Use These Approaches:
-- `SET session_replication_role = replica` (Permission denied)
-- `ALTER TABLE ... DISABLE TRIGGER` (Permission denied)
-- `TRUNCATE CASCADE` (May not work with triggers)
-
-#### Must Use These Approaches:
-- **Single Transaction Seeding** - Create complete hierarchies in one transaction
-- **Proper Deletion Order** - Delete in reverse dependency order
-- **ON CONFLICT Handling** - Handle existing data gracefully
-
-### 📋 **Verification Checklist**
-
-After seeding, verify these constraints are satisfied:
+After seeding, verify constraints are satisfied:
 
 ```sql
 -- Check tenant has stations
@@ -141,42 +165,61 @@ FROM tenants t
 LEFT JOIN stations s ON t.id = s.tenant_id AND s.active = true
 GROUP BY t.id, t.name;
 
--- Check stations have pumps
+-- Check stations have active pumps
 SELECT s.name, COUNT(p.id) as pump_count
 FROM stations s
 LEFT JOIN pumps p ON s.id = p.station_id AND p.active = true
 GROUP BY s.id, s.name;
 
--- Check pumps have nozzles
+-- Check pumps have active nozzles
 SELECT p.name, COUNT(n.id) as nozzle_count
 FROM pumps p
 LEFT JOIN nozzles n ON p.id = n.pump_id AND n.active = true
 GROUP BY p.id, p.name;
 
--- Check users have station assignments
-SELECT u.email, COUNT(us.station_id) as assigned_stations
-FROM users u
-LEFT JOIN user_stations us ON u.id = us.user_id AND us.active = true
-GROUP BY u.id, u.email;
+-- Check both fuel price tables
+SELECT 'fuel_price_history' as table_name, COUNT(*) as count FROM fuel_price_history
+UNION ALL
+SELECT 'fuel_prices' as table_name, COUNT(*) as count FROM fuel_prices;
 ```
 
-### 🔄 **Safe Operations**
+## 🚨 **Azure PostgreSQL Limitations**
 
-#### Adding New Data
-1. **Always use transactions** for related entities
-2. **Create complete hierarchies** (tenant → station → pump → nozzle)
-3. **Handle conflicts** with ON CONFLICT clauses
+### Cannot Use:
+- `SET session_replication_role = replica` (Permission denied)
+- `ALTER TABLE ... DISABLE TRIGGER` (Permission denied)
+- `TRUNCATE CASCADE` (May not work with immediate triggers)
 
-#### Modifying Data
-1. **Check dependencies** before deletion
-2. **Update in correct order** (children before parents for deletion)
-3. **Verify constraints** after operations
+### Must Use:
+- **Immediate satisfaction** of triggers during INSERT
+- **Nested transactions** for complex hierarchies
+- **Proper deletion order** respecting all foreign keys
+- **ON CONFLICT handling** for existing data
 
-#### Testing Changes
-1. **Use db:reset** for clean testing environment
-2. **Verify all triggers** are satisfied
-3. **Test with different user roles** and permissions
+## 📋 **Troubleshooting Guide**
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| "Station must have at least one active pump" | Immediate trigger firing | Create pump immediately after station |
+| "Tenant must have at least one active station" | Immediate trigger firing | Create station before tenant |
+| "violates foreign key constraint fuel_prices_station_id_fkey" | Missing fuel_prices in deletion order | Clear fuel_prices before stations |
+| "violates foreign key constraint fuel_prices_created_by_fkey" | Missing fuel_prices in deletion order | Clear fuel_prices before users |
+| "duplicate key value violates unique constraint" | Existing data conflicts | Use ON CONFLICT clauses |
+
+## 🎯 **Best Practices**
+
+### For Development:
+1. **Always use `npm run db:reset`** - handles all constraints properly
+2. **Never create station without immediate pump** - triggers fire immediately
+3. **Check both fuel price tables** - there are two different ones
+4. **Use nested transactions** for complex hierarchies
+
+### For Production:
+1. **Test seeding process** thoroughly in staging
+2. **Monitor trigger violations** in logs
+3. **Backup before schema changes**
+4. **Verify all constraints** after operations
 
 ---
 
-**⚠️ Important**: Always test database changes with `npm run db:reset` to ensure the seeding process works correctly with all constraints and triggers.
+**⚠️ CRITICAL**: The database has immediate triggers that cannot be deferred. Always create complete hierarchies (station+pump+nozzles) together to satisfy all constraints immediately.
