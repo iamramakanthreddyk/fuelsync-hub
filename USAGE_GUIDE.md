@@ -16,7 +16,7 @@ export DB_SSL=false
 
 # 2. Install and setup
 npm install
-cd backend && npm install && npm run db:setup
+cd backend && npm install && npm run db reset
 cd ../frontend && npm install
 cd .. && npm run dev
 ```
@@ -32,8 +32,10 @@ docker run --name fuelsync-db -p 5432:5432 \
 
 # 2. Setup and run
 export DB_HOST=localhost DB_PORT=5432 DB_NAME=fuelsync_dev DB_USER=postgres DB_PASSWORD=postgres DB_SSL=false
-npm run db:setup && npm run dev
+npm run db reset && npm run dev
 ```
+
+> **Note:** `npm run db reset` drops and recreates all tables to avoid duplicate key errors.
 
 #### Option 3: Agent Bootstrap (Fully Automated)
 ```bash
