@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FormControl, InputLabel, Select, MenuItem, CircularProgress, FormHelperText } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import type { Station } from '../../types/api';
+import { useAuth } from '../../context/AuthProvider';
 
 interface StationSelectorProps {
   value: string;
@@ -30,13 +31,13 @@ const StationSelector: React.FC<StationSelectorProps> = ({
     loading: true,
     error: null,
   });
+  const { token } = useAuth();
 
   useEffect(() => {
     const fetchStations = async () => {
       try {
         setState(prev => ({ ...prev, loading: true, error: null }));
 
-        const token = localStorage.getItem('token');
         if (!token) {
           setState(prev => ({ ...prev, loading: false, error: 'Authentication required' }));
           return;

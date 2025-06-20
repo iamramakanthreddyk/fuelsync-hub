@@ -4,7 +4,8 @@ import { AppProps } from 'next/app';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useRouter } from 'next/router';
-import { isAuthenticated, isTokenExpired } from '../utils/authHelper';
+import { isTokenExpired } from '../utils/authHelper';
+import { AuthProvider, useAuth } from '../context/AuthProvider';
 import '../styles/globals.css';
 
 // Create a theme instance
@@ -19,8 +20,9 @@ const theme = createTheme({
   },
 });
 
-function MyApp({ Component, pageProps }: AppProps) {
+function AppContent({ Component, pageProps }: AppProps) {
   const router = useRouter();
+  const { token, logout } = useAuth();
 
   useEffect(() => {
     // Remove the server-side injected CSS
@@ -49,14 +51,14 @@ function MyApp({ Component, pageProps }: AppProps) {
       }
 
       // Check if token is expired for regular user routes
-      if (isAuthenticated() && isTokenExpired()) {
+      if (token && isTokenExpired()) {
         console.log('Token expired, redirecting to login...');
+        logout();
         router.push('/login');
         return;
       }
 
-      // Check if user is authenticated for protected routes
-      if (!isAuthenticated()) {
+      if (!token) {
         console.log('User not authenticated, redirecting to login...');
         router.push('/login');
       }
@@ -72,13 +74,21 @@ function MyApp({ Component, pageProps }: AppProps) {
     return () => {
       router.events.off('routeChangeComplete', handleRouteChange);
     };
-  }, [router]);
+  }, [router, token]);
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Component {...pageProps} />
     </ThemeProvider>
+  );
+}
+
+function MyApp(props: AppProps) {
+  return (
+    <AuthProvider>
+      <AppContent {...props} />
+    </AuthProvider>
   );
 }
 

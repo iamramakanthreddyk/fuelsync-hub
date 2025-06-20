@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@mui/material';
 import { useRouter } from 'next/router';
-import { removeToken } from '../../utils/authHelper';
+import { useAuth } from '../../context/AuthProvider';
 import { LogoutOutlined } from '@mui/icons-material';
 
 interface LogoutButtonProps {
@@ -19,6 +19,7 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
   showIcon = true
 }) => {
   const router = useRouter();
+  const { token, logout } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -29,12 +30,11 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
         }
       });
-      
-      // Remove token from localStorage
-      removeToken();
+
+      logout();
       
       console.log('Logout successful, redirecting to login page');
       
@@ -43,8 +43,8 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
     } catch (error) {
       console.error('Logout error:', error);
       
-      // Even if API call fails, remove token and redirect
-      removeToken();
+      // Even if API call fails, clear state and redirect
+      logout();
       router.push('/login');
     }
   };
