@@ -130,7 +130,7 @@ export const recordNozzleReading = async (req: Request, res: Response) => {
     }
     
     // Get user ID from authenticated request
-    const userId = req.user.id;
+    const userId = req.user!.id;
     
     const readingRecord = await nozzleService.recordNozzleReading(
       schemaName,
@@ -139,10 +139,13 @@ export const recordNozzleReading = async (req: Request, res: Response) => {
       userId,
       notes
     );
-    
+
     return res.status(200).json(readingRecord);
   } catch (error: any) {
     console.error('Record nozzle reading error:', error);
+    if (error instanceof Error && error.message.includes('last recorded')) {
+      return res.status(400).json({ message: error.message });
+    }
     return res.status(500).json({ message: error.message || 'Failed to record nozzle reading' });
   }
 };

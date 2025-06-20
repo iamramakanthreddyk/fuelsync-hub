@@ -82,6 +82,19 @@ export const recordNozzleReading = async (
   notes?: string
 ) => {
   return await withTransaction(schemaName, async (client) => {
+    const lastRes = await client.query(
+      `SELECT current_reading FROM nozzles WHERE id = $1`,
+      [nozzleId]
+    );
+    if (lastRes.rows.length === 0) {
+      throw new Error('Nozzle not found');
+    }
+
+    const lastReading = parseFloat(lastRes.rows[0].current_reading);
+    if (reading < lastReading) {
+      throw new Error('New reading cannot be less than the last recorded reading');
+    }
+
     await client.query(
       `UPDATE nozzles SET current_reading = $1, updated_at = NOW() WHERE id = $2`,
       [reading, nozzleId]
