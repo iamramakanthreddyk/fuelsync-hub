@@ -17,7 +17,7 @@ You may now begin.
 - Documented inventory endpoints in API.md.
 - Updated seeding guide for 3 attendant users.
 - Added shifts and tender_entries to ERD and DATABASE_GUIDE.
-- Replaced planType references with subscription_plan in DATABASE_SCHEMA.md.
+- Replaced `planType` references with the `subscription_plan` field in DATABASE_SCHEMA.md.
 - Synced PLANS.md snippet with latest PLAN_CONFIG settings.
 - Seed script now includes station_id when creating creditors.
 
