@@ -43,7 +43,7 @@ curl -X POST http://localhost:3001/api/auth/register \
     "name": "New Tenant",
     "email": "owner@example.com",
     "password": "password123",
-    "planType": "basic"
+    "subscription_plan": "basic"
   }'
 ```
 
@@ -56,7 +56,7 @@ Response:
     "tenant": {
       "id": "tenant-uuid",
       "name": "New Tenant",
-      "planType": "basic"
+      "subscription_plan": "basic"
     }
   }
 }
