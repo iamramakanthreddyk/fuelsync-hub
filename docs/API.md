@@ -49,12 +49,12 @@ This document outlines the available API endpoints grouped by user roles in the 
 ### 🛠 Setup
 
 * `POST /api/stations` — Create a station
-* `POST /api/pumps` — Add a pump to a station
+* `POST /api/pumps` — Add a pump to a station _(checkPumpLimit enforces plan limit)
 * `GET /api/pumps/:id` — Get pump details
 * `PATCH /api/pumps/:id` — Update pump
 * `DELETE /api/pumps/:id` — Remove pump
 * `GET /api/pumps/station/:stationId` — Pumps for a station
-* `POST /api/nozzles` — Add a nozzle to a pump
+* `POST /api/nozzles` — Add a nozzle to a pump _(checkNozzleLimit enforces plan limit)
 * `GET /api/nozzles/:id` — Get nozzle details
 * `PATCH /api/nozzles/:id` — Update nozzle
 * `GET /api/nozzles/pump/:pumpId` — Nozzles for a pump
