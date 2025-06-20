@@ -6,88 +6,35 @@ This guide explains the streamlined database operations for FuelSync Hub.
 
 | Command | Description | When to Use |
 |---------|-------------|-------------|
-| `npm run db reset` | Drop & recreate the database then seed | Clean slate before development |
-| `npm run db:setup` | Complete database setup with seed data | First-time setup or when the DB is empty |
+| `npm run db:setup` | Complete database setup with seed data | First-time setup |
+| `npm run db:reset` | Clean database and setup fresh | When you need a clean slate (RECOMMENDED) |
+| `npm run db:clean` | Clean database only (no setup) | Before manual setup |
 | `npm run db:check` | Test database connection | Troubleshooting connectivity |
 | `npm run db:fix` | Fix user-station relationships | When users can't access stations |
 | `npm run db:verify` | Verify database setup | After setup or changes |
 
 ## 📁 Essential Database Files
 
-The database management has been streamlined to 4 essential files:
+The database management has been streamlined to 5 essential files:
 
 ```
 backend/db/
 ├── setup-db.ts          # Schema creation and setup
-├── seed.ts              # Data seeding (users, tenants, stations)
+├── seed.ts              # Trigger-compliant data seeding
 ├── fix-relationships.ts # Fix user-station relationships
+├── reset-db.ts          # Complete database cleanup
 └── check-connection.ts  # Test database connection
 ```
 
-## 📂 File Reference
+## 🚨 **Critical Database Constraints**
 
-### backend/db/
+⚠️ **The database has business rule triggers that must be satisfied:**
 
-| File | Purpose |
-|------|---------|
-| `admin-schema.sql` | Defines superadmin tables and default admin settings |
-| `check-connection.ts` | Verifies database connectivity |
-| `fix-relationships.ts` | Repairs user-to-station assignments |
-| `schema.sql` | Core public schema used by `setup-db.ts` |
-| `schema-info.json` | JSON dump of table metadata |
-| `validation-triggers.sql` | Triggers enforcing data integrity |
-| `setup-db.ts` | Applies `schema.sql` to create tables |
-| `seed.ts` | Seeds demo data and creates tenant schema |
-| `verify-seed.ts` | Prints sample rows to verify seeding |
-| `migrations/` | Incremental SQL migrations |
-| `schema/` | Contains `complete_schema.sql` snapshot |
-| `scripts/` | Utility scripts described below |
+1. **Tenant Constraint**: Each tenant must have at least one active station
+2. **Station Constraint**: Each station must have at least one active pump
+3. **Complex Foreign Keys**: Multiple tables reference each other
 
-### backend/db/scripts/
-
-| File | Purpose |
-|------|---------|
-| `clean_db.sql` | Truncates tables for a fresh start |
-| `clean_db.ts` | Drops and recreates the database |
-| `create_tenant.sql` | Function to provision a tenant schema |
-| `init-db.ts` | Runs full initialization (schema, migrations, seed) |
-| `migrate.ts` | Applies base schema and all migrations |
-| `reset-db.ts` | Calls `clean_db.ts`, `migrate.ts`, then `seed.ts` |
-| `reset_schema.sql` | Drops and recreates the public schema only |
-| `rollback.ts` | Rolls back the last migration batch |
-| `schema-snapshot.ts` | Exports the current schema to JSON |
-| `seed.ts` | Advanced seeding script with options |
-| `salees.json` | Example snapshot of the `sales` table |
-| `update-schema.ts` | Uses `psql` to apply schema and migrations |
-| `validate-schema.ts` | Checks required tables and data rules |
-| `validate.ts` | Runs custom validation queries |
-
-### Setup and Reset Internals
-
-The root command `npm run db` delegates to scripts in `backend`. When you run:
-
-```bash
-npm run db setup
-```
-
-It invokes `npm run db:setup` inside `backend/package.json`, which runs:
-
-1. `ts-node db/setup-db.ts`
-2. `ts-node db/seed.ts`
-3. `ts-node db/fix-relationships.ts`
-
-Likewise, running:
-
-```bash
-npm run db reset
-```
-
-calls `npm run db:reset` in the backend. That sequence executes:
-
-1. `ts-node db/scripts/clean_db.ts`
-2. `ts-node db/setup-db.ts`
-3. `ts-node db/seed.ts`
-4. `ts-node db/fix-relationships.ts`
+**See [DATABASE_CONSTRAINTS.md](DATABASE_CONSTRAINTS.md) for complete details.**
 
 ## 🔧 Environment Setup
 
@@ -119,27 +66,6 @@ set DB_PASSWORD=postgres
 set DB_SSL=false
 ```
 
-## 📝 Example Workflow
-
-```bash
-npm run db reset   # drop & recreate DB, then seed
-npm run db setup   # apply schema and seed (assumes clean DB)
-npm run db verify  # check tables and relationships
-```
-
-## 🛠 One-Step Initialization
-
-The `scripts/db.ts` helper lets you run setup and verification in one go:
-
-```bash
-npm run db setup   # create schema and seed data
-npm run db verify  # confirm relationships and sample rows
-```
-
-If any issues appear, run `npm run db fix` to repair user-station links.
-
-If seeding fails for any reason, re-run `npm run db reset` to start from a clean state.
-
 ## 🔧 Common Scenarios
 
 ### 1. First-Time Setup
@@ -150,79 +76,84 @@ cd backend
 npm run db:setup
 ```
 
-This runs:
-1. Creates database schema (tables, indexes, constraints)
-2. Seeds initial data (admin, tenant, users, stations)
-3. Creates user-station assignments
-4. Sets up tenant schemas
+### 2. Clean Reset (RECOMMENDED for most issues)
 
-### 2. Fix Data Issues
+```bash
+cd backend
+npm run db:reset
+```
 
-If you encounter "No stations found" or permission errors:
+**This is the safest option** - it handles all constraints and triggers properly.
+
+### 3. Fix Data Issues Only
 
 ```bash
 cd backend
 npm run db:fix
 ```
 
-This ensures:
-- All users are assigned to stations
-- User-station relationships are correct
-- Permissions are properly set
-
-### 3. Test Database Connection
+### 4. Test Database Connection
 
 ```bash
 cd backend
 npm run db:check
 ```
 
-Use this when:
-- Setting up for the first time
-- Troubleshooting connection issues
-- Verifying environment variables
+## 🔄 **How the Reset Process Works**
 
-### 4. Verify Setup
+### Reset Phase (`reset-db.ts`)
+1. **Drops tenant schemas** (CASCADE removes all dependencies)
+2. **Identifies all tables** dynamically from database
+3. **Deletes in dependency order**:
+   ```
+   admin_activity_logs → sales → fuel_price_history → 
+   nozzles → pumps → user_stations → creditors → 
+   stations → users → tenants → admin_users
+   ```
+4. **Handles errors gracefully** (continues if some tables don't exist)
 
-```bash
-cd backend
-npm run db:verify
-```
+### Seeding Phase (`seed.ts`)
+1. **Single Transaction Approach** - All constraints checked at commit
+2. **Creates complete hierarchies**:
+   - Admin user (independent)
+   - Tenant (independent)
+   - Users (depends on tenant)
+   - Station + Pump + Nozzles (complete hierarchy to satisfy triggers)
+   - Fuel prices (depends on station, users)
+   - User-station assignments
+   - Tenant schema replication
 
-This checks:
-- Required tables exist
-- Seed data is present
-- Relationships are correct
+### Fix Phase (`fix-relationships.ts`)
+1. **Ensures user-station assignments** exist
+2. **Works with existing data** (doesn't recreate)
+3. **Handles both public and tenant schemas**
 
 ## 🗄️ Database Schema Overview
 
-### Multi-Tenant Architecture
+### Multi-Tenant Architecture with Constraints
 
 ```
 ┌─────────────────┐    ┌─────────────────┐
 │   Public Schema │    │  Tenant Schema  │
 │                 │    │                 │
-│ • tenants       │    │ • stations      │
+│ • tenants ──────┼────┤ • stations      │
 │ • users         │    │ • user_stations │
-│ • admin_users   │    │ • (tenant data) │
-│ • stations      │    │                 │
+│ • admin_users   │    │                 │
+│ • stations ─────┼────┤                 │
 │ • user_stations │    │                 │
 │ • pumps         │    │                 │
 │ • nozzles       │    │                 │
 │ • sales         │    │                 │
+│ • fuel_prices   │    │                 │
 └─────────────────┘    └─────────────────┘
 ```
 
-### Key Relationships
-
-1. **Tenants** → **Users** (one-to-many)
-2. **Users** → **Stations** (many-to-many via user_stations)
-3. **Stations** → **Pumps** → **Nozzles** (hierarchical)
-4. **Sales** → **Nozzles** (many-to-one)
+### Key Constraints
+- **Tenants** must have ≥1 active station
+- **Stations** must have ≥1 active pump
+- **Complex foreign key chain** requires specific deletion order
 
 ## 🔐 Default Seed Data
-
-The seed script creates:
 
 ### Admin User
 - **Email**: admin@fuelsync.com
@@ -240,125 +171,107 @@ The seed script creates:
 | Manager | manager@demofuel.com | password123 |
 | Employee | employee@demofuel.com | password123 |
 
-### Sample Data
-- 1 Station with 1 Pump and 2 Nozzles (Petrol/Diesel)
-- Fuel prices for both fuel types
-- User-station assignments with proper roles
+### Complete Station Hierarchy
+- **Station**: Main Station
+- **Pump**: Pump 1 (satisfies station constraint)
+- **Nozzles**: Petrol & Diesel (satisfies pump requirements)
+- **Fuel Prices**: Set for both fuel types
+- **User Assignments**: All users properly assigned
 
 ## 🐛 Troubleshooting
 
-### Common Issues
+### Common Issues & Solutions
+
+#### "Station must have at least one active pump"
+```bash
+# This is a database trigger - use reset
+cd backend && npm run db:reset
+```
+
+#### "Tenant must have at least one active station"
+```bash
+# This is a database trigger - use reset
+cd backend && npm run db:reset
+```
+
+#### "violates foreign key constraint"
+```bash
+# Foreign key dependency issue - use reset
+cd backend && npm run db:reset
+```
+
+#### "No stations found for this user"
+```bash
+# User-station assignment issue
+cd backend && npm run db:fix
+```
 
 #### "Database connection failed"
 ```bash
 # Check environment variables
 echo $DB_HOST $DB_PORT $DB_NAME $DB_USER
-
-# Test connection
 cd backend && npm run db:check
 ```
 
-#### "No stations found for this user"
+#### "Duplicate key value violates unique constraint"
 ```bash
-# Fix relationships
-cd backend && npm run db:fix
+# Existing data conflict - use reset
+cd backend && npm run db:reset
 ```
 
-#### "Permission denied" errors
-```bash
-# Reset and setup again
-cd backend && npm run db:setup
-```
+### When to Use Each Command
 
-#### "Token validation failed"
-```bash
-# Clear browser storage and re-login
-# Or reset database
-cd backend && npm run db:setup
-```
-
-#### "Seeding failed" errors
-If you encounter duplicate key or other seeding errors, run:
-
-```bash
-npm run db reset
-```
-This drops and recreates the database before seeding.
-
-### Environment Variables
-
-Ensure these environment variables are set:
-
-```bash
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=fuelsync_dev
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_SSL=false
-```
-
-## 🔄 Migration Strategy
-
-For production deployments:
-
-1. **Set environment variables**
-2. **Run setup**: `npm run db:setup`
-3. **Verify**: `npm run db:verify`
-4. **Test application** functionality
-
-## 📊 Database Monitoring
-
-### Check Database Status
-```bash
-# Connection test
-cd backend && npm run db:check
-
-# Verify data integrity
-cd backend && npm run db:verify
-```
-
-### Performance Tips
-- Regular VACUUM and ANALYZE on PostgreSQL
-- Monitor connection pool usage
-- Index optimization for large datasets
-
-## 🚨 Emergency Procedures
-
-### Complete Reset
-```bash
-cd backend && npm run db:setup
-```
-
-### Backup Before Changes
-```bash
-pg_dump fuelsync_dev > backup_$(date +%Y%m%d_%H%M%S).sql
-```
-
-### Restore from Backup
-```bash
-psql fuelsync_dev < backup_file.sql
-cd backend && npm run db:fix
-```
-
-## 📝 Development Notes
-
-- All database scripts use environment variables (no .env files required)
-- Connection pooling is handled automatically
-- Multi-tenant isolation is enforced at the schema level
-- Generated columns (like sales.amount) are calculated automatically
+| Issue | Command | Why |
+|-------|---------|-----|
+| Any constraint/trigger error | `db:reset` | Handles all constraints properly |
+| First time setup | `db:setup` | Creates fresh database |
+| Users can't access stations | `db:fix` | Fixes assignments only |
+| Connection problems | `db:check` | Tests connectivity |
+| After code changes | `db:reset` | Ensures clean state |
+| Production deployment | `db:setup` | One-time setup |
 
 ## 🎯 Best Practices
 
-1. **Always set environment variables** before running operations
-2. **Use fix command** after manual database changes
-3. **Verify setup** after any schema modifications
-4. **Monitor logs** for any database errors
-5. **Test connection** before running operations
+### Development
+1. **Use `npm run db:reset`** for most issues
+2. **Set environment variables** before any operation
+3. **Test with different user roles** after seeding
+4. **Check logs** for constraint violations
+
+### Production
+1. **Use `npm run db:setup`** for initial deployment
+2. **Backup before changes**: `pg_dump database > backup.sql`
+3. **Test migrations** in staging environment first
+4. **Monitor constraint violations** in logs
+
+### Debugging
+1. **Check constraint documentation**: [DATABASE_CONSTRAINTS.md](DATABASE_CONSTRAINTS.md)
+2. **Verify all triggers** are satisfied after operations
+3. **Use transaction logs** to understand failures
+4. **Test seeding process** regularly
+
+## 📊 Database Monitoring
+
+### Health Checks
+```bash
+# Test connection
+npm run db:check
+
+# Verify data integrity
+npm run db:verify
+
+# Check constraint satisfaction
+# See DATABASE_CONSTRAINTS.md for SQL queries
+```
+
+### Performance Tips
+- Monitor connection pool usage
+- Regular VACUUM and ANALYZE on PostgreSQL
+- Index optimization for large datasets
+- Watch for constraint violation patterns
 
 ---
 
-For more detailed information, see:
-- [Project Structure](PROJECT_STRUCTURE.md)
-- [Troubleshooting Guide](TROUBLESHOOTING.md)
-- [User Guide](USER_GUIDE.md)
+**⚠️ Important**: The database has complex business rule triggers. Always use `npm run db:reset` when encountering constraint errors, as it's designed to handle all triggers and dependencies correctly.
+
+For detailed constraint information, see [DATABASE_CONSTRAINTS.md](DATABASE_CONSTRAINTS.md).

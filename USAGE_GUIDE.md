@@ -16,7 +16,7 @@ export DB_SSL=false
 
 # 2. Install and setup
 npm install
-cd backend && npm install && npm run db reset
+cd backend && npm install && npm run db:reset
 cd ../frontend && npm install
 cd .. && npm run dev
 ```
@@ -32,10 +32,9 @@ docker run --name fuelsync-db -p 5432:5432 \
 
 # 2. Setup and run
 export DB_HOST=localhost DB_PORT=5432 DB_NAME=fuelsync_dev DB_USER=postgres DB_PASSWORD=postgres DB_SSL=false
-npm run db reset && npm run dev
+cd backend && npm run db:reset
+cd .. && npm run dev
 ```
-
-> **Note:** `npm run db reset` drops and recreates all tables to avoid duplicate key errors.
 
 #### Option 3: Agent Bootstrap (Fully Automated)
 ```bash
@@ -49,6 +48,7 @@ chmod +x agent-bootstrap.sh
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:3001
 - **Debug Tools**: http://localhost:3000/debug
+- **Admin Panel**: http://localhost:3000/admin/login
 
 ### Default Login Credentials
 
@@ -60,6 +60,22 @@ chmod +x agent-bootstrap.sh
 | **Employee** | employee@demofuel.com | password123 | Single station |
 
 ## 🎯 Using Different User Roles
+
+### 🔧 Admin Role (SuperAdmin)
+**Platform administration and tenant management**
+
+**What you can do:**
+- Manage all tenants (create, edit, delete)
+- View platform statistics
+- Manage users across all tenants
+- Monitor system health
+- Access admin panel at `/admin/login`
+
+**Key Features:**
+- Tenant management dashboard
+- Platform-wide analytics
+- User management across tenants
+- System configuration
 
 ### 👑 Owner Role
 **Full access to all business operations**
@@ -109,17 +125,28 @@ chmod +x agent-bootstrap.sh
 - Nozzle reading submission
 - Personal performance tracking
 
-### 🔧 Admin Role
-**Platform administration**
-
-**What you can do:**
-- Manage all tenants
-- View platform analytics
-- Create/modify subscription plans
-- System configuration
-- Platform monitoring
-
 ## 📊 Key Features Usage
+
+### 🔧 Admin Panel Usage
+
+#### Accessing Admin Panel
+1. Go to http://localhost:3000/admin/login
+2. Login with admin@fuelsync.com / admin123
+3. Navigate through admin dashboard
+
+#### Managing Tenants
+1. Go to Admin → Tenants
+2. View all tenants in the system
+3. Add new tenant with "Add Tenant" button
+4. Edit existing tenants by clicking edit icon
+5. Delete tenants if needed
+
+#### Viewing Platform Stats
+1. Admin dashboard shows:
+   - Total tenants count
+   - Total users count
+   - Total stations count
+   - Recent tenants list
 
 ### 🏪 Station Management
 
@@ -133,7 +160,7 @@ chmod +x agent-bootstrap.sh
 1. Go to Station Details
 2. Click "Add Pump"
 3. Enter pump details (name, serial number)
-4. Add nozzles to pump (fuel type, color)
+4. Add nozzles to pump (fuel type)
 
 ### 💰 Sales Recording
 
@@ -193,7 +220,7 @@ chmod +x agent-bootstrap.sh
 cd backend
 
 # Setup database (first time or reset)
-npm run db:setup
+npm run db:reset
 
 # Test database connection
 npm run db:check
@@ -203,15 +230,23 @@ npm run db:fix
 
 # Verify database setup
 npm run db:verify
+
+# Clean database only
+npm run db:clean
 ```
 
 ### When to Use Each Command
 
-#### `npm run db:setup`
+#### `npm run db:reset` (RECOMMENDED)
 - First-time setup
 - After major changes
 - When you need a clean slate
 - If database is corrupted
+- For most troubleshooting issues
+
+#### `npm run db:setup`
+- First-time setup only
+- When database is already clean
 
 #### `npm run db:check`
 - Before starting development
@@ -228,11 +263,20 @@ npm run db:verify
 - Before deploying to production
 - When troubleshooting data issues
 
+#### `npm run db:clean`
+- When you want to manually setup after cleaning
+- Before running custom setup scripts
+
 ## 🐛 Common Issues and Solutions
 
 ### "No stations found for this user"
 ```bash
 cd backend && npm run db:fix
+```
+
+### "Tenant must have at least one active station"
+```bash
+cd backend && npm run db:reset
 ```
 
 ### "Database connection failed"
@@ -244,16 +288,29 @@ echo $DB_HOST $DB_PORT $DB_NAME $DB_USER
 cd backend && npm run db:check
 ```
 
+### "Duplicate key value violates unique constraint"
+```bash
+# Clean reset
+cd backend && npm run db:reset
+```
+
 ### "Permission denied"
 ```bash
 # Reset database
-cd backend && npm run db:setup
+cd backend && npm run db:reset
 ```
 
 ### Login not working
 1. Clear browser cache/localStorage
 2. Use correct credentials (see table above)
 3. Check if backend is running on port 3001
+4. Try database reset: `npm run db:reset`
+
+### Admin panel not loading
+1. Make sure you're accessing `/admin/login` not `/login`
+2. Clear browser cache
+3. Check backend is running
+4. Try database reset
 
 ## 🎯 Development Workflow
 
@@ -282,15 +339,21 @@ npm run dev
 3. Record sample sales
 4. Verify permissions work correctly
 5. Test multi-tenant isolation
+6. Test admin panel functionality
 
 ## 📚 API Usage
 
 ### Authentication
 ```bash
-# Login
+# User Login
 curl -X POST http://localhost:3001/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"owner@demofuel.com","password":"password123"}'
+
+# Admin Login
+curl -X POST http://localhost:3001/api/admin-auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@fuelsync.com","password":"admin123"}'
 
 # Use token in subsequent requests
 curl -H "Authorization: Bearer YOUR_TOKEN" \
@@ -303,6 +366,8 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 - `GET /api/dashboard` - Dashboard data
 - `GET /api/users` - List users
 - `POST /api/fuel-prices` - Set fuel price
+- `GET /api/superadmin/tenants` - List tenants (admin only)
+- `GET /api/superadmin/stats` - Platform stats (admin only)
 
 ## 🎉 Success Indicators
 
@@ -312,6 +377,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 - ✅ Login works with provided credentials
 - ✅ Dashboard shows station data
 - ✅ No "No stations found" errors
+- ✅ Admin panel accessible at http://localhost:3000/admin/login
 
 ### Application Working When:
 - ✅ Different user roles see appropriate data
@@ -319,6 +385,8 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 - ✅ Station assignments work
 - ✅ Reports display data
 - ✅ All CRUD operations work
+- ✅ Admin can manage tenants
+- ✅ Platform stats are displayed
 
 ---
 

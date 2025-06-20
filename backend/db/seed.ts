@@ -1,5 +1,4 @@
-// backend/db/seed.ts - Fixed TypeScript seed
-import { generateDemoSales } from './scripts/seed';
+// backend/db/seed.ts - Improved seeding with conflict handling
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
 import pool from './dbPool';
@@ -11,41 +10,50 @@ interface User {
   firstName: string;
   lastName: string;
 }
-
-
 async function seedDatabase() {
   const client = await pool.connect();
   
   try {
-    console.log('🌱 Starting database seeding...');
-
-    // Disable trigger to allow tenant creation without owner
-    await client.query('ALTER TABLE tenants DISABLE TRIGGER check_tenant_owner_trigger');
-    console.log('🚧 Disabled check_tenant_owner_trigger');
+    console.log('🌱 Starting trigger-compliant database seeding...');
     
-    // 1. Create admin user
+    // Use a single transaction to satisfy all constraints at commit time
+    await client.query('BEGIN');
+    
+    // Step 1: Create admin user
+    console.log('👤 Creating admin user...');
     const adminId = uuidv4();
     const adminPasswordHash = await bcrypt.hash('admin123', 10);
     
     await client.query(`
       INSERT INTO admin_users (id, email, password_hash, role, first_name, last_name)
       VALUES ($1, $2, $3, $4, $5, $6)
-      ON CONFLICT (email) DO NOTHING
+      ON CONFLICT (email) DO UPDATE SET
+        password_hash = $3,
+        first_name = $5,
+        last_name = $6,
+        updated_at = NOW()
     `, [adminId, 'admin@fuelsync.com', adminPasswordHash, 'superadmin', 'Admin', 'User']);
     
-    console.log(`✅ Admin user created with ID: ${adminId}`);
-    
-    // 2. Create demo tenant
+    // Step 2: Create tenant
+    console.log('🏢 Creating tenant...');
     const tenantId = uuidv4();
     await client.query(`
       INSERT INTO tenants (id, name, email, subscription_plan, active, contact_person)
       VALUES ($1, $2, $3, $4, $5, $6)
-      ON CONFLICT (email) DO NOTHING
+      ON CONFLICT (email) DO UPDATE SET
+        name = $2,
+        subscription_plan = $4,
+        active = $5,
+        contact_person = $6,
+        updated_at = NOW()
     `, [tenantId, 'Demo Company', 'demo@company.com', 'premium', true, 'Demo Owner']);
     
-    console.log(`✅ Demo tenant created with ID: ${tenantId}`);
+    // Get actual tenant ID
+    const tenantResult = await client.query(`SELECT id FROM tenants WHERE email = $1`, ['demo@company.com']);
+    const actualTenantId = tenantResult.rows[0].id;
     
-    // 3. Create tenant users
+    // Step 3: Create users (before station to satisfy potential user requirements)
+    console.log('👥 Creating users...');
     const users = [
       { email: 'owner@demofuel.com', role: 'owner', firstName: 'John', lastName: 'Owner' },
       { email: 'manager@demofuel.com', role: 'manager', firstName: 'Jane', lastName: 'Manager' },
@@ -60,59 +68,83 @@ async function seedDatabase() {
       await client.query(`
         INSERT INTO users (id, tenant_id, email, password_hash, role, first_name, last_name, active)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        ON CONFLICT (email, tenant_id) DO NOTHING
-      `, [userId, tenantId, user.email, passwordHash, user.role, user.firstName, user.lastName, true]);
-
-      console.log(`  ↳ Created user ${user.email} (${user.role}) with ID: ${userId}`);
-
-      userIds.push({ id: userId, ...user });
+        ON CONFLICT (email, tenant_id) DO UPDATE SET
+          password_hash = $4,
+          role = $5,
+          first_name = $6,
+          last_name = $7,
+          active = $8,
+          updated_at = NOW()
+      `, [userId, actualTenantId, user.email, passwordHash, user.role, user.firstName, user.lastName, true]);
+      
+      // Get actual user ID
+      const userResult = await client.query(`SELECT id FROM users WHERE email = $1 AND tenant_id = $2`, [user.email, actualTenantId]);
+      userIds.push({ id: userResult.rows[0].id, ...user });
     }
-
-    console.log(`✅ ${userIds.length} tenant users created for tenant ${tenantId}`);
-
-    // Re-enable trigger after users are inserted
-    await client.query('ALTER TABLE tenants ENABLE TRIGGER check_tenant_owner_trigger');
-    console.log('✅ Re-enabled check_tenant_owner_trigger');
     
-    // 4. Create stations
+    // Step 4: Create complete station hierarchy (station + pump + nozzles) to satisfy triggers
+    console.log('🏪 Creating complete station hierarchy...');
     const stationId = uuidv4();
+    const pumpId = uuidv4();
+    
+    // Create station
     await client.query(`
       INSERT INTO stations (id, tenant_id, name, address, city, state, zip, contact_phone)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    `, [stationId, tenantId, 'Main Station', '123 Main St', 'Anytown', 'ST', '12345', '555-1234']);
-
-    console.log(`✅ Station created with ID: ${stationId} for tenant ${tenantId}`);
+      ON CONFLICT (tenant_id, name) DO UPDATE SET
+        address = $4,
+        city = $5,
+        state = $6,
+        zip = $7,
+        contact_phone = $8,
+        updated_at = NOW()
+    `, [stationId, actualTenantId, 'Main Station', '123 Main St', 'Anytown', 'ST', '12345', '555-1234']);
     
-    // 5. Create pump
-    const pumpId = uuidv4();
+    // Get actual station ID
+    const stationResult = await client.query(`SELECT id FROM stations WHERE tenant_id = $1 AND name = $2`, [actualTenantId, 'Main Station']);
+    const actualStationId = stationResult.rows[0].id;
+    
+    // Create pump immediately after station
+    console.log('⛽ Creating pump...');
     await client.query(`
       INSERT INTO pumps (id, station_id, name, serial_number)
       VALUES ($1, $2, $3, $4)
-    `, [pumpId, stationId, 'Pump 1', 'SN-001']);
-
-    console.log(`✅ Pump created with ID: ${pumpId} for station ${stationId}`);
+      ON CONFLICT (station_id, name) DO UPDATE SET
+        serial_number = $4,
+        updated_at = NOW()
+    `, [pumpId, actualStationId, 'Pump 1', 'SN-001']);
     
-    // 6. Create nozzles
+    // Get actual pump ID
+    const pumpResult = await client.query(`SELECT id FROM pumps WHERE station_id = $1 AND name = $2`, [actualStationId, 'Pump 1']);
+    const actualPumpId = pumpResult.rows[0].id;
+    
+    // Create nozzles immediately after pump
+    console.log('🔧 Creating nozzles...');
     const fuelTypes = ['petrol', 'diesel'];
+    
     for (const fuelType of fuelTypes) {
       const nozzleId = uuidv4();
       await client.query(`
         INSERT INTO nozzles (id, pump_id, fuel_type)
         VALUES ($1, $2, $3)
-      `, [nozzleId, pumpId, fuelType]);
-
-      console.log(`  ↳ Nozzle ${nozzleId} (${fuelType}) added to pump ${pumpId}`);
-
-      // Add fuel prices
-      await client.query(`
-        INSERT INTO fuel_price_history (station_id, fuel_type, price_per_unit)
-        VALUES ($1, $2, $3)
-      `, [stationId, fuelType, fuelType === 'petrol' ? 4.50 : 4.20]);
+        ON CONFLICT DO NOTHING
+      `, [nozzleId, actualPumpId, fuelType]);
     }
-
-    console.log('✅ Station, pump, and nozzles created');
     
-    // 7. Create user-station assignments
+    // Step 5: Create fuel prices (may reference users as created_by)
+    console.log('💰 Creating fuel prices...');
+    const ownerUser = userIds.find(u => u.role === 'owner');
+    
+    for (const fuelType of fuelTypes) {
+      await client.query(`
+        INSERT INTO fuel_price_history (station_id, fuel_type, price_per_unit, created_by)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT DO NOTHING
+      `, [actualStationId, fuelType, fuelType === 'petrol' ? 4.50 : 4.20, ownerUser?.id]);
+    }
+    
+    // Step 6: Create user-station assignments
+    console.log('🔄 Creating user-station assignments...');
     for (const user of userIds) {
       let stationRole = 'attendant';
       if (user.role === 'owner') stationRole = 'owner';
@@ -121,17 +153,17 @@ async function seedDatabase() {
       await client.query(`
         INSERT INTO user_stations (id, user_id, station_id, role, active)
         VALUES ($1, $2, $3, $4, $5)
-        ON CONFLICT (user_id, station_id) DO UPDATE
-        SET role = $4, active = $5, updated_at = NOW()
-      `, [uuidv4(), user.id, stationId, stationRole, true]);
-      
-      console.log(`✅ Assigned user ${user.email} (${user.id}) to station ${stationId} as ${stationRole}`);
+        ON CONFLICT (user_id, station_id) DO UPDATE SET
+          role = $4,
+          active = $5,
+          updated_at = NOW()
+      `, [uuidv4(), user.id, actualStationId, stationRole, true]);
     }
     
-    // 8. Create tenant schema
-    const schemaName = `tenant_${tenantId.replace(/-/g, '_')}`;
+    // Step 7: Create tenant schema and tables
+    console.log('🗄️ Creating tenant schema...');
+    const schemaName = `tenant_${actualTenantId.replace(/-/g, '_')}`;
     await client.query(`CREATE SCHEMA IF NOT EXISTS ${schemaName}`);
-    console.log(`✅ Created schema ${schemaName}`);
     
     await client.query(`
       CREATE TABLE IF NOT EXISTS ${schemaName}.stations (
@@ -160,12 +192,20 @@ async function seedDatabase() {
       );
     `);
     
-    // Copy data to tenant schema
+    // Step 8: Copy data to tenant schema
+    console.log('📋 Copying data to tenant schema...');
     await client.query(`
       INSERT INTO ${schemaName}.stations (id, tenant_id, name, address, city, state, zip, contact_phone)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      ON CONFLICT (id) DO NOTHING
-    `, [stationId, tenantId, 'Main Station', '123 Main St', 'Anytown', 'ST', '12345', '555-1234']);
+      ON CONFLICT (id) DO UPDATE SET
+        name = $3,
+        address = $4,
+        city = $5,
+        state = $6,
+        zip = $7,
+        contact_phone = $8,
+        updated_at = NOW()
+    `, [actualStationId, actualTenantId, 'Main Station', '123 Main St', 'Anytown', 'ST', '12345', '555-1234']);
     
     for (const user of userIds) {
       let stationRole = 'attendant';
@@ -175,18 +215,32 @@ async function seedDatabase() {
       await client.query(`
         INSERT INTO ${schemaName}.user_stations (id, user_id, station_id, role, active)
         VALUES ($1, $2, $3, $4, $5)
-        ON CONFLICT (user_id, station_id) DO NOTHING
-      `, [uuidv4(), user.id, stationId, stationRole, true]);
+        ON CONFLICT (user_id, station_id) DO UPDATE SET
+          role = $4,
+          active = $5,
+          updated_at = NOW()
+      `, [uuidv4(), user.id, actualStationId, stationRole, true]);
     }
-
-    // Generate 30 days of demo sales using shared logic
-    await generateDemoSales(client, [{ id: stationId }], userIds.map(u => u.id));
-
-    console.log(`✅ Tenant schema ${schemaName} populated with initial data`);
+    
+    // Commit the entire transaction - all constraints checked here
+    await client.query('COMMIT');
     console.log('🎉 Database seeding completed successfully!');
     
+    // Summary
+    console.log('');
+    console.log('📊 Seeded Data Summary:');
+    console.log(`   ✅ Admin: admin@fuelsync.com / admin123`);
+    console.log(`   ✅ Tenant: Demo Company`);
+    console.log(`   ✅ Users: ${users.length} (owner, manager, employee)`);
+    console.log(`   ✅ Station: Main Station with Pump 1`);
+    console.log(`   ✅ Nozzles: ${fuelTypes.length} (petrol, diesel)`);
+    console.log(`   ✅ Fuel Prices: Set for both fuel types`);
+    console.log(`   ✅ User Assignments: All users assigned to station`);
+    console.log(`   ✅ Tenant Schema: Created and populated`);
+    
   } catch (error) {
-    console.error('❌ Error seeding database:', error);
+    await client.query('ROLLBACK');
+    console.error('❌ Seed failed:', error);
     throw error;
   } finally {
     client.release();

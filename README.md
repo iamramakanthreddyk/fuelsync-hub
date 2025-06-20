@@ -25,12 +25,10 @@ npm install
 cd backend && npm install
 cd ../frontend && npm install
 cd ../backend
-npm run db reset
+npm run db:reset
 cd ..
 npm run dev
 ```
-
-Running `npm run db reset` cleans the database before seeding. This prevents duplicate key errors like `admin_users_email_key` when starting over.
 
 ### Option 2: Docker Database
 
@@ -44,26 +42,25 @@ docker run --name fuelsync-db -p 5432:5432 \
 
 # Set environment variables and setup
 export DB_HOST=localhost DB_PORT=5432 DB_NAME=fuelsync_dev DB_USER=postgres DB_PASSWORD=postgres DB_SSL=false
-npm run db reset
-npm run dev
+cd backend && npm run db:reset
+cd .. && npm run dev
 ```
-
-`npm run db reset` ensures the container starts with a clean database so seeding works without duplicate key conflicts.
 
 ## 🌐 Access URLs
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:3001
 - **Debug Page**: http://localhost:3000/debug
+- **Admin Panel**: http://localhost:3000/admin/login
 
 ## 🔐 Default Login Credentials
 
-| Role | Email | Password |
-|------|-------|----------|
-| Owner | owner@demofuel.com | password123 |
-| Manager | manager@demofuel.com | password123 |
-| Employee | employee@demofuel.com | password123 |
-| Admin | admin@fuelsync.com | admin123 |
+| Role | Email | Password | Access |
+|------|-------|----------|---------|
+| **Admin** | admin@fuelsync.com | admin123 | Platform management |
+| **Owner** | owner@demofuel.com | password123 | All stations |
+| **Manager** | manager@demofuel.com | password123 | Assigned stations |
+| **Employee** | employee@demofuel.com | password123 | Single station |
 
 ## 🛠️ Development Commands
 
@@ -77,8 +74,9 @@ npm run build            # Build for production
 
 ### Database Management
 ```bash
-npm run db reset         # Clean DB then seed
-npm run db:setup         # Setup without cleaning
+npm run db:setup         # Complete database setup with seed data
+npm run db:reset         # Clean database and setup fresh (RECOMMENDED)
+npm run db:clean         # Clean database only (no setup)
 npm run db:check         # Test database connection
 npm run db:fix           # Fix user-station relationships
 npm run db:verify        # Verify database setup
@@ -103,10 +101,11 @@ npm run clean            # Clean all node_modules and build files
 fuelsync-hub/
 ├── backend/             # Node.js/Express API
 │   ├── src/            # Source code
-│   ├── db/             # Database scripts (4 essential files)
+│   ├── db/             # Database scripts (5 essential files)
 │   │   ├── setup-db.ts     # Schema creation
 │   │   ├── seed.ts         # Data seeding
 │   │   ├── fix-relationships.ts # Fix relationships
+│   │   ├── reset-db.ts     # Clean database
 │   │   └── check-connection.ts  # Test connection
 │   └── package.json    # Backend dependencies
 ├── frontend/           # Next.js React app
@@ -119,8 +118,14 @@ fuelsync-hub/
 
 ### Multi-Tenant Architecture
 - Separate data isolation per tenant
-- Role-based access control (Owner, Manager, Employee, Admin)
+- Role-based access control (Admin, Owner, Manager, Employee)
 - Scalable tenant management
+
+### Admin Panel
+- SuperAdmin dashboard for platform management
+- Tenant CRUD operations
+- User management across tenants
+- Platform statistics and monitoring
 
 ### Station Management
 - Multiple stations per tenant
@@ -155,18 +160,26 @@ fuelsync-hub/
    cd backend && npm run db:fix
    ```
 
-3. **Permission denied errors**
+3. **"Tenant must have at least one active station"**
    ```bash
-   cd backend && npm run db reset
+   cd backend && npm run db:reset
    ```
-   Cleaning the database helps prevent duplicate key errors like `admin_users_email_key`.
 
-4. **Clean slate needed**
+4. **Duplicate key errors during seeding**
    ```bash
-   # Reset everything
-   cd backend && npm run db reset
+   cd backend && npm run db:reset
    ```
-   This drops and recreates the database before seeding.
+
+5. **Permission denied errors**
+   ```bash
+   cd backend && npm run db:reset
+   ```
+
+6. **Clean slate needed**
+   ```bash
+   # Reset everything (RECOMMENDED for most issues)
+   cd backend && npm run db:reset
+   ```
 
 ### Debug Tools
 - Visit http://localhost:3000/debug for debugging tools
@@ -177,6 +190,7 @@ fuelsync-hub/
 - [Database Operations](DATABASE_OPERATIONS.md) - Database management guide
 - [Project Structure](PROJECT_STRUCTURE.md) - Detailed project organization
 - [Troubleshooting](TROUBLESHOOTING.md) - Common issues and solutions
+- [Usage Guide](USAGE_GUIDE.md) - How to use the application
 - [Agent Setup](AGENT_SETUP.md) - For AI agents and automated systems
 
 ## 🤖 For AI Agents
@@ -189,6 +203,39 @@ chmod +x agent-bootstrap.sh
 ```
 
 This handles everything automatically - database, environment, dependencies, and setup.
+
+## 🧪 Testing APIs
+
+### Authentication
+```bash
+# User login
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"owner@demofuel.com","password":"password123"}'
+
+# Admin login
+curl -X POST http://localhost:3001/api/admin-auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@fuelsync.com","password":"admin123"}'
+```
+
+### SuperAdmin APIs
+```bash
+# Get all tenants
+curl -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
+  http://localhost:3001/api/superadmin/tenants
+
+# Get platform stats
+curl -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
+  http://localhost:3001/api/superadmin/stats
+```
+
+### Station APIs
+```bash
+# Get all stations
+curl -H "Authorization: Bearer YOUR_USER_TOKEN" \
+  http://localhost:3001/api/stations
+```
 
 ## 🤝 Contributing
 
