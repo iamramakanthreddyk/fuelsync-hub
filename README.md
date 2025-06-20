@@ -110,6 +110,7 @@ fuelsync-hub/
 │   └── package.json    # Backend dependencies
 ├── frontend/           # Next.js React app
 │   ├── src/            # Source code
+│   ├── next.config.js  # Next.js configuration
 │   └── package.json    # Frontend dependencies
 └── package.json       # Root workspace configuration
 ```
