@@ -56,6 +56,16 @@ npm run db reset
 npm run db fix
 ```
 
+### Duplicate Key Errors
+
+**Error**: "duplicate key value violates unique constraint"
+
+**Solution**:
+```bash
+npm run db reset
+```
+This drops existing tables and re-seeds data, starting with a clean database.
+
 ## 🔐 Authentication Issues
 
 ### Token Validation Errors
