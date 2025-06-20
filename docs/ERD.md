@@ -10,6 +10,8 @@ erDiagram
     NOZZLES ||--o{ SALES : "records"
     STATIONS ||--o{ SALES : "records"
     SALES }o--|| USERS : "sold_by"
+    SALES }o--|| USERS : "voided_by"
+    SALES }o--|| CREDITORS : "credit_party"
     STATIONS ||--o{ FUEL_PRICES : "sets"
     STATIONS ||--o{ FUEL_PRICE_HISTORY : "price_history"
     STATIONS ||--o{ CREDITORS : "manages"
