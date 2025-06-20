@@ -17,7 +17,7 @@ export const getTenantPlan = async (req: Request, res: Response) => {
       return res.json(result.rows[0].custom_plan);
     }
     // Fallback: return standard plan
-    const planType = result.rows.length ? result.rows[0].plan_type : 'basic';
+    const planType = result.rows.length ? result.rows[0].subscription_plan : 'basic';
     res.json(PLAN_CONFIG[planType as PlanType]);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch tenant plan.' });

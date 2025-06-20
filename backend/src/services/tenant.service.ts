@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 
 export const createTenant = async (
   name: string,
-  planType: string,
+  subscriptionPlan: string,
   ownerEmail: string,
   ownerPassword: string
 ) => {
@@ -17,7 +17,7 @@ export const createTenant = async (
     // Create tenant and get schema
     const tenantResult = await client.query(
       'SELECT * FROM create_tenant($1, $2)',
-      [name, planType]
+      [name, subscriptionPlan]
     );
     const tenantId = tenantResult.rows[0].create_tenant;
 
@@ -47,7 +47,7 @@ export const createTenant = async (
     await client.query(
       `INSERT INTO subscription (plan_id, status) 
        VALUES ($1, 'active')`,
-      [planType]
+      [subscriptionPlan]
     );
 
     await client.query('COMMIT');
@@ -63,8 +63,8 @@ export const createTenant = async (
 
 export const getTenantByEmail = async (email: string) => {
   const result = await pool.query(
-    `SELECT t.id, t.name, t.schema_name, t.plan_type 
-     FROM tenants t 
+    `SELECT t.id, t.name, t.schema_name, t.subscription_plan
+     FROM tenants t
      JOIN admin_users au ON au.email = $1
      WHERE t.active = true`,
     [email]
@@ -78,7 +78,7 @@ export const getAllTenants = async () => {
 
   try {
     const result = await client.query(
-      `SELECT id, name, plan_type, schema_name, active, created_at, updated_at, contact_email, contact_phone
+      `SELECT id, name, subscription_plan, schema_name, active, created_at, updated_at, contact_email, contact_phone
        FROM tenants
        ORDER BY created_at DESC`
     );
@@ -92,7 +92,7 @@ export const getAllTenants = async () => {
 };
 export const getTenantById = async (tenantId: string) => {
   const result = await pool.query(
-    `SELECT id, name, plan_type, schema_name, active, created_at, updated_at
+    `SELECT id, name, subscription_plan, schema_name, active, created_at, updated_at
      FROM tenants
      WHERE id = $1`,
     [tenantId]

@@ -16,7 +16,7 @@ async function createTenantAndStation() {
       name: 'Other Tenant',
       email,
       password: 'Password123!',
-      planType: 'basic'
+      subscriptionPlan: 'basic'
     });
 
   const loginRes = await request(app)

@@ -95,7 +95,7 @@ router.post('/login', authLimiter, validateLoginInput, authController.login);
  *               - name
  *               - email
  *               - password
- *               - planType
+ *               - subscriptionPlan
  *             properties:
  *               name:
  *                 type: string
@@ -104,7 +104,7 @@ router.post('/login', authLimiter, validateLoginInput, authController.login);
  *                 format: email
  *               password:
  *                 type: string
- *               planType:
+ *               subscriptionPlan:
  *                 type: string
  *                 enum: [basic, premium, enterprise]
  *     responses:
@@ -131,7 +131,7 @@ router.post('/login', authLimiter, validateLoginInput, authController.login);
  *                           format: uuid
  *                         name:
  *                           type: string
- *                         planType:
+ *                         subscriptionPlan:
  *                           type: string
  *                           enum: [basic, premium, enterprise]
  *       400:

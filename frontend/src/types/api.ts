@@ -37,7 +37,7 @@ export interface RegisterResponseData {
   tenant: {
     id: string;
     name: string;
-    planType: 'basic' | 'premium' | 'enterprise';
+    subscriptionPlan: 'basic' | 'premium' | 'enterprise';
   };
 }
 

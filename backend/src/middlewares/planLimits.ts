@@ -7,8 +7,8 @@ import { sendError } from './error';
 
 // Utility to get plan type safely
 function getPlanType(user: UserSession): PlanType {
-  if (user?.planType && PLAN_TYPES.includes(user.planType)) {
-    return user.planType as PlanType;
+  if (user?.subscriptionPlan && PLAN_TYPES.includes(user.subscriptionPlan)) {
+    return user.subscriptionPlan as PlanType;
   }
   return 'basic';
 }

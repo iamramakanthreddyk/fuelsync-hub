@@ -3,7 +3,7 @@
 CREATE OR REPLACE FUNCTION create_tenant(tenant_id UUID, tenant_name TEXT, plan TEXT, schema_name TEXT)
 RETURNS VOID AS $$BEGIN
   -- Create tenant record (UUID is now passed in)
-  INSERT INTO public.tenants (id, name, plan_type, schema_name)
+  INSERT INTO public.tenants (id, name, subscription_plan, schema_name)
   VALUES (tenant_id, tenant_name, plan, schema_name);
   
   -- Create schema

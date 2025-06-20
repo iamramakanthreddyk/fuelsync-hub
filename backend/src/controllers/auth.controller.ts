@@ -18,7 +18,7 @@ interface RegisterBody {
   name: string;
   email: string;
   password: string;
-  planType: Plan;
+  subscriptionPlan: Plan;
 }
 
 /**
@@ -115,13 +115,13 @@ export const register = async (
   });
   
   try {
-    const { name, email, password, planType } = req.body;
+    const { name, email, password, subscriptionPlan } = req.body;
 
-    if (!name || !email || !password || !planType) {
-      return res.status(400).json({ 
+    if (!name || !email || !password || !subscriptionPlan) {
+      return res.status(400).json({
         status: 'error',
         code: 'MISSING_FIELDS',
-        message: 'All fields are required' 
+        message: 'All fields are required'
       });
     }
     
@@ -133,17 +133,17 @@ export const register = async (
       });
     }
     
-    if (!['basic', 'premium', 'enterprise'].includes(planType)) {
-      return res.status(400).json({ 
+    if (!['basic', 'premium', 'enterprise'].includes(subscriptionPlan)) {
+      return res.status(400).json({
         status: 'error',
         code: 'INVALID_PLAN',
-        message: 'Invalid plan type' 
+        message: 'Invalid plan type'
       });
     }
 
     const tenant = await tenantService.createTenant(
       name,
-      planType,
+      subscriptionPlan,
       email,
       password
     );
@@ -162,7 +162,7 @@ export const register = async (
         tenant: {
           id: tenant.tenantId,
           name,
-          planType
+          subscriptionPlan
         }
       }
     });

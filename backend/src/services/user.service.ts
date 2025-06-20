@@ -54,7 +54,7 @@ export const authenticateUser = async (email: string, password: string) => {
     
     // If not an admin, find which tenant this user belongs to
     const tenantQuery = `
-      SELECT t.id, t.schema_name, t.plan_type
+      SELECT t.id, t.schema_name, t.subscription_plan
       FROM tenants t
       INNER JOIN LATERAL (
         SELECT true AS exists
@@ -91,7 +91,7 @@ export const authenticateUser = async (email: string, password: string) => {
                 role: user.role,
                 tenantId: tenant.id,
                 schemaName: tenant.schema_name,
-                planType: tenant.plan_type,
+                subscriptionPlan: tenant.subscription_plan,
                 isAdmin: false 
               },
               config.jwtSecret,
@@ -122,7 +122,7 @@ export const authenticateUser = async (email: string, password: string) => {
                 role: user.role,
                 tenantId: tenant.id,
                 schemaName: tenant.schema_name,
-                planType: tenant.plan_type,
+                subscriptionPlan: tenant.subscription_plan,
                 isAdmin: false
               }
             };

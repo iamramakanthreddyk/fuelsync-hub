@@ -14,7 +14,7 @@ router.use(auditLog);
 
 // Per-plan rate limiting middleware
 router.use((req, res, next) => {
-  const planType: PlanType = req.user?.planType || 'basic';
+  const planType: PlanType = req.user?.subscriptionPlan || 'basic';
   const planLimits = { basic: 100, premium: 500, enterprise: 2000 };
   return require('express-rate-limit')({
     windowMs: 60 * 60 * 1000, // 1 hour

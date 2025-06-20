@@ -185,9 +185,9 @@ export default function Settings() {
           <Paper sx={{ p: 2 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
               <Typography variant="h6">Subscription</Typography>
-              <Chip 
-                label={user?.planType?.toUpperCase() || 'BASIC'} 
-                color={getPlanChipColor(user?.planType || 'basic')} 
+              <Chip
+                label={user?.subscriptionPlan?.toUpperCase() || 'BASIC'}
+                color={getPlanChipColor(user?.subscriptionPlan || 'basic')}
               />
             </Box>
             <Divider sx={{ mb: 2 }} />
@@ -201,8 +201,8 @@ export default function Settings() {
                 <Grid item xs={12} sm={6} key={feature.name}>
                   <Box display="flex" alignItems="center">
                     <ListItemIcon sx={{ minWidth: 32 }}>
-                      {typeof feature[user?.planType || 'basic'] === 'boolean' ? (
-                        feature[user?.planType || 'basic'] ? (
+                      {typeof feature[user?.subscriptionPlan || 'basic'] === 'boolean' ? (
+                        feature[user?.subscriptionPlan || 'basic'] ? (
                           <CheckIcon color="success" fontSize="small" />
                         ) : (
                           <CheckIcon color="disabled" fontSize="small" />
@@ -213,8 +213,8 @@ export default function Settings() {
                     </ListItemIcon>
                     <ListItemText 
                       primary={feature.name} 
-                      secondary={typeof feature[user?.planType || 'basic'] !== 'boolean' 
-                        ? feature[user?.planType || 'basic'] 
+                      secondary={typeof feature[user?.subscriptionPlan || 'basic'] !== 'boolean'
+                        ? feature[user?.subscriptionPlan || 'basic']
                         : undefined} 
                     />
                   </Box>
@@ -273,7 +273,7 @@ export default function Settings() {
                   <CardHeader title="Billing" />
                   <CardContent>
                     <Typography variant="body2" color="text.secondary" paragraph>
-                      Current Plan: {user?.planType?.toUpperCase() || 'BASIC'}
+                      Current Plan: {user?.subscriptionPlan?.toUpperCase() || 'BASIC'}
                     </Typography>
                     <Button size="small" color="primary">
                       Manage Billing
