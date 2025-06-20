@@ -21,6 +21,6 @@
 │   ├── styles/               # CSS styles
 │   └── utils/                # Utility functions
 ├── package.json
-└── next.config.js
+└── next.config.js  # Next.js Config (single file)
 
 

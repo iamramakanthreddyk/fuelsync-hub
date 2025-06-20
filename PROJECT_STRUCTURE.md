@@ -54,7 +54,7 @@ fuelsync-hub/
 │   │   │   └── 📄 errorHandler.ts        # Error Handling
 │   │   └── 📁 styles/                    # CSS Styles
 │   ├── 📄 package.json                   # ✅ CLEANED (No Ant Design)
-│   └── 📄 next.config.js                 # Next.js Config
+│   └── 📄 next.config.js                 # Next.js Config (single config file)
 │
 ├── 📁 scripts/                           # ✅ NEW Utility Scripts
 │   ├── 📄 db.ts                          # Unified Database Management
