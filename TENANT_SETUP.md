@@ -137,7 +137,7 @@ Each tenant schema contains:
    - `creditors`: Creditor information
    - `fuel_price_history`: Fuel price history
    - `sales`: Sales records
-   - `creditor_payments`: Creditor payment records
+  - `credit_payments`: Creditor payment records
    - `shifts`: Shift records
    - `tender_entries`: Tender entries
    - `day_reconciliations`: Day reconciliation records
