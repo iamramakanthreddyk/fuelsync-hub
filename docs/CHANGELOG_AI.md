@@ -65,3 +65,5 @@ You may now begin.
 ## 2025-06-28
 - Documented `fuel_deliveries.received_by` and `fuel_price_history.created_by` relationships in DATABASE_GUIDE.
 - Verified ERD diagram reflects these links.
+## 2025-06-29
+- Added notes in API docs that `checkPumpLimit` and `checkNozzleLimit` enforce plan limits for pump and nozzle creation routes.
