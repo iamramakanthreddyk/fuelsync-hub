@@ -12,9 +12,14 @@ export const auditLog = async (
   const originalEnd = res.end;
   
   // Override end method
-  res.end = function(chunk?: any, encoding?: BufferEncoding, callback?: () => void): Response {
+  res.end = function (
+    this: Response,
+    chunk?: any,
+    encoding?: BufferEncoding,
+    callback?: () => void
+  ): Response {
     // Call original end method
-    originalEnd.call(this, chunk, encoding, callback);
+    originalEnd.call(this, chunk, encoding as any, callback);
     
     // Log activity after response is sent
     setTimeout(async () => {
@@ -75,8 +80,8 @@ export const auditLog = async (
       }
     }, 0);
     
-    return this;
-  };
+    return this as unknown as Response;
+  } as any;
   
   next();
 };

@@ -12,9 +12,9 @@
     "db:check": "ts-node db/check-connection.ts",
     "db:fix": "ts-node db/fix-relationships.ts",
     "db:verify": "ts-node db/verify-seed.ts",
-    "test": "jest --runTestsByPath src/tests/sanity.test.ts",
-    "test:watch": "jest --watch src/tests/sanity.test.ts",
-    "test:coverage": "jest --coverage src/tests/sanity.test.ts",
+    "test": "jest --runTestsByPath src/tests/sanity.test.ts src/tests/nozzle.test.ts",
+    "test:watch": "jest --watch src/tests/sanity.test.ts src/tests/nozzle.test.ts",
+    "test:coverage": "jest --coverage src/tests/sanity.test.ts src/tests/nozzle.test.ts",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' --fix"
     },
