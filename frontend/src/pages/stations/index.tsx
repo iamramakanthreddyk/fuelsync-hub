@@ -15,6 +15,7 @@ import DashboardLayout from '../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../components/auth/ProtectedRoute';
 import { useRouter } from 'next/router';
 import { authHeader } from '../../utils/authHelper';
+import { apiFetch } from '../../services/api';
 
 const StationsPage = () => {
   const [stations, setStations] = useState([]);
@@ -38,8 +39,8 @@ const StationsPage = () => {
         
         console.log('Using headers:', headers);
         
-        const response = await fetch('http://localhost:3001/api/stations', {
-          headers
+        const response = await apiFetch('/stations', {
+          headers,
         });
         
         const data = await response.json();

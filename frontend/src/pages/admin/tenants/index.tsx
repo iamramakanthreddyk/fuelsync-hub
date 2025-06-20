@@ -25,6 +25,7 @@ import {
 } from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
 import AdminLayout from '../../../components/layout/AdminLayout';
+import { apiFetch } from '../../../services/api';
 
 export default function AdminTenants() {
   const router = useRouter();
@@ -48,7 +49,7 @@ export default function AdminTenants() {
         return;
       }
 
-      const response = await fetch('http://localhost:3001/api/superadmin/tenants', {
+      const response = await apiFetch('/superadmin/tenants', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -114,12 +115,12 @@ export default function AdminTenants() {
       }
 
       const url = currentTenant
-        ? `http://localhost:3001/api/superadmin/tenants/${currentTenant.id}`
-        : 'http://localhost:3001/api/superadmin/tenants';
+        ? `/superadmin/tenants/${currentTenant.id}`
+        : '/superadmin/tenants';
 
       const method = currentTenant ? 'PATCH' : 'POST';
 
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         method,
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -152,7 +153,7 @@ export default function AdminTenants() {
         return;
       }
 
-      const response = await fetch(`http://localhost:3001/api/superadmin/tenants/${id}`, {
+      const response = await apiFetch(`/superadmin/tenants/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

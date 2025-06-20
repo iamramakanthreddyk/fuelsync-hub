@@ -12,6 +12,7 @@ import {
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../components/auth/ProtectedRoute';
 import { getUserRole, getToken, authHeader } from '../../utils/authHelper';
+import { apiFetch } from '../../services/api';
 import { useRouter } from 'next/router';
 
 const Dashboard = () => {
@@ -40,8 +41,8 @@ const Dashboard = () => {
         
         console.log('Using headers:', headers);
         
-        const response = await fetch('http://localhost:3001/api/dashboard', {
-          headers
+        const response = await apiFetch('/dashboard', {
+          headers,
         });
         
         const data = await response.json();

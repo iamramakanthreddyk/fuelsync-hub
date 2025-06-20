@@ -18,6 +18,7 @@ import { Save as SaveIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-materia
 import DashboardLayout from '../../../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../../../components/auth/ProtectedRoute';
 import { authHeader } from '../../../../utils/authHelper';
+import { apiFetch } from '../../../../services/api';
 
 const StationEditPage = () => {
   const router = useRouter();
@@ -52,8 +53,8 @@ const StationEditPage = () => {
           return;
         }
         
-        const response = await fetch(`http://localhost:3001/api/stations/${id}`, {
-          headers
+        const response = await apiFetch(`/stations/${id}`, {
+          headers,
         });
         
         if (!response.ok) {
@@ -113,7 +114,7 @@ const StationEditPage = () => {
         return;
       }
       
-      const response = await fetch(`http://localhost:3001/api/stations/${id}`, {
+      const response = await apiFetch(`/stations/${id}`, {
         method: 'PUT',
         headers: {
           ...headers,

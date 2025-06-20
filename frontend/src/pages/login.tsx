@@ -12,6 +12,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import { storeToken, parseToken, isAuthenticated } from '../utils/authHelper';
+import { apiFetch } from '../services/api';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -36,7 +37,7 @@ const LoginPage = () => {
     try {
       console.log('Attempting login with:', { email });
       
-      const response = await fetch('http://localhost:3001/api/auth/login', {
+      const response = await apiFetch('/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
