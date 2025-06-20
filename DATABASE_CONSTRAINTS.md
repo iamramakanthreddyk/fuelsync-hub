@@ -1,4 +1,4 @@
-# FuelSync Hub - Database Constraints & Triggers Documentation
+# FuelSync Hub - Database Constraints & Issues Documentation
 
 ## 🚨 **CRITICAL: Immediate Trigger Behavior**
 
@@ -59,7 +59,13 @@ Level 6 (Independent):
 - **Fires**: IMMEDIATELY on station INSERT/UPDATE
 - **Impact**: Cannot create station without active pump existing
 
-### 3. **Discovered Tables**
+### 3. **Pump Constraint**
+- **Trigger**: `check_pump_has_nozzles()`
+- **Rule**: Each pump must have at least two active nozzles
+- **Fires**: IMMEDIATELY on pump INSERT/UPDATE
+- **Impact**: Cannot create pump without nozzles existing
+
+### 4. **Discovered Tables**
 The database contains these tables (21 total):
 - `admin_activity_logs`, `admin_notifications`, `admin_sessions`, `admin_settings`
 - `admin_users`, `creditor_payments`, `creditors`, `day_reconciliations`
@@ -136,23 +142,47 @@ DELETE FROM admin_settings;
 DELETE FROM migrations;
 ```
 
-## ⚠️ **Critical Issues Discovered**
+## ⚠️ **Critical Issues Discovered & Fixed**
 
 ### 1. **Missing fuel_prices Table**
-- There are TWO fuel price tables: `fuel_price_history` AND `fuel_prices`
-- The reset script was only clearing `fuel_price_history`
-- `fuel_prices` had 18 rows and was blocking station/user deletion
+- **Issue**: There are TWO fuel price tables: `fuel_price_history` AND `fuel_prices`
+- **Problem**: The reset script was only clearing `fuel_price_history`
+- **Impact**: `fuel_prices` had 18 rows and was blocking station/user deletion
 - **Solution**: Clear both tables in deletion order
 
 ### 2. **Immediate Trigger Firing**
-- Triggers fire on INSERT, not at COMMIT
-- Cannot create station then pump - must create pump immediately
+- **Issue**: Triggers fire on INSERT, not at COMMIT
+- **Problem**: Cannot create station then pump - must create pump immediately
 - **Solution**: Use nested transactions with immediate pump creation
 
 ### 3. **Tenant-Station Circular Dependency**
-- Tenant needs station (trigger)
-- Station needs tenant (foreign key)
+- **Issue**: Tenant needs station (trigger), Station needs tenant (FK)
 - **Solution**: Create station with temporary tenant_id, then create actual tenant
+
+### 4. **Schema vs Table Structure Mismatch**
+- **Issue**: Schema file didn't match actual database structure
+- **Problem**: Missing NOT NULL fields like `installation_date`, `initial_reading`, `current_reading`
+- **Solution**: Check actual table structure before seeding
+
+### 5. **Multi-Tenant Architecture Confusion**
+- **Issue**: Plan service querying tenant schemas instead of public schema
+- **Problem**: `SET search_path TO tenant_schema` but stations table is in public schema
+- **Error**: `relation "stations" does not exist`
+- **Solution**: Query `public.stations` with `tenant_id` filter instead of schema switching
+
+### 6. **Trigger Names Mismatch**
+- **Issue**: Trigger removal scripts used wrong trigger names
+- **Problem**: `check_tenant_has_station_trigger` vs `check_tenant_station_trigger`
+- **Solution**: Check actual trigger names before removal
+
+### 7. **Missing Required Fields**
+- **Issue**: Database has additional NOT NULL fields not in schema
+- **Examples**: 
+  - `pumps.installation_date` (required)
+  - `nozzles.initial_reading` (required)
+  - `nozzles.current_reading` (required)
+  - `fuel_price_history.created_by` (required)
+- **Solution**: Include ALL required fields in INSERT statements
 
 ## 🎯 **Verification Queries**
 
@@ -181,6 +211,12 @@ GROUP BY p.id, p.name;
 SELECT 'fuel_price_history' as table_name, COUNT(*) as count FROM fuel_price_history
 UNION ALL
 SELECT 'fuel_prices' as table_name, COUNT(*) as count FROM fuel_prices;
+
+-- Check actual table structure
+SELECT column_name, data_type, is_nullable, column_default
+FROM information_schema.columns 
+WHERE table_name = 'your_table' AND table_schema = 'public'
+ORDER BY ordinal_position;
 ```
 
 ## 🚨 **Azure PostgreSQL Limitations**
@@ -189,12 +225,14 @@ SELECT 'fuel_prices' as table_name, COUNT(*) as count FROM fuel_prices;
 - `SET session_replication_role = replica` (Permission denied)
 - `ALTER TABLE ... DISABLE TRIGGER` (Permission denied)
 - `TRUNCATE CASCADE` (May not work with immediate triggers)
+- `DROP TRIGGER` on system triggers (Permission denied)
 
 ### Must Use:
 - **Immediate satisfaction** of triggers during INSERT
 - **Nested transactions** for complex hierarchies
 - **Proper deletion order** respecting all foreign keys
 - **ON CONFLICT handling** for existing data
+- **CASCADE** when dropping triggers with dependencies
 
 ## 📋 **Troubleshooting Guide**
 
@@ -202,9 +240,13 @@ SELECT 'fuel_prices' as table_name, COUNT(*) as count FROM fuel_prices;
 |-------|-------|----------|
 | "Station must have at least one active pump" | Immediate trigger firing | Create pump immediately after station |
 | "Tenant must have at least one active station" | Immediate trigger firing | Create station before tenant |
+| "Pump must have at least two active nozzles" | Immediate trigger firing | Create nozzles immediately after pump |
 | "violates foreign key constraint fuel_prices_station_id_fkey" | Missing fuel_prices in deletion order | Clear fuel_prices before stations |
 | "violates foreign key constraint fuel_prices_created_by_fkey" | Missing fuel_prices in deletion order | Clear fuel_prices before users |
 | "duplicate key value violates unique constraint" | Existing data conflicts | Use ON CONFLICT clauses |
+| "null value in column X violates not-null constraint" | Missing required field | Check table structure and include all NOT NULL fields |
+| "relation 'stations' does not exist" | Wrong schema context | Use `public.stations` instead of tenant schema |
+| "cannot drop function because other objects depend on it" | Trigger dependencies | Use `DROP ... CASCADE` |
 
 ## 🎯 **Best Practices**
 
@@ -213,13 +255,44 @@ SELECT 'fuel_prices' as table_name, COUNT(*) as count FROM fuel_prices;
 2. **Never create station without immediate pump** - triggers fire immediately
 3. **Check both fuel price tables** - there are two different ones
 4. **Use nested transactions** for complex hierarchies
+5. **Verify table structure** before writing INSERT statements
+6. **Query public schema** for main tables, not tenant schemas
 
 ### For Production:
 1. **Test seeding process** thoroughly in staging
 2. **Monitor trigger violations** in logs
 3. **Backup before schema changes**
 4. **Verify all constraints** after operations
+5. **Document any custom triggers** and their behavior
+
+### For Schema Changes:
+1. **Check actual database structure** vs schema files
+2. **Test with immediate triggers** - don't assume deferred behavior
+3. **Update both public and tenant schemas** if using multi-tenant architecture
+4. **Verify foreign key relationships** in both directions
+
+## 🔧 **Multi-Tenant Architecture Notes**
+
+### Schema Structure:
+- **Public Schema**: Contains main tables (tenants, users, stations, pumps, nozzles, etc.)
+- **Tenant Schemas**: Contains tenant-specific replicated data
+- **Plan Limits**: Query public schema with tenant_id filter, not tenant schemas
+
+### Common Mistakes:
+1. **Querying tenant schema** for tables that exist in public schema
+2. **Using `SET search_path`** instead of explicit schema qualification
+3. **Assuming tenant schemas** have all the same tables as public schema
+
+### Correct Approach:
+```sql
+-- ❌ Wrong - queries tenant schema
+SET search_path TO tenant_123; 
+SELECT COUNT(*) FROM stations;
+
+-- ✅ Correct - queries public schema with tenant filter
+SELECT COUNT(*) FROM public.stations WHERE tenant_id = $1;
+```
 
 ---
 
-**⚠️ CRITICAL**: The database has immediate triggers that cannot be deferred. Always create complete hierarchies (station+pump+nozzles) together to satisfy all constraints immediately.
+**⚠️ CRITICAL**: The database has immediate triggers that cannot be deferred. Always create complete hierarchies (station+pump+nozzles) together to satisfy all constraints immediately. Multi-tenant architecture uses public schema for main tables, tenant schemas for replicated data only.

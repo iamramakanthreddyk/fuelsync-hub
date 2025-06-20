@@ -1,24 +1,36 @@
-// backend/src/controllers/superadmin.controller.ts
+// backend/src/controllers/superadmin.controller.ts - Fixed station creation
 import { Request, Response } from 'express';
 import pool from '../config/database';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
 
-// Get all tenants
+// Get all tenants with station warnings
 export const getTenants = async (req: Request, res: Response) => {
   try {
     const query = `
-      SELECT id, name, email, subscription_plan, status, contact_person, 
-             active, created_at, updated_at
-      FROM tenants
-      ORDER BY created_at DESC
+      SELECT 
+        t.id, t.name, t.email, t.subscription_plan, t.status, t.contact_person, 
+        t.active, t.created_at, t.updated_at,
+        COUNT(s.id) as station_count
+      FROM tenants t
+      LEFT JOIN stations s ON s.tenant_id = t.id AND s.active = true
+      GROUP BY t.id, t.name, t.email, t.subscription_plan, t.status, t.contact_person, 
+               t.active, t.created_at, t.updated_at
+      ORDER BY t.created_at DESC
     `;
     
     const result = await pool.query(query);
     
+    // Add warnings for tenants without stations
+    const tenantsWithWarnings = result.rows.map(tenant => ({
+      ...tenant,
+      has_stations: parseInt(tenant.station_count) > 0,
+      warning: parseInt(tenant.station_count) === 0 ? 'No active stations' : null
+    }));
+    
     return res.status(200).json({
       status: 'success',
-      data: result.rows
+      data: tenantsWithWarnings
     });
   } catch (error) {
     console.error('Get tenants error:', error);
@@ -29,8 +41,10 @@ export const getTenants = async (req: Request, res: Response) => {
   }
 };
 
-// Create a new tenant
+// Create a new tenant with default station
 export const createTenant = async (req: Request, res: Response) => {
+  const client = await pool.connect();
+  
   try {
     const { name, email, subscription_plan, contact_person } = req.body;
     
@@ -41,33 +55,103 @@ export const createTenant = async (req: Request, res: Response) => {
       });
     }
     
-    const id = uuidv4();
+    console.log(`[SUPERADMIN] Creating tenant: ${name} (${email})`);
+    
+    await client.query('BEGIN');
+    
+    const tenantId = uuidv4();
+    const stationId = uuidv4();
+    const pumpId = uuidv4();
     const plan = subscription_plan || 'basic';
     
+    // Create tenant
+    await client.query(`
+      INSERT INTO tenants (id, name, email, subscription_plan, contact_person, status, active)
+      VALUES ($1, $2, $3, $4, $5, 'active', true)
+    `, [tenantId, name, email, plan, contact_person]);
+    
+    // Create default station with all required fields
+    await client.query(`
+      INSERT INTO stations (id, tenant_id, name, address, city, state, zip, contact_phone, active)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
+    `, [stationId, tenantId, 'Default Station', 'To be configured', 'City', 'State', '00000', '000-000-0000']);
+    
+    // Create default pump
+    await client.query(`
+      INSERT INTO pumps (id, station_id, name, serial_number, installation_date, active)
+      VALUES ($1, $2, $3, $4, $5, true)
+    `, [pumpId, stationId, 'Default Pump', 'TBD', '2024-01-01']);
+    
+    await client.query('COMMIT');
+    
+    // Get the created tenant
+    const tenantResult = await client.query(`
+      SELECT id, name, email, subscription_plan, contact_person, status, active, created_at
+      FROM tenants WHERE id = $1
+    `, [tenantId]);
+    
+    console.log(`[SUPERADMIN] Tenant created successfully: ${tenantId}`);
+    
+    return res.status(201).json({
+      status: 'success',
+      data: {
+        ...tenantResult.rows[0],
+        has_stations: true,
+        message: 'Tenant created with default station'
+      }
+    });
+    
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('[SUPERADMIN] Create tenant error:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to create tenant: ' + error.message
+    });
+  } finally {
+    client.release();
+  }
+};
+
+// Create station endpoint
+export const createStation = async (req: Request, res: Response) => {
+  try {
+    const { tenantId } = req.params;
+    const { name, address, city, state, zip, contact_phone } = req.body;
+    
+    // Validate required fields
+    if (!name || !address || !city || !zip || !contact_phone) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Name, address, city, zip, and contact_phone are required'
+      });
+    }
+    
+    // Handle empty state
+    const stationState = state && state.trim() ? state.trim() : 'N/A';
+    
+    const stationId = uuidv4();
+    
     const query = `
-      INSERT INTO tenants (
-        id, name, email, subscription_plan, contact_person, status, active
-      ) VALUES (
-        $1, $2, $3, $4, $5, 'active', true
-      )
-      RETURNING id, name, email, subscription_plan, contact_person, status, active, created_at
+      INSERT INTO stations (id, tenant_id, name, address, city, state, zip, contact_phone, active)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
+      RETURNING id, name, address, city, state, zip, contact_phone, active, created_at
     `;
     
-    const result = await pool.query(query, [id, name, email, plan, contact_person]);
-    
-    // Create tenant schema
-    const schemaName = `tenant_${id.replace(/-/g, '_')}`;
-    await pool.query(`CREATE SCHEMA IF NOT EXISTS ${schemaName}`);
+    const result = await pool.query(query, [
+      stationId, tenantId, name, address, city, stationState, zip, contact_phone
+    ]);
     
     return res.status(201).json({
       status: 'success',
       data: result.rows[0]
     });
+    
   } catch (error) {
-    console.error('Create tenant error:', error);
+    console.error('Create station error:', error);
     return res.status(500).json({
       status: 'error',
-      message: 'Failed to create tenant'
+      message: 'Failed to create station'
     });
   }
 };
@@ -78,11 +162,17 @@ export const getTenantById = async (req: Request, res: Response) => {
     const { id } = req.params;
     
     const query = `
-      SELECT id, name, email, subscription_plan, status, contact_person, 
-             contact_phone, address, city, state, zip, max_stations, max_users,
-             active, created_at, updated_at
-      FROM tenants
-      WHERE id = $1
+      SELECT 
+        t.id, t.name, t.email, t.subscription_plan, t.status, t.contact_person, 
+        t.contact_phone, t.address, t.city, t.state, t.zip, t.max_stations, t.max_users,
+        t.active, t.created_at, t.updated_at,
+        COUNT(s.id) as station_count
+      FROM tenants t
+      LEFT JOIN stations s ON s.tenant_id = t.id AND s.active = true
+      WHERE t.id = $1
+      GROUP BY t.id, t.name, t.email, t.subscription_plan, t.status, t.contact_person, 
+               t.contact_phone, t.address, t.city, t.state, t.zip, t.max_stations, t.max_users,
+               t.active, t.created_at, t.updated_at
     `;
     
     const result = await pool.query(query, [id]);
@@ -94,9 +184,15 @@ export const getTenantById = async (req: Request, res: Response) => {
       });
     }
     
+    const tenant = result.rows[0];
+    
     return res.status(200).json({
       status: 'success',
-      data: result.rows[0]
+      data: {
+        ...tenant,
+        has_stations: parseInt(tenant.station_count) > 0,
+        warning: parseInt(tenant.station_count) === 0 ? 'No active stations' : null
+      }
     });
   } catch (error) {
     console.error('Get tenant error:', error);
@@ -367,7 +463,7 @@ export const resetUserPassword = async (req: Request, res: Response) => {
   }
 };
 
-// Get platform stats
+// Get platform stats with warnings
 export const getPlatformStats = async (req: Request, res: Response) => {
   try {
     // Get tenant count
@@ -385,15 +481,28 @@ export const getPlatformStats = async (req: Request, res: Response) => {
     const stationResult = await pool.query(stationQuery);
     const stationCount = parseInt(stationResult.rows[0].count);
     
-    // Get recent tenants
+    // Get recent tenants with station info
     const recentTenantsQuery = `
-      SELECT id, name, email, subscription_plan, created_at
-      FROM tenants
-      WHERE active = true
-      ORDER BY created_at DESC
+      SELECT 
+        t.id, t.name, t.email, t.subscription_plan, t.created_at,
+        COUNT(s.id) as station_count
+      FROM tenants t
+      LEFT JOIN stations s ON s.tenant_id = t.id AND s.active = true
+      WHERE t.active = true
+      GROUP BY t.id, t.name, t.email, t.subscription_plan, t.created_at
+      ORDER BY t.created_at DESC
       LIMIT 5
     `;
     const recentTenantsResult = await pool.query(recentTenantsQuery);
+    
+    // Get tenants without stations (warning)
+    const tenantsWithoutStationsQuery = `
+      SELECT COUNT(*) as count FROM tenants t
+      LEFT JOIN stations s ON s.tenant_id = t.id AND s.active = true
+      WHERE t.active = true AND s.id IS NULL
+    `;
+    const tenantsWithoutStationsResult = await pool.query(tenantsWithoutStationsQuery);
+    const tenantsWithoutStations = parseInt(tenantsWithoutStationsResult.rows[0].count);
     
     return res.status(200).json({
       status: 'success',
@@ -401,7 +510,14 @@ export const getPlatformStats = async (req: Request, res: Response) => {
         tenantCount,
         userCount,
         stationCount,
-        recentTenants: recentTenantsResult.rows
+        recentTenants: recentTenantsResult.rows.map(tenant => ({
+          ...tenant,
+          has_stations: parseInt(tenant.station_count) > 0,
+          warning: parseInt(tenant.station_count) === 0 ? 'No stations' : null
+        })),
+        warnings: {
+          tenantsWithoutStations: tenantsWithoutStations > 0 ? tenantsWithoutStations : null
+        }
       }
     });
   } catch (error) {

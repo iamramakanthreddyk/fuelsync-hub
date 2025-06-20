@@ -27,11 +27,11 @@ export const checkStationLimit = async (req: Request, res: Response, next: NextF
   }
   
   try {
-    const schemaName = req.schemaName as string;
-    if (!schemaName) return sendError(res, 400, 'Schema name is required');
+    const tenantId = user.tenant_id;
+    if (!tenantId) return sendError(res, 400, 'Tenant ID is required');
     const planType = getPlanType(user);
     const limits = PLAN_CONFIG[planType as PlanType];
-    const stationCount = await getStationCount(schemaName);
+    const stationCount = await getStationCount(tenantId);
     if (stationCount >= limits.maxStations) {
       return sendError(res, 403, `You have reached the maximum number of stations (${limits.maxStations}) allowed on your ${planType} plan.`, {
         limit: limits.maxStations,

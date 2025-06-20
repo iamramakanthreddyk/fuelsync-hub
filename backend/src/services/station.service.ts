@@ -6,7 +6,7 @@ export const getStations = async (tenantId?: string) => {
   try {
     let query = `
       SELECT id, name, address, city, state, zip, contact_phone, active, created_at, updated_at
-      FROM stations
+      FROM public.stations
       WHERE active = true`;
     
     const values: any[] = [];
@@ -33,7 +33,7 @@ export const getStationById = async (stationId: string, tenantId?: string) => {
   try {
     let query = `
       SELECT id, name, address, city, state, zip, contact_phone, active, created_at, updated_at
-      FROM stations
+      FROM public.stations
       WHERE id = $1 AND active = true`;
     
     const values: any[] = [stationId];
@@ -66,7 +66,7 @@ export const createStation = async (
   try {
     const id = uuidv4();
     const query = `
-      INSERT INTO stations (
+      INSERT INTO public.stations (
         id, tenant_id, name, address, city, state, zip, contact_phone
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8
@@ -102,7 +102,7 @@ export const updateStation = async (
 
     const values = [stationId, ...Object.values(filteredUpdates)];
     let query = `
-      UPDATE stations
+      UPDATE public.stations
       SET ${setClause}, updated_at = NOW()
       WHERE id = $1 AND active = true`;
     
@@ -127,7 +127,7 @@ export const deleteStation = async (stationId: string, tenantId?: string) => {
   const client = await pool.connect();
   try {
     let query = `
-      UPDATE stations
+      UPDATE public.stations
       SET active = false, updated_at = NOW()
       WHERE id = $1 AND active = true`;
     
