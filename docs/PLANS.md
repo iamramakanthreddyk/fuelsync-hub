@@ -67,3 +67,14 @@ SEEDING.md (simulate plans)
 ROLES.md (which roles can use features)
 
 API.md (routes gated by plan)
+
+---
+
+## 🔒 Server Guard Middleware
+
+Plan limits are enforced in the backend using middleware:
+
+- `checkPumpLimit` blocks new pumps if a station has reached `maxPumpsPerStation`.
+- `checkNozzleLimit` blocks new nozzles if a pump has reached `maxNozzlesPerPump`.
+
+These guards read plan settings from `planConfig.ts` and return `403` errors when limits are exceeded.

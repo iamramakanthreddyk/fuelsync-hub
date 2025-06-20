@@ -49,8 +49,8 @@ This document outlines the available API endpoints grouped by user roles in the 
 ### 🛠 Setup
 
 * `POST /api/stations` — Create a station
-* `POST /api/pumps` — Add a pump to a station
-* `POST /api/nozzles` — Add a nozzle to a pump
+* `POST /api/pumps` — Add a pump to a station _(guarded by `checkPumpLimit`)_
+* `POST /api/nozzles` — Add a nozzle to a pump _(guarded by `checkNozzleLimit`)_
 * `POST /api/users` — Create a new employee (manager/attendant)
 * `PATCH /api/users/:id` — Update employee
 * `DELETE /api/users/:id` — Deactivate employee
