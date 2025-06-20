@@ -33,12 +33,12 @@ export const register = async (
   name: string,
   email: string,
   password: string,
-  planType: string
+  subscriptionPlan: string
 ): Promise<RegisterResponseData> => {
   try {
     const response = await apiPost<ApiResponse<RegisterResponseData>>(
       '/auth/register',
-      { name, email, password, planType }
+      { name, email, password, subscriptionPlan }
     );
     
     if (response.status !== 'success' || !response.data) {

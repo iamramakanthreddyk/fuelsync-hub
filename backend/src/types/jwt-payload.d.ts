@@ -18,7 +18,7 @@ export interface JWTPayload {
   tenant_name?: string;
 
   /** Subscription plan for the tenant */
-  planType?: PlanType;
+  subscriptionPlan?: PlanType;
   
   /** User email (optional for backward compatibility) */
   email?: string;

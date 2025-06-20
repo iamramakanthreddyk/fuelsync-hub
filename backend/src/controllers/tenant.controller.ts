@@ -3,26 +3,31 @@ import * as tenantService from '../services/tenant.service';
 
 export const createTenant = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, planType } = req.body;
-    
-    if (!name || !email || !password || !planType) {
+    const { name, email, password, subscriptionPlan } = req.body;
+
+    if (!name || !email || !password || !subscriptionPlan) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-    
+
     // Validate plan type
-    if (!['basic', 'premium', 'enterprise'].includes(planType)) {
+    if (!['basic', 'premium', 'enterprise'].includes(subscriptionPlan)) {
       return res.status(400).json({ message: 'Invalid plan type' });
     }
-    
+
     // Create tenant and owner user
-    const tenant = await tenantService.createTenant(name, planType, email, password);
+    const tenant = await tenantService.createTenant(
+      name,
+      subscriptionPlan,
+      email,
+      password
+    );
     
     return res.status(201).json({
       message: 'Tenant created successfully',
       tenant: {
         id: tenant.tenantId,
         name,
-        planType,
+        subscriptionPlan,
         schemaName: tenant.schemaName
       }
     });

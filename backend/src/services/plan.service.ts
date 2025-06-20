@@ -6,8 +6,8 @@ import pool from '../config/database';
 // Returns the effective plan config (custom or standard)
 export function getEffectivePlan(user: UserSession, customPlan?: PlanConfig): PlanConfig {
   if (customPlan) return customPlan;
-  if (user?.planType && PLAN_TYPES.includes(user.planType)) {
-    return PLAN_CONFIG[user.planType as PlanType];
+  if (user?.subscriptionPlan && PLAN_TYPES.includes(user.subscriptionPlan)) {
+    return PLAN_CONFIG[user.subscriptionPlan as PlanType];
   }
   return PLAN_CONFIG['basic'];
 }
@@ -20,8 +20,8 @@ export function hasPlanFeature(user: UserSession, feature: keyof PlanConfig, cus
 // If tenant has a custom plan, use it for enforcement
 export function getPlanType(user: UserSession, customPlan?: PlanConfig): PlanType | PlanConfig {
   if (customPlan) return customPlan;
-  if (user?.planType && PLAN_TYPES.includes(user.planType)) {
-    return user.planType as PlanType;
+  if (user?.subscriptionPlan && PLAN_TYPES.includes(user.subscriptionPlan)) {
+    return user.subscriptionPlan as PlanType;
   }
   return 'basic';
 }

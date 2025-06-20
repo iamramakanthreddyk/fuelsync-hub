@@ -24,7 +24,7 @@ export default function Register() {
     email: '',
     password: '',
     confirmPassword: '',
-    planType: 'basic'
+    subscriptionPlan: 'basic'
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -54,7 +54,7 @@ export default function Register() {
         formData.name,
         formData.email,
         formData.password,
-        formData.planType
+        formData.subscriptionPlan
       );
 
       // Redirect to login page
@@ -126,9 +126,9 @@ export default function Register() {
               <InputLabel id="plan-type-label">Subscription Plan</InputLabel>
               <Select
                 labelId="plan-type-label"
-                id="planType"
-                name="planType"
-                value={formData.planType}
+                id="subscriptionPlan"
+                name="subscriptionPlan"
+                value={formData.subscriptionPlan}
                 label="Subscription Plan"
                 onChange={handleChange}
               >

@@ -97,7 +97,7 @@ components:
           type: string
           format: password
           description: Owner password
-        planType:
+        subscriptionPlan:
           type: string
           enum: [basic, premium, enterprise]
           description: Subscription plan type
@@ -105,7 +105,7 @@ components:
         - name
         - email
         - password
-        - planType
+        - subscriptionPlan
     
     RegisterResponse:
       type: object
@@ -126,7 +126,7 @@ components:
                   format: uuid
                 name:
                   type: string
-                planType:
+                subscriptionPlan:
                   type: string
                   enum: [basic, premium, enterprise]
       required:

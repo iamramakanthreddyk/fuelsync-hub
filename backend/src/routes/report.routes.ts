@@ -21,7 +21,7 @@ router.get('/creditors', hasPermission('view_reports'), reportController.getCred
 
 // Enforce permission and plan feature for advanced report (example)
 router.get('/station-performance', hasPermission('view_reports'), (req, res, next) => {
-  const planType = req.user?.planType as keyof typeof PLAN_FEATURES;
+  const planType = req.user?.subscriptionPlan as keyof typeof PLAN_FEATURES;
   if (!planType || !PLAN_FEATURES[planType].viewReports) {
     return res.status(403).json({ message: 'Advanced reports are not available on your plan.' });
   }

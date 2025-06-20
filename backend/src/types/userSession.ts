@@ -4,7 +4,7 @@ export interface UserSession {
   id: string;
   email: string;
   role: 'superadmin' | 'owner' | 'manager' | 'employee';
-  planType?: 'basic' | 'premium' | 'enterprise';
+  subscriptionPlan?: 'basic' | 'premium' | 'enterprise';
   isAdmin?: boolean;
   [key: string]: any;
 }

@@ -14,7 +14,7 @@ const testTenant = {
   name: 'Test Company',
   email: 'owner@testcompany.com',
   password: 'Password123!',
-  planType: 'basic',
+  subscriptionPlan: 'basic',
 };
 
 describe('Authentication API', () => {
@@ -34,7 +34,7 @@ describe('Authentication API', () => {
       expect(res.body).toHaveProperty('tenant');
       expect(res.body.tenant).toHaveProperty('id');
       expect(res.body.tenant).toHaveProperty('name', testTenant.name);
-      expect(res.body.tenant).toHaveProperty('planType', testTenant.planType);
+      expect(res.body.tenant).toHaveProperty('subscriptionPlan', testTenant.subscriptionPlan);
     });
 
     it('should return 400 if required fields are missing', async () => {
