@@ -61,3 +61,7 @@ You may now begin.
 - Standardized payment table name across code and docs.
 - Added migration to rename `creditor_payments` to `credit_payments`.
 - Updated docs to note the change.
+
+## 2025-06-28
+- Documented `fuel_deliveries.received_by` and `fuel_price_history.created_by` relationships in DATABASE_GUIDE.
+- Verified ERD diagram reflects these links.
