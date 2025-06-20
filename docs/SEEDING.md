@@ -15,6 +15,7 @@ Drops public and tenant schemas
 Applies all migrations
 
 Seeds SuperAdmin and tenants with default data
+Generates 30 days of sample sales for each station
 
 🛠 Manual Seed Script
 For finer control, run:
@@ -33,6 +34,9 @@ Edit
 --sales=50                # Number of sample sales to generate
 --skip-sales              # Do not create any sales records
 --demo=true               # Loads dummy creditors & payments
+
+`npm run db:setup` always generates 30 days of sales. Use the options above with
+`db/scripts/seed.ts` to change the count or skip creating sales entirely.
 👤 Seeded Roles & Data
 SuperAdmin
 Email: admin@fuelsync.com

@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 import dotenv from 'dotenv';
 import path from 'path';
-import { Pool } from 'pg';
+import { Pool, PoolClient } from 'pg';
 import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
@@ -25,6 +25,88 @@ const rnd  = (min: number, max: number, precision: number = 2): number => {
 
 const FUEL_TYPES    = ['petrol','diesel','premium','super','cng','lpg'] as const;
 const PAYMENT_METHS = ['cash','card','upi','credit','mixed'] as const;
+
+export async function generateDemoSales(
+  client: PoolClient,
+  stations: { id: string }[],
+  empIds: string[],
+  days: number = 30,
+  saleCount?: number
+) {
+  const { rows: nozzles } = await client.query(`
+    SELECT n.id, n.current_reading, p.station_id, n.fuel_type
+    FROM nozzles n
+    JOIN pumps p ON p.id = n.pump_id
+  `);
+
+  const { rows: prices } = await client.query(`
+    SELECT station_id,
+           fuel_type,
+           CAST(price_per_unit AS NUMERIC(10,3)) as price_per_unit
+    FROM fuel_prices
+    WHERE active
+  `);
+
+  const priceMap = new Map(
+    prices.map(r => [`${r.station_id}_${r.fuel_type}`, r.price_per_unit])
+  );
+
+  const totalSales = saleCount ?? stations.length * days * 2;
+  let made = 0;
+
+  for (const dayOffset of [...Array(days).keys()]) {
+    const baseTs = Math.floor(Date.now() / 1000) - dayOffset * 86400;
+    for (const { id: stId } of stations) {
+      const stationNozzles = nozzles.filter(n => n.station_id === stId);
+      for (let k = 0; k < 2 && made < totalSales; k++) {
+        made++;
+        const nozzle = stationNozzles[Math.floor(Math.random() * stationNozzles.length)];
+        const saleTime = new Date((baseTs + k * 300) * 1000).toISOString();
+
+        await client.query(
+          `WITH sale_data AS (
+             SELECT
+               CAST($4 AS NUMERIC(12,3)) as volume,
+               CAST($5 AS NUMERIC(10,3)) as price,
+               CAST($6 AS NUMERIC(12,3)) as prev_reading
+           ),
+           calc_data AS (
+             SELECT
+               volume,
+               price,
+               prev_reading,
+               prev_reading + volume as cum_reading
+             FROM sale_data
+           )
+           INSERT INTO sales (
+             id, station_id, nozzle_id, user_id, recorded_at,
+             sale_volume, fuel_price,
+             previous_reading, cumulative_reading,
+             payment_method, status, notes
+           )
+           SELECT
+             $1, $2, $3, $7, $8,
+             volume, price,
+             prev_reading, cum_reading,
+             $9::payment_method, 'posted'::sale_status, NULL
+           FROM calc_data
+           RETURNING id`,
+          [
+            uuid(),
+            stId,
+            nozzle.id,
+            rnd(5, 50, 3),
+            priceMap.get(`${stId}_${nozzle.fuel_type}`),
+            nozzle.current_reading,
+            empIds[Math.floor(Math.random() * empIds.length)],
+            saleTime,
+            PAYMENT_METHS[Math.floor(Math.random() * PAYMENT_METHS.length)]
+          ]
+        );
+      }
+    }
+  }
+}
 
 async function seed() {
   const client = await pool.connect();
@@ -185,81 +267,9 @@ async function seed() {
     // 8️⃣ demo sales (skip if requested)
     if (!process.argv.includes('--skip-sales')) {
       console.log('💵 Generating demo sales…');
-      const { rows: nozzles } = await client.query(`
-        SELECT n.id, n.current_reading, p.station_id, n.fuel_type
-        FROM nozzles n
-        JOIN pumps p ON p.id = n.pump_id
-      `);
-
-      const { rows: prices } = await client.query(`
-        SELECT station_id, 
-               fuel_type, 
-               CAST(price_per_unit AS NUMERIC(10,3)) as price_per_unit
-        FROM fuel_prices 
-        WHERE active
-      `);
-      
-      const priceMap = new Map(
-        prices.map(r => [`${r.station_id}_${r.fuel_type}`, r.price_per_unit])
-      );
-
-      const saleCount = process.argv.find(a => a.startsWith('--sales='))
-        ? Number(process.argv.find(a => a.startsWith('--sales='))!.split('=')[1])
-        : stations.length * 30 * 2;
-      let made = 0;
-
-      for (const dayOffset of [...Array(30).keys()]) {
-        const baseTs = Math.floor(Date.now() / 1000) - (dayOffset * 86400);
-        for (const { id: stId } of stations) {
-          const stationNozzles = nozzles.filter(n => n.station_id === stId);
-          
-          for (let k = 0; k < 2 && made < saleCount; k++) {
-            made++;
-            const nozzle = stationNozzles[Math.floor(Math.random() * stationNozzles.length)];
-            const saleTime = new Date((baseTs + k * 300) * 1000).toISOString();
-            
-            // Let PostgreSQL handle all numeric calculations
-            await client.query(`
-              WITH sale_data AS (
-                SELECT 
-                  CAST($4 AS NUMERIC(12,3)) as volume,
-                  CAST($5 AS NUMERIC(10,3)) as price,
-                  CAST($6 AS NUMERIC(12,3)) as prev_reading
-              ),
-              calc_data AS (
-                SELECT 
-                  volume,
-                  price,
-                  prev_reading,
-                  prev_reading + volume as cum_reading
-                FROM sale_data
-              )
-              INSERT INTO sales (
-                id, station_id, nozzle_id, user_id, recorded_at,
-                sale_volume, fuel_price, 
-                previous_reading, cumulative_reading,
-                payment_method, status, notes
-              )
-              SELECT 
-                $1, $2, $3, $7, $8,
-                volume, price,
-                prev_reading, cum_reading,
-                $9::payment_method, 'posted'::sale_status, NULL
-              FROM calc_data
-              RETURNING id`, [
-                uuid(),
-                stId, 
-                nozzle.id, 
-                rnd(5, 50, 3),  // volume
-                priceMap.get(`${stId}_${nozzle.fuel_type}`),  // price
-                nozzle.current_reading,
-                empIds[Math.floor(Math.random() * empIds.length)],
-                saleTime,
-                PAYMENT_METHS[Math.floor(Math.random() * PAYMENT_METHS.length)]
-              ]);
-          }
-        }
-      }
+      const saleArg = process.argv.find(a => a.startsWith('--sales='));
+      const saleCount = saleArg ? Number(saleArg.split('=')[1]) : undefined;
+      await generateDemoSales(client, stations, empIds, 30, saleCount);
     }
 
     await client.query('COMMIT');

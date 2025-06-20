@@ -50,3 +50,7 @@ You may now begin.
 - Documented `sales.voided_by` and `sales.credit_party_id` relationships in DATABASE_GUIDE.
 - Added corresponding links to ERD diagram.
 - Documented all plan feature flags in PLANS.md to match `planConfig.ts`
+
+## 2025-06-26
+- `db:setup` now seeds 30 days of demo sales by reusing the script logic.
+- Updated SEEDING guide with sales seeding behavior and flags.
