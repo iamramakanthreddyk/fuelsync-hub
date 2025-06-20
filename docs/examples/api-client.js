@@ -61,10 +61,10 @@ const createFuelSyncClient = (baseUrl = 'http://localhost:3001/api') => {
       },
       
       // Register
-      register: async (name, email, password, planType) => {
+      register: async (name, email, password, subscription_plan) => {
         const response = await request('/auth/register', {
           method: 'POST',
-          body: JSON.stringify({ name, email, password, planType })
+          body: JSON.stringify({ name, email, password, subscription_plan })
         });
         
         return response.data;
