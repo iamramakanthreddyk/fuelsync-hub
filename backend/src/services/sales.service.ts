@@ -81,14 +81,14 @@ export const createSale = async (
     const saleResult = await client.query(
       `INSERT INTO sales (
         station_id, nozzle_id, user_id, sale_volume, cumulative_reading,
-        previous_reading, fuel_price, amount, cash_received, credit_given,
+        previous_reading, fuel_price, cash_received, credit_given,
         payment_method, credit_party_id, status, notes
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *`,
       [
         stationId, nozzleId, userId, calculatedSaleVolume, cumulativeReading,
-        previousReading, fuelPrice, amount, cashReceived, creditGiven,
+        previousReading, fuelPrice, cashReceived, creditGiven,
         paymentMethod, appliedCreditPartyId, 'posted', notes
       ]
     );

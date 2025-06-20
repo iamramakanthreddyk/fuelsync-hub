@@ -33,6 +33,7 @@ router.post('/', hasPermission('manage_nozzles'), validate(createNozzleSchema), 
 // Enforce permission for getting, updating nozzles
 router.get('/:id', hasPermission('manage_nozzles'), nozzleController.getNozzleById);
 router.patch('/:id', hasPermission('manage_nozzles'), nozzleController.updateNozzle);
+router.delete('/:id', hasPermission('manage_nozzles'), nozzleController.deleteNozzle);
 
 // Record nozzle reading (assume sales permission)
 router.post('/:id/readings', hasPermission('record_sales'), nozzleController.recordNozzleReading);

@@ -149,3 +149,23 @@ export const recordNozzleReading = async (req: Request, res: Response) => {
     return res.status(500).json({ message: error.message || 'Failed to record nozzle reading' });
   }
 };
+
+export const deleteNozzle = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const schemaName = req.schemaName;
+    if (!schemaName) {
+      return res.status(500).json({ message: 'Tenant context not set' });
+    }
+
+    const success = await nozzleService.deleteNozzle(schemaName, id);
+    if (!success) {
+      return res.status(404).json({ message: 'Nozzle not found' });
+    }
+
+    return res.status(204).send();
+  } catch (error: any) {
+    console.error('Delete nozzle error:', error);
+    return res.status(500).json({ message: error.message || 'Failed to delete nozzle' });
+  }
+};

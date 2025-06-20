@@ -1,0 +1,4 @@
+-- UP
+ALTER TABLE nozzles ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;
+-- DOWN
+ALTER TABLE nozzles DROP COLUMN IF EXISTS deleted_at;
