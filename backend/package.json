@@ -16,6 +16,8 @@
     "db:check-tables": "ts-node db/check-tables.ts",
     "db:fix": "ts-node db/fix-relationships.ts",
     "db:verify": "ts-node db/verify-seed.ts",
+    "db:migrate": "ts-node db/scripts/migrate.ts",
+    "db:seed": "ts-node db/seed.ts && ts-node db/fix-relationships.ts",
     "test": "jest --runTestsByPath src/tests/sanity.test.ts src/tests/nozzle.test.ts",
     "test:watch": "jest --watch src/tests/sanity.test.ts src/tests/nozzle.test.ts",
     "test:coverage": "jest --coverage src/tests/sanity.test.ts src/tests/nozzle.test.ts",

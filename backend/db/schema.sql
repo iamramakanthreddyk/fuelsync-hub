@@ -117,9 +117,14 @@ CREATE TABLE IF NOT EXISTS nozzles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     pump_id UUID NOT NULL REFERENCES pumps(id) ON DELETE CASCADE,
     fuel_type VARCHAR(50) NOT NULL,
+    initial_reading NUMERIC(12,3) NOT NULL,
+    current_reading NUMERIC(12,3) NOT NULL,
+    last_reading_date TIMESTAMP,
+    status VARCHAR(50) DEFAULT 'active',
     active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT valid_readings CHECK (current_reading >= initial_reading)
 );
 
 CREATE TABLE IF NOT EXISTS fuel_price_history (
