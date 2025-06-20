@@ -41,3 +41,6 @@ You may now begin.
 - Added Jest test runner and a basic sanity test
 - Updated tsconfig typeRoots for workspace node_modules
 - Modified test scripts to run the sanity test only
+
+## 2025-06-25
+- Documented all plan feature flags in PLANS.md to match `planConfig.ts`
