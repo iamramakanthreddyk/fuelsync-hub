@@ -41,7 +41,7 @@ async function seedDatabase() {
       ON CONFLICT (email) DO NOTHING
     `, [adminId, 'admin@fuelsync.com', adminPasswordHash, 'superadmin', 'Admin', 'User']);
     
-    console.log('✅ Admin user created');
+    console.log(`✅ Admin user created with ID: ${adminId}`);
     
     // 2. Create demo tenant
     const tenantId = uuidv4();
@@ -51,7 +51,7 @@ async function seedDatabase() {
       ON CONFLICT (email) DO NOTHING
     `, [tenantId, 'Demo Company', 'demo@company.com', 'premium', true, 'Demo Owner']);
     
-    console.log('✅ Demo tenant created');
+    console.log(`✅ Demo tenant created with ID: ${tenantId}`);
     
     // 3. Create tenant users
     const users = [
@@ -70,11 +70,13 @@ async function seedDatabase() {
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         ON CONFLICT (email, tenant_id) DO NOTHING
       `, [userId, tenantId, user.email, passwordHash, user.role, user.firstName, user.lastName, true]);
-      
+
+      console.log(`  ↳ Created user ${user.email} (${user.role}) with ID: ${userId}`);
+
       userIds.push({ id: userId, ...user });
     }
-    
-    console.log('✅ Tenant users created');
+
+    console.log(`✅ ${userIds.length} tenant users created for tenant ${tenantId}`);
 
     // Re-enable trigger after users are inserted
     await client.query('ALTER TABLE tenants ENABLE TRIGGER check_tenant_owner_trigger');
@@ -86,6 +88,8 @@ async function seedDatabase() {
       INSERT INTO stations (id, tenant_id, name, address, city, state, zip, contact_phone)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `, [stationId, tenantId, 'Main Station', '123 Main St', 'Anytown', 'ST', '12345', '555-1234']);
+
+    console.log(`✅ Station created with ID: ${stationId} for tenant ${tenantId}`);
     
     // 5. Create pump
     const pumpId = uuidv4();
@@ -93,6 +97,8 @@ async function seedDatabase() {
       INSERT INTO pumps (id, station_id, name, serial_number)
       VALUES ($1, $2, $3, $4)
     `, [pumpId, stationId, 'Pump 1', 'SN-001']);
+
+    console.log(`✅ Pump created with ID: ${pumpId} for station ${stationId}`);
     
     // 6. Create nozzles
     const fuelTypes = ['petrol', 'diesel'];
@@ -102,14 +108,16 @@ async function seedDatabase() {
         INSERT INTO nozzles (id, pump_id, fuel_type)
         VALUES ($1, $2, $3)
       `, [nozzleId, pumpId, fuelType]);
-      
+
+      console.log(`  ↳ Nozzle ${nozzleId} (${fuelType}) added to pump ${pumpId}`);
+
       // Add fuel prices
       await client.query(`
         INSERT INTO fuel_price_history (station_id, fuel_type, price_per_unit)
         VALUES ($1, $2, $3)
       `, [stationId, fuelType, fuelType === 'petrol' ? 4.50 : 4.20]);
     }
-    
+
     console.log('✅ Station, pump, and nozzles created');
     
     // 7. Create user-station assignments
@@ -125,12 +133,13 @@ async function seedDatabase() {
         SET role = $4, active = $5, updated_at = NOW()
       `, [uuidv4(), user.id, stationId, stationRole, true]);
       
-      console.log(`✅ Assigned user ${user.email} to station as ${stationRole}`);
+      console.log(`✅ Assigned user ${user.email} (${user.id}) to station ${stationId} as ${stationRole}`);
     }
     
     // 8. Create tenant schema
     const schemaName = `tenant_${tenantId.replace(/-/g, '_')}`;
     await client.query(`CREATE SCHEMA IF NOT EXISTS ${schemaName}`);
+    console.log(`✅ Created schema ${schemaName}`);
     
     await client.query(`
       CREATE TABLE IF NOT EXISTS ${schemaName}.stations (
@@ -181,7 +190,7 @@ async function seedDatabase() {
     // Generate 30 days of demo sales using shared logic
     await generateDemoSales(client, [{ id: stationId }], userIds.map(u => u.id));
 
-    console.log('✅ Tenant schema created and populated');
+    console.log(`✅ Tenant schema ${schemaName} populated with initial data`);
     console.log('🎉 Database seeding completed successfully!');
     
   } catch (error) {
