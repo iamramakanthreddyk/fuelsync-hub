@@ -41,7 +41,10 @@ You may now begin.
 - Added Jest test runner and a basic sanity test
 - Updated tsconfig typeRoots for workspace node_modules
 - Modified test scripts to run the sanity test only
+
 ## 2025-06-25
+- Documented `checkPumpLimit` and `checkNozzleLimit` middleware in PLANS and BUSINESS_RULES.
+- Noted these guards in API.md under pump and nozzle creation routes.
 - Documented `sales.voided_by` and `sales.credit_party_id` relationships in DATABASE_GUIDE.
 - Added corresponding links to ERD diagram.
 - Documented all plan feature flags in PLANS.md to match `planConfig.ts`
