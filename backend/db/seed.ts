@@ -26,6 +26,10 @@ async function seedDatabase() {
   
   try {
     console.log('🌱 Starting database seeding...');
+
+    // Disable trigger to allow tenant creation without owner
+    await client.query('ALTER TABLE tenants DISABLE TRIGGER check_tenant_owner_trigger');
+    console.log('🚧 Disabled check_tenant_owner_trigger');
     
     // 1. Create admin user
     const adminId = uuidv4();
@@ -71,6 +75,10 @@ async function seedDatabase() {
     }
     
     console.log('✅ Tenant users created');
+
+    // Re-enable trigger after users are inserted
+    await client.query('ALTER TABLE tenants ENABLE TRIGGER check_tenant_owner_trigger');
+    console.log('✅ Re-enabled check_tenant_owner_trigger');
     
     // 4. Create stations
     const stationId = uuidv4();
