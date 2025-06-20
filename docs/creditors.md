@@ -85,9 +85,9 @@ CREATE TABLE creditors (
 );
 ```
 
-### creditor_payments table
+### credit_payments table
 ```sql
-CREATE TABLE creditor_payments (
+CREATE TABLE credit_payments (
   id UUID PRIMARY KEY,
   creditor_id UUID NOT NULL REFERENCES creditors(id) ON DELETE CASCADE,
   amount DECIMAL(10,2) NOT NULL,

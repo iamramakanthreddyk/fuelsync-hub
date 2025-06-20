@@ -15,7 +15,7 @@ This document provides a comprehensive guide for FuelSync Hub, including databas
 | `nozzles` | Pump nozzles | id, pump_id, fuel_type |
 | `sales` | Sales transactions | id, nozzle_id, user_id, amount |
 | `creditors` | Credit customers | id, party_name, credit_limit |
-| `creditor_payments` | Credit payments | id, creditor_id, amount |
+| `credit_payments` | Credit payments | id, creditor_id, amount |
 
 ### Important Notes
 

@@ -12,7 +12,7 @@ This document summarizes the fixes made to address issues with the FuelSync Hub 
 - Updated seed scripts to match the actual database schema
 - Fixed column names in `creditors` table (using `party_name` instead of `name`)
 - Fixed column names in `sales` table (using correct field names for sales records)
-- Fixed column names in `creditor_payments` table (using `recorded_by` instead of `created_by`)
+- Fixed column names in `credit_payments` table (using `recorded_by` instead of `created_by`)
 
 ### 2. Tenant User Login Issues
 

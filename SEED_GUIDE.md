@@ -16,7 +16,7 @@ Before seeding data, it's important to understand the database schema:
 2. **Key findings**:
    - The `sales` table has a generated column `amount` that is calculated from `sale_volume` and `fuel_price`
    - The `creditors` table requires `station_id`, `party_name` and other fields
-   - The `creditor_payments` table links payments to creditors
+   - The `credit_payments` table links payments to creditors
 
 ## Seeding Data
 
@@ -109,6 +109,6 @@ This information is crucial for creating correct INSERT statements.
 |--------|-------------|
 | `db:check-sales` | Check the schema of the sales table |
 | `db:check-creditors` | Check the schema of the creditors table |
-| `db:check-payments` | Check the schema of the creditor_payments table |
+| `db:check-payments` | Check the schema of the credit_payments table |
 | `db:seed-simple` | Seed a creditor, credit sale, and payment |
 | `db:verify-seed` | Verify the seed data was created correctly |

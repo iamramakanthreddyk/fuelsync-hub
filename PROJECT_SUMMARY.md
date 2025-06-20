@@ -108,7 +108,7 @@ Limited access to daily operations at assigned stations.
   - `nozzles`: Nozzles within pumps
   - `sales`: Sales transactions
   - `creditors`: Credit customers
-  - `creditor_payments`: Payments for credit sales
+  - `credit_payments`: Payments for credit sales
   - `inventory_deliveries`: Fuel deliveries
   - `shifts`: Employee shifts
 

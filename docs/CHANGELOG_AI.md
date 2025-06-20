@@ -43,6 +43,7 @@ You may now begin.
 - Modified test scripts to run the sanity test only
 
 ## 2025-06-25
+- Renamed `creditor_payments` references in documentation to `credit_payments`.
 - Clarified seeding guide: removed nozzle reading simulation and updated sales options.
 - Documented `checkPumpLimit` and `checkNozzleLimit` middleware in PLANS and BUSINESS_RULES.
 - Noted these guards in API.md under pump and nozzle creation routes.
