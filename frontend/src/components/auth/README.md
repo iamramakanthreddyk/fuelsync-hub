@@ -17,12 +17,12 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 </ProtectedRoute>
 
 // With role requirements - only allows users with specific roles
-<ProtectedRoute requiredRoles={['owner', 'manager']}>
+<ProtectedRoute allowedRoles={['owner', 'manager']}>
   <YourComponent />
 </ProtectedRoute>
 
 // For admin routes
-<ProtectedRoute requiredRoles={['superadmin']} isAdminRoute={true}>
+<ProtectedRoute allowedRoles={['superadmin']} isAdminRoute={true}>
   <YourComponent />
 </ProtectedRoute>
 ```
@@ -44,9 +44,9 @@ import AuthenticatedDashboardLayout from '@/components/layout/AuthenticatedDashb
 
 export default function YourPage() {
   return (
-    <AuthenticatedDashboardLayout 
-      title="Your Page Title" 
-      requiredRoles={['owner', 'manager']}
+    <AuthenticatedDashboardLayout
+      title="Your Page Title"
+      allowedRoles={['owner', 'manager']}
     >
       {/* Your page content */}
     </AuthenticatedDashboardLayout>
@@ -61,10 +61,10 @@ import AuthenticatedAdminLayout from '@/components/layout/AuthenticatedAdminLayo
 
 export default function YourAdminPage() {
   return (
-    <AuthenticatedAdminLayout 
+    <AuthenticatedAdminLayout
       title="Your Admin Page Title"
       // Default role is 'superadmin', but you can override it
-      requiredRoles={['superadmin']} 
+      allowedRoles={['superadmin']}
     >
       {/* Your admin page content */}
     </AuthenticatedAdminLayout>

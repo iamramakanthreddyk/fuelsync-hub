@@ -3,7 +3,7 @@ import DashboardLayout, { DashboardLayoutProps } from './DashboardLayout';
 import ProtectedRoute from '../auth/ProtectedRoute';
 
 interface AuthenticatedDashboardLayoutProps extends DashboardLayoutProps {
-  requiredRoles?: string[];
+  allowedRoles?: string[];
   children: React.ReactNode;
 }
 
@@ -11,12 +11,12 @@ interface AuthenticatedDashboardLayoutProps extends DashboardLayoutProps {
  * A wrapper around DashboardLayout that includes authentication protection
  */
 export default function AuthenticatedDashboardLayout({
-  requiredRoles,
+  allowedRoles,
   children,
   ...props
 }: AuthenticatedDashboardLayoutProps) {
   return (
-    <ProtectedRoute requiredRoles={requiredRoles}>
+    <ProtectedRoute allowedRoles={allowedRoles}>
       <DashboardLayout {...props}>
         {children}
       </DashboardLayout>
