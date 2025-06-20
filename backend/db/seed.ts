@@ -1,5 +1,6 @@
 // backend/db/seed.ts - Fixed TypeScript seed
 import { Pool } from 'pg';
+import { generateDemoSales } from './scripts/seed';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
 
@@ -168,7 +169,10 @@ async function seedDatabase() {
         ON CONFLICT (user_id, station_id) DO NOTHING
       `, [uuidv4(), user.id, stationId, stationRole, true]);
     }
-    
+
+    // Generate 30 days of demo sales using shared logic
+    await generateDemoSales(client, [{ id: stationId }], userIds.map(u => u.id));
+
     console.log('✅ Tenant schema created and populated');
     console.log('🎉 Database seeding completed successfully!');
     
