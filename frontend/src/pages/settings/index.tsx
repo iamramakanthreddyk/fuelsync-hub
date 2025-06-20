@@ -32,7 +32,7 @@ import {
 } from '@mui/icons-material';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { useAuth } from '../../utils/auth';
-import { apiGet, apiPatch } from '../../utils/api';
+import { api } from '../../utils/api';
 
 interface PlanFeature {
   name: string;
@@ -70,7 +70,7 @@ export default function Settings() {
     
     const fetchSettings = async () => {
       try {
-        const data = await apiGet('/settings');
+        const data = await api.get('/settings');
         setTenantSettings(data);
         
         // Initialize profile data
@@ -104,7 +104,7 @@ export default function Settings() {
     setSaveLoading(true);
     
     try {
-      await apiPatch(`/users/${user?.id}`, profileData);
+      await api.patch(`/users/${user?.id}`, profileData);
       
       // Update user in localStorage
       const storedUser = JSON.parse(localStorage.getItem('user') || '{}');

@@ -20,7 +20,7 @@ import { Save as SaveIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-materia
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../../components/auth/ProtectedRoute';
 import { authHeader } from '../../../utils/authHelper';
-import { apiFetch } from '../../../services/api';
+import { api } from '../../../utils/api';
 
 const NewSalePage = () => {
   const router = useRouter();
@@ -54,20 +54,7 @@ const NewSalePage = () => {
           return;
         }
         
-        const response = await apiFetch('/stations', {
-          headers,
-        });
-        
-        if (!response.ok) {
-          if (response.status === 401) {
-            router.push('/login');
-            return;
-          }
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch stations');
-        }
-        
-        const data = await response.json();
+        const data = await api.get('/stations', { headers });
         console.log('Stations data:', data);
         
         if (data && Array.isArray(data)) {
@@ -99,16 +86,7 @@ const NewSalePage = () => {
   const fetchPumps = async (stationId) => {
     try {
       const headers = authHeader();
-      const response = await apiFetch(`/stations/${stationId}/pumps`, {
-        headers,
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch pumps');
-      }
-      
-      const data = await response.json();
+      const data = await api.get(`/stations/${stationId}/pumps`, { headers });
       console.log('Pumps data:', data);
       
       if (data && Array.isArray(data)) {
@@ -139,16 +117,7 @@ const NewSalePage = () => {
   const fetchNozzles = async (pumpId) => {
     try {
       const headers = authHeader();
-      const response = await apiFetch(`/pumps/${pumpId}/nozzles`, {
-        headers,
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch nozzles');
-      }
-      
-      const data = await response.json();
+      const data = await api.get(`/pumps/${pumpId}/nozzles`, { headers });
       console.log('Nozzles data:', data);
       
       if (data && Array.isArray(data)) {
@@ -221,21 +190,9 @@ const NewSalePage = () => {
         fuel_price: parseFloat(sale.fuel_price)
       };
       
-      const response = await apiFetch('/sales', {
-        method: 'POST',
-        headers: {
-          ...headers,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(saleData)
+      const data = await api.post('/sales', saleData, {
+        headers: { ...headers, 'Content-Type': 'application/json' },
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create sale');
-      }
-      
-      const data = await response.json();
       console.log('Created sale:', data);
       
       router.push('/sales');

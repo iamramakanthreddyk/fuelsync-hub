@@ -12,7 +12,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import { storeToken, parseToken, isAuthenticated } from '../utils/authHelper';
-import { apiFetch } from '../services/api';
+import { api } from '../utils/api';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -37,18 +37,10 @@ const LoginPage = () => {
     try {
       console.log('Attempting login with:', { email });
       
-      const response = await apiFetch('/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
+      const data = await api.post('/auth/login', { email, password });
       console.log('Login response:', data);
 
-      if (response.ok && data.status === 'success' && data.data?.token) {
+      if (data.status === 'success' && data.data?.token) {
         // Extract the actual token if it starts with "Bearer "
         const token = data.data.token.startsWith('Bearer ') 
           ? data.data.token.substring(7) 

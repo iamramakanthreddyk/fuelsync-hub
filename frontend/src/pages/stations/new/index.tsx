@@ -18,7 +18,7 @@ import { Save as SaveIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-materia
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../../components/auth/ProtectedRoute';
 import { authHeader } from '../../../utils/authHelper';
-import { apiFetch } from '../../../services/api';
+import { api } from '../../../utils/api';
 
 const NewStationPage = () => {
   const router = useRouter();
@@ -63,21 +63,9 @@ const NewStationPage = () => {
         return;
       }
       
-      const response = await apiFetch('/stations', {
-        method: 'POST',
-        headers: {
-          ...headers,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(station)
+      const data = await api.post('/stations', station, {
+        headers: { ...headers, 'Content-Type': 'application/json' },
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create station');
-      }
-      
-      const data = await response.json();
       console.log('Created station:', data);
       
       router.push('/stations');

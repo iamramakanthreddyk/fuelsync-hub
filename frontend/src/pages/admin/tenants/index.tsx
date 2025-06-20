@@ -25,7 +25,7 @@ import {
 } from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
 import AdminLayout from '../../../components/layout/AdminLayout';
-import { apiFetch } from '../../../services/api';
+import { api } from '../../../utils/api';
 
 export default function AdminTenants() {
   const router = useRouter();
@@ -49,17 +49,12 @@ export default function AdminTenants() {
         return;
       }
 
-      const response = await apiFetch('/superadmin/tenants', {
+      const data = await api.get('/superadmin/tenants', {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch tenants');
-      }
-
-      const data = await response.json();
       setTenants(data.data || []);
     } catch (err) {
       console.error('Error fetching tenants:', err);
@@ -114,23 +109,24 @@ export default function AdminTenants() {
         return;
       }
 
-      const url = currentTenant
-        ? `/superadmin/tenants/${currentTenant.id}`
-        : '/superadmin/tenants';
-
-      const method = currentTenant ? 'PATCH' : 'POST';
-
-      const response = await apiFetch(url, {
-        method,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${currentTenant ? 'update' : 'create'} tenant`);
+      if (currentTenant) {
+        await api.patch(
+          `/superadmin/tenants/${currentTenant.id}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+      } else {
+        await api.post('/superadmin/tenants', formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
       }
 
       handleCloseDialog();
@@ -153,16 +149,11 @@ export default function AdminTenants() {
         return;
       }
 
-      const response = await apiFetch(`/superadmin/tenants/${id}`, {
-        method: 'DELETE',
+      await api.delete(`/superadmin/tenants/${id}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete tenant');
-      }
 
       fetchTenants();
     } catch (err) {

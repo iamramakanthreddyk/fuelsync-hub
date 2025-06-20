@@ -2,6 +2,9 @@
 import { authHeader, removeToken } from './authHelper';
 import Router from 'next/router';
 
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ||
+  'http://localhost:3001/api';
+
 interface ApiOptions {
   method?: string;
   body?: any;
@@ -35,7 +38,11 @@ export async function fetchApi<T>(endpoint: string, options: ApiOptions = {}): P
       requestOptions.body = JSON.stringify(body);
     }
 
-    console.log(`API Request to ${endpoint}:`, { 
+    const url = endpoint.startsWith('http')
+      ? endpoint
+      : `${API_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+
+    console.log(`API Request to ${url}:`, {
       method, 
       headers: { 
         ...requestOptions.headers,
@@ -43,7 +50,7 @@ export async function fetchApi<T>(endpoint: string, options: ApiOptions = {}): P
       }
     });
 
-    const response = await fetch(endpoint, requestOptions);
+    const response = await fetch(url, requestOptions);
     
     // Handle 401 Unauthorized errors
     if (response.status === 401) {
@@ -55,7 +62,7 @@ export async function fetchApi<T>(endpoint: string, options: ApiOptions = {}): P
     
     const data = await response.json();
     
-    console.log(`API Response from ${endpoint}:`, data);
+    console.log(`API Response from ${url}:`, data);
 
     if (!response.ok) {
       throw new Error(data.message || 'API request failed');
@@ -84,12 +91,15 @@ export const api = {
   get: <T>(endpoint: string, options: ApiOptions = {}): Promise<T> => 
     fetchApi<T>(endpoint, { ...options, method: 'GET' }),
     
-  post: <T>(endpoint: string, body: any, options: ApiOptions = {}): Promise<T> => 
+  post: <T>(endpoint: string, body: any, options: ApiOptions = {}): Promise<T> =>
     fetchApi<T>(endpoint, { ...options, method: 'POST', body }),
-    
-  put: <T>(endpoint: string, body: any, options: ApiOptions = {}): Promise<T> => 
+
+  put: <T>(endpoint: string, body: any, options: ApiOptions = {}): Promise<T> =>
     fetchApi<T>(endpoint, { ...options, method: 'PUT', body }),
-    
-  delete: <T>(endpoint: string, options: ApiOptions = {}): Promise<T> => 
+
+  patch: <T>(endpoint: string, body: any, options: ApiOptions = {}): Promise<T> =>
+    fetchApi<T>(endpoint, { ...options, method: 'PATCH', body }),
+
+  delete: <T>(endpoint: string, options: ApiOptions = {}): Promise<T> =>
     fetchApi<T>(endpoint, { ...options, method: 'DELETE' }),
 };
