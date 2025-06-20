@@ -847,7 +847,7 @@
       "column_default": "CURRENT_TIMESTAMP"
     }
   ],
-  "creditor_payments": [
+  "credit_payments": [
     {
       "column_name": "id",
       "data_type": "uuid",

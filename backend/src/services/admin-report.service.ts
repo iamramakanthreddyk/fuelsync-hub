@@ -186,7 +186,7 @@ export async function getCreditReport(params: ReportParams) {
       LEFT JOIN
         creditors c ON s.creditor_id = c.id
       LEFT JOIN
-        creditor_payments cp ON s.id = cp.sale_id
+        credit_payments cp ON s.id = cp.sale_id
       ${whereClause}
       GROUP BY
         t.id, t.name, st.id, st.name, c.id, c.name
