@@ -1,21 +1,8 @@
 #!/usr/bin/env ts-node
-import dotenv from 'dotenv';
-import path from 'path';
-import { Pool, PoolClient } from 'pg';
+import { PoolClient } from 'pg';
 import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
-
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '5432'),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+import pool from '../dbPool';
 
 const uuid = () => randomUUID();
 const rnd  = (min: number, max: number, precision: number = 2): number => {

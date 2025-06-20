@@ -23,6 +23,11 @@ export DB_PASSWORD=postgres
 export DB_SSL=false
 ```
 
+The backend provides a shared connection helper at `backend/db/dbPool.ts`. All
+database scripts import this module instead of creating their own `Pool`
+instances. Use it as the standard way to connect when writing local tools or
+tests.
+
 ### 3. Check Database Connection
 
 Run the connection check script to verify your database connection:
