@@ -124,7 +124,19 @@ set DB_SSL=false
 ```bash
 npm run db reset   # drop & recreate DB, then seed
 npm run db setup   # apply schema and seed (assumes clean DB)
+npm run db verify  # check tables and relationships
 ```
+
+## 🛠 One-Step Initialization
+
+The `scripts/db.ts` helper lets you run setup and verification in one go:
+
+```bash
+npm run db setup   # create schema and seed data
+npm run db verify  # confirm relationships and sample rows
+```
+
+If any issues appear, run `npm run db fix` to repair user-station links.
 
 If seeding fails for any reason, re-run `npm run db reset` to start from a clean state.
 

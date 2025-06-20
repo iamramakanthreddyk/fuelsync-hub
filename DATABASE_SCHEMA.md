@@ -747,3 +747,19 @@ When extending the schema, consider the following:
 3. **Audit Trail**: Include created_at and updated_at timestamps
 4. **Referential Integrity**: Use foreign keys to maintain data consistency
 5. **Business Rules**: Enforce business rules through triggers and constraints
+
+### Maintenance Workflow
+
+1. **Create a Migration** in `backend/db/migrations` using a timestamped filename.
+2. **Apply Migrations**
+   ```bash
+   npx ts-node db/scripts/migrate.ts
+   ```
+3. **Verify Data**
+   ```bash
+   npm run db:verify
+   ```
+4. **Fix Relationships** if any issues appear
+   ```bash
+   npm run db:fix
+   ```
