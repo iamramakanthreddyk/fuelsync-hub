@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { AppProps } from 'next/app';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import { isTokenExpired } from '../utils/authHelper';
 import { AuthProvider, useAuth } from '../context/AuthProvider';
@@ -81,6 +82,7 @@ function AppContent({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <Toaster position="top-right" />
       <Component {...pageProps} />
     </ThemeProvider>
   );

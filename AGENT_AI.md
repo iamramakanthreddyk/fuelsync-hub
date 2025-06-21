@@ -102,3 +102,70 @@ curl -X DELETE http://localhost:3001/api/nozzles/1 \
 ## 📘 Purpose
 
 This guide ensures that future Codex agents skip Docker, use a local PostgreSQL setup, and follow a clear test → fix → validate loop when working with the FuelSync Hub project.
+
+## Front-End Recon
+- Pages and components structure (`tree -L 2 frontend/src`):
+```
+frontend/src
+├── components
+│   ├── PumpIcon.tsx
+│   ├── admin
+│   ├── auth
+│   ├── common
+│   ├── dashboard
+│   ├── forms
+│   ├── layout
+│   ├── reports
+│   ├── sales
+│   └── stations
+├── context
+│   └── AuthProvider.tsx
+├── pages
+│   ├── _app.tsx
+│   ├── admin
+│   ├── api
+│   ├── dashboard
+│   ├── debug.tsx
+│   ├── index.tsx
+│   ├── login.tsx
+│   ├── logout.tsx
+│   ├── nozzle-entry.tsx
+│   ├── reconciliations
+│   ├── register.tsx
+│   ├── reports
+│   ├── sales
+│   ├── settings
+│   └── stations
+└── utils
+```
+- Major routes: `/login`, `/dashboard`, `/stations`, `/sales`, `/reports`, `/settings`, plus admin paths.
+- Missing dedicated pages for pumps and nozzles.
+- `npm run dev` shows warnings about unknown env config `http-proxy` and `ENOWORKSPACES` but server starts.
+
+## Front-End Strategy
+A full refactor is recommended. The code mixes MUI and Ant Design and lacks pump/nozzle screens. Plan:
+1. Centralise auth in context with token stored in localStorage and loaded on app start.
+2. Use React Query for API calls with the existing backend contract.
+3. Add toast notifications via `react-hot-toast`.
+4. Create unified pages for Stations, Pumps, Nozzles and Sales with clean routes.
+5. Adopt MUI across all components.
+
+## Front-End Automation
+```
+cd frontend && npm install --legacy-peer-deps
+VITE_API_BASE=http://localhost:3001
+npm run dev
+npm test
+npm run cypress
+```
+If `npm` reports `ENOWORKSPACES`, run `pnpm install` and `pnpm run dev` instead.
+When Cypress fails due to missing Xvfb, perform manual browser testing and log results.
+
+### Routes Added
+- `/stations/[id]/pumps`
+- `/stations/[id]/pumps/new`
+- `/stations/[id]/pumps/[pumpId]/edit`
+- `/stations/[id]/pumps/[pumpId]/nozzles`
+- `/stations/[id]/pumps/[pumpId]/nozzles/new`
+- `/stations/[id]/pumps/[pumpId]/nozzles/[nozzleId]/edit`
+Run Cypress tests from `cypress/e2e`. Use the fix-test loop until all tests pass.
