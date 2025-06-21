@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import pool from '../config/database';
 import { PLAN_CONFIG, PlanType, PlanConfig } from '../config/planConfig';
+import { sendErrorResponse } from '../utils/errorResponse';
 
 // Get all plans (for SuperAdmin UI)
 export const getAllPlans = (_req: Request, res: Response) => {
@@ -20,7 +21,7 @@ export const getTenantPlan = async (req: Request, res: Response) => {
     const planType = result.rows.length ? result.rows[0].subscription_plan : 'basic';
     res.json(PLAN_CONFIG[planType as PlanType]);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch tenant plan.' });
+    sendErrorResponse(res, 'SERVER_ERROR', 'Failed to fetch tenant plan.', 500);
   }
 };
 
@@ -32,7 +33,7 @@ export const setCustomPlan = async (req: Request, res: Response) => {
     await pool.query('UPDATE tenants SET custom_plan = $1 WHERE id = $2', [customPlan, tenantId]);
     res.json({ message: 'Custom plan set successfully.' });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to set custom plan.' });
+    sendErrorResponse(res, 'SERVER_ERROR', 'Failed to set custom plan.', 500);
   }
 };
 
@@ -43,6 +44,6 @@ export const removeCustomPlan = async (req: Request, res: Response) => {
     await pool.query('UPDATE tenants SET custom_plan = NULL WHERE id = $1', [tenantId]);
     res.json({ message: 'Custom plan removed.' });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to remove custom plan.' });
+    sendErrorResponse(res, 'SERVER_ERROR', 'Failed to remove custom plan.', 500);
   }
 };

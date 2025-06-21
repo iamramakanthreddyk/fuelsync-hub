@@ -1,26 +1,31 @@
 import { Request, Response } from 'express';
 import * as pumpService from '../services/pump.service';
 import * as stationService from '../services/station.service';
+import { sendErrorResponse } from '../utils/errorResponse';
 
 export const createPump = async (req: Request, res: Response) => {
   try {
     const { stationId, name, serialNumber, installationDate, nozzles } = req.body;
 
     if (!stationId || !name || !serialNumber || !installationDate || !Array.isArray(nozzles) || nozzles.length < 2) {
-      return res.status(400).json({ message: 'Station ID, name, serial number, installation date and at least two nozzles are required' });
+      return sendErrorResponse(
+        res,
+        'MISSING_REQUIRED_FIELDS',
+        'Station ID, name, serial number, installation date and at least two nozzles are required'
+      );
     }
     
     // Get schema name and tenant ID from middleware
     const schemaName = req.schemaName;
     const tenantId = req.user?.tenant_id;
     if (!schemaName || !tenantId) {
-      return res.status(500).json({ message: 'Tenant context not set' });
+      return sendErrorResponse(res, 'TENANT_CONTEXT_MISSING', 'Tenant context not set', 500);
     }
 
     // Verify station belongs to tenant
     const station = await stationService.getStationById(stationId, tenantId);
     if (!station) {
-      return res.status(404).json({ message: 'Station not found' });
+      return sendErrorResponse(res, 'STATION_NOT_FOUND', 'Station not found', 404);
     }
 
     const pump = await pumpService.createPump(
@@ -35,7 +40,7 @@ export const createPump = async (req: Request, res: Response) => {
     return res.status(201).json(pump);
   } catch (error: any) {
     console.error('Create pump error:', error);
-    return res.status(500).json({ message: error.message || 'Failed to create pump' });
+    return sendErrorResponse(res, 'SERVER_ERROR', error.message || 'Failed to create pump', 500);
   }
 };
 
@@ -46,15 +51,15 @@ export const getPumpsByStationId = async (req: Request, res: Response) => {
     // Get schema name from middleware
     const schemaName = req.schemaName;
     if (!schemaName) {
-      return res.status(500).json({ message: 'Tenant context not set' });
+      return sendErrorResponse(res, 'TENANT_CONTEXT_MISSING', 'Tenant context not set', 500);
     }
     
     const pumps = await pumpService.getPumpsByStationId(schemaName, stationId);
-    
+
     return res.status(200).json(pumps);
   } catch (error: any) {
     console.error('Get pumps error:', error);
-    return res.status(500).json({ message: error.message || 'Failed to get pumps' });
+    return sendErrorResponse(res, 'SERVER_ERROR', error.message || 'Failed to get pumps', 500);
   }
 };
 
@@ -65,19 +70,19 @@ export const getPumpById = async (req: Request, res: Response) => {
     // Get schema name from middleware
     const schemaName = req.schemaName;
     if (!schemaName) {
-      return res.status(500).json({ message: 'Tenant context not set' });
+      return sendErrorResponse(res, 'TENANT_CONTEXT_MISSING', 'Tenant context not set', 500);
     }
     
     const pump = await pumpService.getPumpById(schemaName, id);
     
     if (!pump) {
-      return res.status(404).json({ message: 'Pump not found' });
+      return sendErrorResponse(res, 'PUMP_NOT_FOUND', 'Pump not found', 404);
     }
     
     return res.status(200).json(pump);
   } catch (error: any) {
     console.error('Get pump error:', error);
-    return res.status(500).json({ message: error.message || 'Failed to get pump' });
+    return sendErrorResponse(res, 'SERVER_ERROR', error.message || 'Failed to get pump', 500);
   }
 };
 
@@ -89,19 +94,19 @@ export const updatePump = async (req: Request, res: Response) => {
     // Get schema name from middleware
     const schemaName = req.schemaName;
     if (!schemaName) {
-      return res.status(500).json({ message: 'Tenant context not set' });
+      return sendErrorResponse(res, 'TENANT_CONTEXT_MISSING', 'Tenant context not set', 500);
     }
     
     const pump = await pumpService.updatePump(schemaName, id, updates);
-    
+
     if (!pump) {
-      return res.status(404).json({ message: 'Pump not found' });
+      return sendErrorResponse(res, 'PUMP_NOT_FOUND', 'Pump not found', 404);
     }
     
     return res.status(200).json(pump);
   } catch (error: any) {
     console.error('Update pump error:', error);
-    return res.status(500).json({ message: error.message || 'Failed to update pump' });
+    return sendErrorResponse(res, 'SERVER_ERROR', error.message || 'Failed to update pump', 500);
   }
 };
 
@@ -112,18 +117,18 @@ export const deletePump = async (req: Request, res: Response) => {
     // Get schema name from middleware
     const schemaName = req.schemaName;
     if (!schemaName) {
-      return res.status(500).json({ message: 'Tenant context not set' });
+      return sendErrorResponse(res, 'TENANT_CONTEXT_MISSING', 'Tenant context not set', 500);
     }
     
     const success = await pumpService.deletePump(schemaName, id);
-    
+
     if (!success) {
-      return res.status(404).json({ message: 'Pump not found' });
+      return sendErrorResponse(res, 'PUMP_NOT_FOUND', 'Pump not found', 404);
     }
     
     return res.status(204).send();
   } catch (error: any) {
     console.error('Delete pump error:', error);
-    return res.status(500).json({ message: error.message || 'Failed to delete pump' });
+    return sendErrorResponse(res, 'SERVER_ERROR', error.message || 'Failed to delete pump', 500);
   }
 };
