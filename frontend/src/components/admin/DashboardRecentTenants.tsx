@@ -34,16 +34,8 @@ export default function DashboardRecentTenants() {
   useEffect(() => {
     const fetchTenants = async () => {
       try {
-        const token = localStorage.getItem('adminToken');
-        if (!token) {
-          router.push('/admin/login');
-          return;
-        }
-
         const response = await fetch('/api/admin/tenants?limit=5', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          credentials: 'include'
         });
 
         if (!response.ok) {

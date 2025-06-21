@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Box, CircularProgress, Typography } from '@mui/material';
-import { removeToken } from '../utils/authHelper';
+import { removeUser } from '../utils/authHelper';
 
 const LogoutPage = () => {
   const router = useRouter();
@@ -13,17 +13,15 @@ const LogoutPage = () => {
         // Call logout API
         await fetch('/api/auth/logout', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
         });
       } catch (error) {
         console.error('Logout API error:', error);
       }
 
       // Remove token regardless of API success
-      removeToken();
+      removeUser();
       
       // Redirect to login page
       setTimeout(() => {

@@ -57,13 +57,21 @@ export const login = async (
     // Authenticate user
     const result = await authService.authenticateTenantUser(email, password);
     
-    // Set secure cookie with token (optional, can be removed if using Authorization header only)
+    // Set secure cookie with token
     const token = result.data.token.split(' ')[1];
     res.cookie('jwt', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
+
+    const csrfToken = crypto.randomBytes(20).toString('hex');
+    res.cookie('csrfToken', csrfToken, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000
     });
 
     console.log('[AUTH] Login successful:', { 
@@ -74,7 +82,7 @@ export const login = async (
       timestamp: new Date().toISOString()
     });
 
-    return res.json(result);
+    return res.json({ ...result, csrfToken });
   } catch (error) {
     console.error('[AUTH] Login error:', {
       requestId,
@@ -279,9 +287,14 @@ export const logout = async (req: Request, res: Response) => {
   });
   
   try {
-    // Clear JWT cookie if it exists
+    // Clear auth and CSRF cookies
     res.clearCookie('jwt', {
       httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    });
+    res.clearCookie('csrfToken', {
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict'
     });

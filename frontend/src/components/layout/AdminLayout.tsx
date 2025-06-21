@@ -43,7 +43,6 @@ export default function AdminLayout({ children, title = 'Admin Panel' }: AdminLa
   const router = useRouter();
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
     localStorage.removeItem('admin');
     router.push('/admin/login');
   };

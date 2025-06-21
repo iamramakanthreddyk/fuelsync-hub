@@ -11,7 +11,7 @@ import {
   Alert,
   CircularProgress
 } from '@mui/material';
-import { storeToken, parseToken, isAuthenticated } from '../utils/authHelper';
+import { storeUser, isAuthenticated } from '../utils/authHelper';
 import { api } from '../utils/api';
 
 const LoginPage = () => {
@@ -40,21 +40,9 @@ const LoginPage = () => {
       const data = await api.post('/auth/login', { email, password });
       console.log('Login response:', data);
 
-      if (data.status === 'success' && data.data?.token) {
-        // Extract the actual token if it starts with "Bearer "
-        const token = data.data.token.startsWith('Bearer ') 
-          ? data.data.token.substring(7) 
-          : data.data.token;
-        
-        // Store token
-        storeToken(token);
-        
-        // Parse token to get user role
-        const tokenData = parseToken(token);
-        console.log('Token data:', tokenData);
-        
-        // Redirect based on role
-        if (tokenData?.role === 'superadmin') {
+      if (data.status === 'success' && data.data?.user) {
+        storeUser(data.data.user);
+        if (data.data.user.role === 'superadmin') {
           router.push('/admin/dashboard');
         } else {
           router.push('/dashboard');

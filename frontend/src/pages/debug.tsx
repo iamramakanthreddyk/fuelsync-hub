@@ -28,12 +28,7 @@ const DebugPageContent = () => {
   const [endpoint, setEndpoint] = useState('/api/stations');
   const [selectedStation, setSelectedStation] = useState('');
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    if (storedToken) {
-      setToken(storedToken);
-    }
-  }, []);
+  useEffect(() => {}, []);
 
   const handleTestEndpoint = async () => {
     try {
@@ -128,11 +123,10 @@ const DebugPageContent = () => {
                   Test Endpoint
                 </Button>
                 
-                <Button 
-                  variant="outlined" 
-                  color="error" 
+                <Button
+                  variant="outlined"
+                  color="error"
                   onClick={() => {
-                    localStorage.removeItem('token');
                     setToken('');
                   }}
                 >

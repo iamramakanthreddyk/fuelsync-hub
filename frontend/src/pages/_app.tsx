@@ -5,7 +5,6 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router';
-import { isTokenExpired } from '../utils/authHelper';
 import { AuthProvider, useAuth } from '../context/AuthProvider';
 import '../styles/globals.css';
 
@@ -23,7 +22,7 @@ const theme = createTheme({
 
 function AppContent({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  const { token, logout } = useAuth();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     // Remove the server-side injected CSS
@@ -42,10 +41,8 @@ function AppContent({ Component, pageProps }: AppProps) {
         return;
       }
 
-      // Handle admin routes separately
       if (url.startsWith('/admin')) {
-        const adminToken = localStorage.getItem('adminToken');
-        if (!adminToken) {
+        if (!user || user.role !== 'superadmin') {
           console.log('Admin not authenticated, redirecting to admin login...');
           router.push('/admin/login');
           return;
@@ -53,15 +50,7 @@ function AppContent({ Component, pageProps }: AppProps) {
         return;
       }
 
-      // Check if token is expired for regular user routes
-      if (token && isTokenExpired()) {
-        console.log('Token expired, redirecting to login...');
-        logout();
-        router.push('/login');
-        return;
-      }
-
-      if (!token) {
+      if (!user) {
         console.log('User not authenticated, redirecting to login...');
         router.push('/login');
       }

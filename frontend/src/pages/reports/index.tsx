@@ -85,13 +85,6 @@ export default function Reports() {
   const [reportLoading, setReportLoading] = useState(false);
 
   useEffect(() => {
-    // Verify authentication
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
     const fetchStations = async () => {
       try {
         const response = await fetch('/api/stations');
@@ -141,24 +134,14 @@ export default function Reports() {
   };
 
   const fetchSalesReport = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
     setReportLoading(true);
 
     try {
       // Fetch sales summary
-      const summaryResponse = await fetch(
-        `/api/reports/sales-summary?stationId=${filters.stationId}&startDate=${filters.startDate}&endDate=${filters.endDate}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+        const summaryResponse = await fetch(
+          `/api/reports/sales-summary?stationId=${filters.stationId}&startDate=${filters.startDate}&endDate=${filters.endDate}`,
+          { credentials: 'include' }
+        );
 
       if (!summaryResponse.ok) {
         throw new Error('Failed to fetch sales summary');
@@ -168,14 +151,10 @@ export default function Reports() {
       setSalesSummary(summaryData);
 
       // Fetch detailed sales data
-      const salesResponse = await fetch(
-        `/api/reports/sales-detail?stationId=${filters.stationId}&startDate=${filters.startDate}&endDate=${filters.endDate}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+        const salesResponse = await fetch(
+          `/api/reports/sales-detail?stationId=${filters.stationId}&startDate=${filters.startDate}&endDate=${filters.endDate}`,
+          { credentials: 'include' }
+        );
 
       if (!salesResponse.ok) {
         throw new Error('Failed to fetch sales details');
