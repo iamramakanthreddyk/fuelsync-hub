@@ -47,23 +47,17 @@ Level 6 (Independent):
 
 ## 🎯 **Business Rule Triggers**
 
-### 1. **Tenant Constraint**
-- **Trigger**: `check_tenant_has_station()`
-- **Rule**: Each tenant must have at least one active station
-- **Fires**: IMMEDIATELY on tenant INSERT/UPDATE
-- **Impact**: Cannot create tenant without active station existing
+### 1. **Tenant Constraint** (Removed)
+- Previously enforced by trigger `check_tenant_has_station()`.
+- Now validated in the service layer after tenant and station creation within a transaction.
 
-### 2. **Station Constraint**
-- **Trigger**: `check_station_has_pump()`
-- **Rule**: Each station must have at least one active pump
-- **Fires**: IMMEDIATELY on station INSERT/UPDATE
-- **Impact**: Cannot create station without active pump existing
+### 2. **Station Constraint** (Removed)
+- Trigger `check_station_has_pump()` has been dropped.
+- Backend services verify that a station has at least one pump after create/update operations.
 
-### 3. **Pump Constraint**
-- **Trigger**: `check_pump_has_nozzles()`
-- **Rule**: Each pump must have at least two active nozzles
-- **Fires**: IMMEDIATELY on pump INSERT/UPDATE
-- **Impact**: Cannot create pump without nozzles existing
+### 3. **Pump Constraint** (Removed)
+- Trigger `check_pump_has_nozzles()` has been dropped.
+- Pump creation now requires at least two nozzles to be inserted in the same transaction.
 
 ### 4. **Discovered Tables**
 The database contains these tables (21 total):

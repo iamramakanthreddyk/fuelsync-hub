@@ -1,5 +1,7 @@
 import pool from '../config/database';
 import { v4 as uuidv4 } from 'uuid';
+import { withTransaction } from './db.service';
+import { validateTenantHasStation, validateStationHasPump } from './hierarchyValidation.service';
 
 export const getStations = async (tenantId?: string) => {
   const client = await pool.connect();
@@ -62,8 +64,7 @@ export const createStation = async (
   contactPhone: string,
   tenantId: string
 ) => {
-  const client = await pool.connect();
-  try {
+  return withTransaction(null, async (client) => {
     const id = uuidv4();
     const query = `
       INSERT INTO public.stations (
@@ -73,16 +74,15 @@ export const createStation = async (
       )
       RETURNING id, name, address, city, state, zip, contact_phone, active, created_at
     `;
-    
+
     const values = [id, tenantId, name, address, city, state, zip, contactPhone];
     const result = await client.query(query, values);
+
+    await validateTenantHasStation(client, tenantId);
+    await validateStationHasPump(client, id);
+
     return result.rows[0];
-  } catch (error) {
-    console.error('Error creating station:', error);
-    throw error;
-  } finally {
-    client.release();
-  }
+  });
 };
 
 export const updateStation = async (
@@ -111,10 +111,17 @@ export const updateStation = async (
       values.push(tenantId);
     }
     
-    query += ` RETURNING id, name, address, city, state, zip, contact_phone, active, created_at, updated_at`;
+    query += ` RETURNING id, tenant_id, name, address, city, state, zip, contact_phone, active, created_at, updated_at`;
 
     const result = await client.query(query, values);
-    return result.rows.length > 0 ? result.rows[0] : null;
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    await validateTenantHasStation(client, tenantId || result.rows[0].tenant_id);
+    await validateStationHasPump(client, stationId);
+
+    return result.rows[0];
   } catch (error) {
     console.error('Error updating station:', error);
     throw error;
@@ -138,10 +145,16 @@ export const deleteStation = async (stationId: string, tenantId?: string) => {
       values.push(tenantId);
     }
     
-    query += ` RETURNING id`;
+    query += ` RETURNING id, tenant_id`;
 
     const result = await client.query(query, values);
-    return result.rows.length > 0;
+    if (result.rows.length === 0) {
+      return false;
+    }
+
+    const { tenant_id } = result.rows[0];
+    await validateTenantHasStation(client, tenant_id);
+    return true;
   } catch (error) {
     console.error('Error deleting station:', error);
     throw error;

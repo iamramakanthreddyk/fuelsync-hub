@@ -4,10 +4,10 @@ import * as stationService from '../services/station.service';
 
 export const createPump = async (req: Request, res: Response) => {
   try {
-    const { stationId, name, serialNumber, installationDate } = req.body;
+    const { stationId, name, serialNumber, installationDate, nozzles } = req.body;
 
-    if (!stationId || !name || !serialNumber || !installationDate) {
-      return res.status(400).json({ message: 'Station ID, name, serial number and installation date are required' });
+    if (!stationId || !name || !serialNumber || !installationDate || !Array.isArray(nozzles) || nozzles.length < 2) {
+      return res.status(400).json({ message: 'Station ID, name, serial number, installation date and at least two nozzles are required' });
     }
     
     // Get schema name and tenant ID from middleware
@@ -28,7 +28,8 @@ export const createPump = async (req: Request, res: Response) => {
       stationId,
       name,
       serialNumber,
-      installationDate
+      installationDate,
+      Array.isArray(nozzles) ? nozzles : []
     );
     
     return res.status(201).json(pump);
