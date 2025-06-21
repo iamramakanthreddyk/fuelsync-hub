@@ -1,6 +1,7 @@
 // backend/src/controllers/nozzleReading.controller.ts
 import { Request, Response } from 'express';
 import pool from '../config/database';
+import { sendErrorResponse } from '../utils/errorResponse';
 
 // Get previous day's readings for all nozzles at a station
 export const getPreviousNozzleReadings = async (req: Request, res: Response) => {
@@ -21,7 +22,7 @@ export const getPreviousNozzleReadings = async (req: Request, res: Response) => 
     );
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch previous readings.' });
+    sendErrorResponse(res, 'SERVER_ERROR', 'Failed to fetch previous readings.', 500);
   }
 };
 
@@ -41,7 +42,7 @@ export const getCurrentFuelPrices = async (req: Request, res: Response) => {
     );
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch fuel prices.' });
+    sendErrorResponse(res, 'SERVER_ERROR', 'Failed to fetch fuel prices.', 500);
   }
 };
 
@@ -51,7 +52,7 @@ export const submitNozzleReadings = async (req: Request, res: Response) => {
   const schemaName = req.schemaName as string;
   const { readings } = req.body; // [{ nozzleId, reading }]
   if (!Array.isArray(readings) || readings.length === 0) {
-    return res.status(400).json({ message: 'No readings provided.' });
+    return sendErrorResponse(res, 'MISSING_REQUIRED_FIELDS', 'No readings provided.');
   }
   try {
     // Validate and insert readings, create sales records
@@ -64,7 +65,11 @@ export const submitNozzleReadings = async (req: Request, res: Response) => {
       );
       const prev = prevRes.rows[0]?.reading || 0;
       if (reading < prev) {
-        return res.status(400).json({ message: `Reading for nozzle ${nozzleId} is less than previous.` });
+        return sendErrorResponse(
+          res,
+          'INVALID_READING',
+          `Reading for nozzle ${nozzleId} is less than previous.`
+        );
       }
       // Insert new reading
       await pool.query(
@@ -89,6 +94,6 @@ export const submitNozzleReadings = async (req: Request, res: Response) => {
     }
     res.json({ message: 'Readings submitted and sales recorded.' });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to submit readings.' });
+    sendErrorResponse(res, 'SERVER_ERROR', 'Failed to submit readings.', 500);
   }
 };

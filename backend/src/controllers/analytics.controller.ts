@@ -1,6 +1,7 @@
 // backend/src/controllers/analytics.controller.ts
 import { Request, Response } from 'express';
 import pool from '../config/database';
+import { sendErrorResponse } from '../utils/errorResponse';
 
 // Tenant sales analytics (for owner dashboard)
 export const getTenantSalesAnalytics = async (req: Request, res: Response) => {
@@ -22,7 +23,7 @@ export const getTenantSalesAnalytics = async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error('Sales analytics error:', err);
-    res.status(500).json({ message: 'Failed to fetch sales analytics.' });
+    sendErrorResponse(res, 'SERVER_ERROR', 'Failed to fetch sales analytics.', 500);
   }
 };
 
@@ -42,6 +43,6 @@ export const getGlobalAnalytics = async (_req: Request, res: Response) => {
     });
   } catch (err) {
     console.error('Global analytics error:', err);
-    res.status(500).json({ message: 'Failed to fetch global analytics.' });
+    sendErrorResponse(res, 'SERVER_ERROR', 'Failed to fetch global analytics.', 500);
   }
 };

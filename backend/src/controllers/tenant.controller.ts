@@ -1,17 +1,18 @@
 import { Request, Response } from 'express';
 import * as tenantService from '../services/tenant.service';
+import { sendErrorResponse } from '../utils/errorResponse';
 
 export const createTenant = async (req: Request, res: Response) => {
   try {
     const { name, email, password, subscriptionPlan } = req.body;
 
     if (!name || !email || !password || !subscriptionPlan) {
-      return res.status(400).json({ message: 'All fields are required' });
+      return sendErrorResponse(res, 'MISSING_REQUIRED_FIELDS', 'All fields are required');
     }
 
     // Validate plan type
     if (!['basic', 'premium', 'enterprise'].includes(subscriptionPlan)) {
-      return res.status(400).json({ message: 'Invalid plan type' });
+      return sendErrorResponse(res, 'INVALID_PLAN', 'Invalid plan type');
     }
 
     // Create tenant and owner user
@@ -33,7 +34,7 @@ export const createTenant = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error('Tenant creation error:', error);
-    return res.status(500).json({ message: error.message || 'Failed to create tenant' });
+    return sendErrorResponse(res, 'SERVER_ERROR', error.message || 'Failed to create tenant', 500);
   }
 };
 
@@ -41,13 +42,13 @@ export const getTenants = async (req: Request, res: Response) => {
   try {
     // Check if user is admin
     if (!req.user.isAdmin) {
-      return res.status(403).json({ message: 'Unauthorized access' });
+      return sendErrorResponse(res, 'UNAUTHORIZED', 'Unauthorized access', 403);
     }
     
     const tenants = await tenantService.getAllTenants();
     return res.status(200).json(tenants);
   } catch (error: any) {
     console.error('Get tenants error:', error);
-    return res.status(500).json({ message: error.message || 'Failed to get tenants' });
+    return sendErrorResponse(res, 'SERVER_ERROR', error.message || 'Failed to get tenants', 500);
   }
 };

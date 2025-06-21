@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as salesService from '.././services/sales.service';
+import { sendErrorResponse } from '../utils/errorResponse';
 
 export const createSale = async (req: Request, res: Response) => {
   try {
@@ -16,22 +17,34 @@ export const createSale = async (req: Request, res: Response) => {
     
     // Validate required fields
     if (!stationId || !nozzleId || cumulativeReading === undefined) {
-      return res.status(400).json({ message: 'Station ID, nozzle ID, and cumulative reading are required' });
+      return sendErrorResponse(
+        res,
+        'MISSING_REQUIRED_FIELDS',
+        'Station ID, nozzle ID, and cumulative reading are required'
+      );
     }
     
     if ((cashReceived === undefined || cashReceived === null) &&
         (creditGiven === undefined || creditGiven === null)) {
-      return res.status(400).json({ message: 'Either cash received or credit given must be specified' });
+      return sendErrorResponse(
+        res,
+        'MISSING_REQUIRED_FIELDS',
+        'Either cash received or credit given must be specified'
+      );
     }
 
     if (creditGiven && creditGiven > 0 && !creditPartyId) {
-      return res.status(400).json({ message: 'Credit party ID is required for credit transactions' });
+      return sendErrorResponse(
+        res,
+        'MISSING_REQUIRED_FIELDS',
+        'Credit party ID is required for credit transactions'
+      );
     }
     
     // Get schema name from middleware
     const schemaName = req.schemaName;
     if (!schemaName) {
-      return res.status(500).json({ message: 'Tenant context not set' });
+      return sendErrorResponse(res, 'TENANT_CONTEXT_MISSING', 'Tenant context not set', 500);
     }
     
     // Get user ID from authenticated request
@@ -53,7 +66,7 @@ export const createSale = async (req: Request, res: Response) => {
     return res.status(201).json(sale);
   } catch (error: any) {
     console.error('Create sale error:', error);
-    return res.status(500).json({ message: error.message || 'Failed to create sale' });
+    return sendErrorResponse(res, 'SERVER_ERROR', error.message || 'Failed to create sale', 500);
   }
 };
 
@@ -64,7 +77,7 @@ export const getSales = async (req: Request, res: Response) => {
     // Get schema name from middleware
     const schemaName = req.schemaName;
     if (!schemaName) {
-      return res.status(500).json({ message: 'Tenant context not set' });
+      return sendErrorResponse(res, 'TENANT_CONTEXT_MISSING', 'Tenant context not set', 500);
     }
     
     const sales = await salesService.getSales(
@@ -78,7 +91,7 @@ export const getSales = async (req: Request, res: Response) => {
     return res.status(200).json(sales);
   } catch (error: any) {
     console.error('Get sales error:', error);
-    return res.status(500).json({ message: error.message || 'Failed to get sales' });
+    return sendErrorResponse(res, 'SERVER_ERROR', error.message || 'Failed to get sales', 500);
   }
 };
 
@@ -87,13 +100,13 @@ export const getDailySalesTotals = async (req: Request, res: Response) => {
     const { stationId, date } = req.query;
     
     if (!stationId || !date) {
-      return res.status(400).json({ message: 'Station ID and date are required' });
+      return sendErrorResponse(res, 'MISSING_REQUIRED_FIELDS', 'Station ID and date are required');
     }
     
     // Get schema name from middleware
     const schemaName = req.schemaName;
     if (!schemaName) {
-      return res.status(500).json({ message: 'Tenant context not set' });
+      return sendErrorResponse(res, 'TENANT_CONTEXT_MISSING', 'Tenant context not set', 500);
     }
     
     const totals = await salesService.getDailySalesTotals(
@@ -105,7 +118,7 @@ export const getDailySalesTotals = async (req: Request, res: Response) => {
     return res.status(200).json(totals);
   } catch (error: any) {
     console.error('Get daily sales totals error:', error);
-    return res.status(500).json({ message: error.message || 'Failed to get daily sales totals' });
+    return sendErrorResponse(res, 'SERVER_ERROR', error.message || 'Failed to get daily sales totals', 500);
   }
 };
 
@@ -115,13 +128,13 @@ export const voidSale = async (req: Request, res: Response) => {
     const { reason } = req.body;
     
     if (!reason) {
-      return res.status(400).json({ message: 'Reason for voiding is required' });
+      return sendErrorResponse(res, 'MISSING_REQUIRED_FIELDS', 'Reason for voiding is required');
     }
     
     // Get schema name from middleware
     const schemaName = req.schemaName;
     if (!schemaName) {
-      return res.status(500).json({ message: 'Tenant context not set' });
+      return sendErrorResponse(res, 'TENANT_CONTEXT_MISSING', 'Tenant context not set', 500);
     }
     
     // Get user ID from authenticated request
@@ -135,12 +148,12 @@ export const voidSale = async (req: Request, res: Response) => {
     );
     
     if (!updated) {
-      return res.status(404).json({ message: 'Sale not found or already voided' });
+      return sendErrorResponse(res, 'SALE_NOT_FOUND', 'Sale not found or already voided', 404);
     }
     
     return res.status(200).json({ message: 'Sale voided successfully' });
   } catch (error: any) {
     console.error('Void sale error:', error);
-    return res.status(500).json({ message: error.message || 'Failed to void sale' });
+    return sendErrorResponse(res, 'SERVER_ERROR', error.message || 'Failed to void sale', 500);
   }
 };
