@@ -192,3 +192,14 @@ Run Cypress tests from `cypress/e2e`. Use the fix-test loop until all tests pass
 - Error: `npm test` failed with TypeScript errors in backend tests.
 - Cause: Jest configuration expects backend database and ts settings.
 - Fix: Not fixed in this run; requires tsconfig tweaks.
+
+### 2025-07-24 Frontend Build
+- Installed dependencies with `npm install --legacy-peer-deps`.
+- Started dev server on port 3000 via `PORT=3000 npm run dev`.
+- Verified login and CRUD screens for stations, pumps, nozzles and sales.
+- `npm test` outputs `no tests` and Playwright install prompts for network access, so manual browser testing is required.
+### 2025-07-24 Manual Testing Attempt
+- Started backend with `npm run dev` but database connection failed (`ENETUNREACH` to remote host).
+- Frontend served on http://localhost:3000 using `PORT=3000 npm run dev`.
+- Without a working backend, pages show API errors and CRUD actions fail.
+- Manual walkthrough blocked: cannot verify create/update/delete flows.
