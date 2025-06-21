@@ -62,7 +62,11 @@ describe('Pump API', () => {
         stationId,
         name: 'Valid Pump',
         serialNumber: 'VP-001',
-        installationDate: '2024-01-01'
+        installationDate: '2024-01-01',
+        nozzles: [
+          { fuelType: 'petrol', initialReading: 0 },
+          { fuelType: 'diesel', initialReading: 0 }
+        ]
       });
 
     expect(res.status).toBe(201);
@@ -78,7 +82,11 @@ describe('Pump API', () => {
         stationId: '00000000-0000-0000-0000-000000000000',
         name: 'Bad Pump',
         serialNumber: 'BAD-1',
-        installationDate: '2024-01-01'
+        installationDate: '2024-01-01',
+        nozzles: [
+          { fuelType: 'petrol', initialReading: 0 },
+          { fuelType: 'diesel', initialReading: 0 }
+        ]
       });
 
     expect([400, 404]).toContain(res.status);
@@ -94,7 +102,11 @@ describe('Pump API', () => {
         stationId: other.stationId,
         name: 'Cross Pump',
         serialNumber: 'CP-001',
-        installationDate: '2024-01-01'
+        installationDate: '2024-01-01',
+        nozzles: [
+          { fuelType: 'petrol', initialReading: 0 },
+          { fuelType: 'diesel', initialReading: 0 }
+        ]
       });
 
     expect([400, 404]).toContain(res.status);

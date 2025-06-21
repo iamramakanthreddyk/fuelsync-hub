@@ -44,7 +44,11 @@ describe('Sales API', () => {
         stationId,
         name: 'Test Pump',
         serialNumber: 'TP123',
-        installationDate: '2023-01-01'
+        installationDate: '2023-01-01',
+        nozzles: [
+          { fuelType: 'petrol', initialReading: 0 },
+          { fuelType: 'diesel', initialReading: 0 }
+        ]
       });
     
     pumpId = pumpRes.body.id;
