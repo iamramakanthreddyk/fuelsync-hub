@@ -18,6 +18,7 @@ export DB_SSL=false
 ## 2. Install Strategy
 
 ```bash
+npm install --legacy-peer-deps
 cd backend && npm install --legacy-peer-deps
 cd ../frontend && npm install --legacy-peer-deps
 ```
@@ -140,7 +141,7 @@ frontend/src
 ```
 - Major routes: `/login`, `/dashboard`, `/stations`, `/sales`, `/reports`, `/settings`, plus admin paths.
 - Missing dedicated pages for pumps and nozzles.
-- `npm run dev` shows warnings about unknown env config `http-proxy` and `ENOWORKSPACES` but server starts.
+- `npm run dev` shows warnings about unknown env config `http-proxy` but the server still starts.
 
 ## Front-End Strategy
 A full refactor is recommended. The code mixes MUI and Ant Design and lacks pump/nozzle screens. Plan:
@@ -158,7 +159,7 @@ npm run dev
 npm test
 npm run cypress
 ```
-If `npm` reports `ENOWORKSPACES`, run `pnpm install` and `pnpm run dev` instead.
+If `npm` fails due to dependency issues, install pnpm and retry with `pnpm install && pnpm run dev`.
 When Cypress fails due to missing Xvfb, perform manual browser testing and log results.
 
 ### Routes Added

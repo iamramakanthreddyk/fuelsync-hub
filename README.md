@@ -112,7 +112,7 @@ fuelsync-hub/
 │   ├── src/            # Source code
 │   ├── next.config.js  # Next.js configuration
 │   └── package.json    # Frontend dependencies
-└── package.json       # Root workspace configuration
+└── package.json       # Root configuration and scripts
 ```
 
 ## 🔧 Key Features
