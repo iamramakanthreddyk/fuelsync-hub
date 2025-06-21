@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './frontend/playwright-tests',
+  testDir: './playwright-tests',
   exclude: ['**/cypress/**'],
   use: {
     baseURL: 'http://localhost:3000',
