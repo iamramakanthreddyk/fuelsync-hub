@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
 import { Container, Typography, Box, Alert, CircularProgress } from '@mui/material';
 import DashboardLayout from '../../../../../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../../../../../components/auth/ProtectedRoute';
 import NozzleList from '../../../../../../components/stations/NozzleList';
+import { useNozzles } from '../../../../../../hooks';
 import { api } from '../../../../../../utils/api';
 import { authHeader } from '../../../../../../utils/authHelper';
 import toast from 'react-hot-toast';
@@ -11,32 +12,10 @@ import toast from 'react-hot-toast';
 const NozzleListPage = () => {
   const router = useRouter();
   const { id, pumpId } = router.query as { id: string; pumpId: string };
-  const [nozzles, setNozzles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (!pumpId) return;
-    const load = async () => {
-      try {
-        const data = await api.get(`/pumps/${pumpId}/nozzles`, { headers: authHeader() });
-        setNozzles(data.data || data);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load nozzles');
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [pumpId]);
+  const { data: nozzles = [], isLoading, isError, error, refetch } = useNozzles(pumpId);
 
   const refresh = () => {
-    if (!pumpId) return;
-    setLoading(true);
-    api.get(`/pumps/${pumpId}/nozzles`, { headers: authHeader() })
-      .then((d) => setNozzles(d.data || d))
-      .catch(() => toast.error('Refresh failed'))
-      .finally(() => setLoading(false));
+    refetch();
   };
 
   const handleAdd = () => router.push(`/stations/${id}/pumps/${pumpId}/nozzles/new`);
@@ -60,10 +39,10 @@ const NozzleListPage = () => {
             <Typography variant="h4">Nozzles</Typography>
             <button onClick={handleAdd}>Add Nozzle</button>
           </Box>
-          {loading ? (
+          {isLoading ? (
             <Box display="flex" justifyContent="center"><CircularProgress /></Box>
-          ) : error ? (
-            <Alert severity="error">{error}</Alert>
+          ) : isError ? (
+            <Alert severity="error">{(error as Error)?.message}</Alert>
           ) : (
             <NozzleList nozzles={nozzles} onAddNozzle={handleAdd} onEditNozzle={handleEdit} onDisableNozzle={handleDisable} />
           )}

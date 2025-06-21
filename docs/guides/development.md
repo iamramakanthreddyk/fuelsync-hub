@@ -40,6 +40,7 @@ npm run db:reset    # Reset and reseed database
 ### State Management
 - Use React Context for global state
 - Use React Query for API data caching
+- Prefer custom hooks like `useStations`, `usePumps` and `useNozzles` for fetching data
 - Follow the container/presenter pattern
 
 ## Testing

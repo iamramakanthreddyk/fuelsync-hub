@@ -1,5 +1,5 @@
 // frontend/src/pages/stations/index.tsx
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { 
   Container, 
   Typography, 
@@ -14,54 +14,11 @@ import StationList from '../../components/stations/StationList';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../components/auth/ProtectedRoute';
 import { useRouter } from 'next/router';
-import { authHeader } from '../../utils/authHelper';
-import { api } from '../../utils/api';
+import { useStations } from '../../hooks';
 
 const StationsPage = () => {
-  const [stations, setStations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const router = useRouter();
-
-  useEffect(() => {
-    const fetchStations = async () => {
-      try {
-        setLoading(true);
-        setError('');
-        
-        const headers = authHeader();
-        if (!headers.Authorization) {
-          setError('Authentication required');
-          setLoading(false);
-          router.push('/login');
-          return;
-        }
-        
-        console.log('Using headers:', headers);
-        
-        const data = await api.get('/stations', { headers });
-        console.log('Stations data:', data);
-        
-        if (data && Array.isArray(data)) {
-          setStations(data);
-        } else if (data && data.data && Array.isArray(data.data)) {
-          setStations(data.data);
-        } else {
-          console.error('Invalid stations data format:', data);
-          setError('Invalid data format received from server');
-          setStations([]);
-        }
-      } catch (err) {
-        console.error('Error fetching stations:', err);
-        setError(`Error: ${err.message}`);
-        setStations([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStations();
-  }, [router]);
+  const { data: stations, isLoading, isError, error } = useStations();
 
   const handleAddStation = () => {
     router.push('/stations/new');
@@ -85,13 +42,13 @@ const StationsPage = () => {
             </Button>
           </Box>
 
-          {loading ? (
+          {isLoading ? (
             <Box display="flex" justifyContent="center" my={4}>
               <CircularProgress />
             </Box>
-          ) : error ? (
+          ) : isError ? (
             <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
+              {(error as Error)?.message}
             </Alert>
           ) : !stations ? (
             <Alert severity="info">No stations available (null data)</Alert>

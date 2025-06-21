@@ -1,45 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
 import { Container, Typography, Box, Alert, CircularProgress } from '@mui/material';
 import DashboardLayout from '../../../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../../../components/auth/ProtectedRoute';
 import PumpList from '../../../../components/stations/PumpList';
+import { usePumps } from '../../../../hooks';
 import { api } from '../../../../utils/api';
 import { authHeader } from '../../../../utils/authHelper';
 import toast from 'react-hot-toast';
 
 const PumpListPage = () => {
   const router = useRouter();
-  const { id } = router.query; // station id
-  const [pumps, setPumps] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (!id) return;
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const headers = authHeader();
-        const data = await api.get(`/stations/${id}/pumps`, { headers });
-        setPumps(data.data || data);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load pumps');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [id]);
+  const { id } = router.query;
+  const { data: pumps = [], isLoading, isError, error, refetch } = usePumps(id);
 
   const refresh = () => {
-    if (id) {
-      setLoading(true);
-      api.get(`/stations/${id}/pumps`, { headers: authHeader() })
-        .then((data) => setPumps(data.data || data))
-        .catch(() => toast.error('Failed to refresh pumps'))
-        .finally(() => setLoading(false));
-    }
+    refetch();
   };
 
   const handleAddPump = () => router.push(`/stations/${id}/pumps/new`);
@@ -65,10 +41,10 @@ const PumpListPage = () => {
             <Typography variant="h4">Pumps</Typography>
             <button onClick={handleAddPump}>Add Pump</button>
           </Box>
-          {loading ? (
+          {isLoading ? (
             <Box display="flex" justifyContent="center"><CircularProgress /></Box>
-          ) : error ? (
-            <Alert severity="error">{error}</Alert>
+          ) : isError ? (
+            <Alert severity="error">{(error as Error)?.message}</Alert>
           ) : (
             <PumpList
               pumps={pumps}

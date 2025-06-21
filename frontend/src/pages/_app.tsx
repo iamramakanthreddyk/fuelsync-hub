@@ -6,6 +6,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import { AuthProvider, useAuth } from '../context/AuthProvider';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '../styles/globals.css';
 
 // Create a theme instance
@@ -66,7 +67,7 @@ function AppContent({ Component, pageProps }: AppProps) {
     return () => {
       router.events.off('routeChangeComplete', handleRouteChange);
     };
-  }, [router, token]);
+  }, [router]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -77,10 +78,14 @@ function AppContent({ Component, pageProps }: AppProps) {
   );
 }
 
+const queryClient = new QueryClient();
+
 function MyApp(props: AppProps) {
   return (
     <AuthProvider>
-      <AppContent {...props} />
+      <QueryClientProvider client={queryClient}>
+        <AppContent {...props} />
+      </QueryClientProvider>
     </AuthProvider>
   );
 }
