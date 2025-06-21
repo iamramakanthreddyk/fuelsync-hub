@@ -181,3 +181,14 @@ When Cypress cannot launch, perform manual browser testing and note results in t
 - `/stations/[id]/pumps/[pumpId]/nozzles/new`
 - `/stations/[id]/pumps/[pumpId]/nozzles/[nozzleId]/edit`
 Run Cypress tests from `cypress/e2e`. Use the fix-test loop until all tests pass.
+
+### 2025-06-21 07:51 UTC – Frontend Fix
+- Error: Dev server and backend both started on port 3001 causing EADDRINUSE.
+- Cause: PORT env var set to 3001 globally.
+- Fix: Restarted backend on 3001 and frontend on PORT=3000.
+- Outcome: Frontend accessible at http://localhost:3000. Backend failed due to missing database.
+
+### 2025-06-21 07:52 UTC – Frontend Fix
+- Error: `npm test` failed with TypeScript errors in backend tests.
+- Cause: Jest configuration expects backend database and ts settings.
+- Fix: Not fixed in this run; requires tsconfig tweaks.
