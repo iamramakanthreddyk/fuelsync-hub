@@ -6,6 +6,7 @@ backend/dist/
 dist/
 coverage/
 build/
+playwright-report/
 
 # Environment files
 .env
