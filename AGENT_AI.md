@@ -2,6 +2,8 @@
 
 This file explains how any future AI agent or Codex instance should automate the FuelSync Hub project. Follow these guidelines to ensure a consistent environment and workflow.
 
+**Note:** The Codex sandbox may block network access to `registry.npmjs.org`. Installation commands assume a normal internet connection. If packages fail to install, perform all setup steps on a local machine with connectivity and copy the results back into the sandbox.
+
 ## 1. DO NOT USE DOCKER
 - Skip Docker completely. Use your own local PostgreSQL instance.
 - Export these environment variables before running any setup commands:
@@ -18,9 +20,13 @@ export DB_SSL=false
 ## 2. Install Strategy
 
 ```bash
+npm install --legacy-peer-deps
 cd backend && npm install --legacy-peer-deps
 cd ../frontend && npm install --legacy-peer-deps
 ```
+
+These commands require internet access to `registry.npmjs.org`. In a restricted
+environment, clone the repo locally with normal connectivity and install there.
 
 If installation fails, install pnpm and retry:
 
@@ -102,3 +108,87 @@ curl -X DELETE http://localhost:3001/api/nozzles/1 \
 ## 📘 Purpose
 
 This guide ensures that future Codex agents skip Docker, use a local PostgreSQL setup, and follow a clear test → fix → validate loop when working with the FuelSync Hub project.
+
+## Front-End Recon
+- Pages and components structure (`tree -L 2 frontend/src`):
+```
+frontend/src
+├── components
+│   ├── PumpIcon.tsx
+│   ├── admin
+│   ├── auth
+│   ├── common
+│   ├── dashboard
+│   ├── forms
+│   ├── layout
+│   ├── reports
+│   ├── sales
+│   └── stations
+├── context
+│   └── AuthProvider.tsx
+├── pages
+│   ├── _app.tsx
+│   ├── admin
+│   ├── api
+│   ├── dashboard
+│   ├── debug.tsx
+│   ├── index.tsx
+│   ├── login.tsx
+│   ├── logout.tsx
+│   ├── nozzle-entry.tsx
+│   ├── reconciliations
+│   ├── register.tsx
+│   ├── reports
+│   ├── sales
+│   ├── settings
+│   └── stations
+└── utils
+```
+- Major routes: `/login`, `/dashboard`, `/stations`, `/sales`, `/reports`, `/settings`, plus admin paths.
+- Missing dedicated pages for pumps and nozzles.
+- `npm run dev` shows warnings about unknown env config `http-proxy` but the server still starts.
+
+## Front-End Strategy
+A full refactor is recommended. The code mixes MUI and Ant Design and lacks pump/nozzle screens. Plan:
+1. Centralise auth in context with token stored in localStorage and loaded on app start.
+2. Use React Query for API calls with the existing backend contract.
+3. Add toast notifications via `react-hot-toast`.
+4. Create unified pages for Stations, Pumps, Nozzles and Sales with clean routes.
+5. Adopt MUI across all components.
+
+## Front-End Automation
+```
+cd frontend && npm install --legacy-peer-deps
+VITE_API_BASE=http://localhost:3001
+npm run dev
+npm test
+npm run cypress
+```
+If `npm` fails because the registry is unreachable, you are likely in an offline sandbox. Clone the repository locally and run `npm install` with internet access.
+Alternatively install pnpm and retry with `pnpm install` if peer dependency issues occur.
+When Cypress cannot launch, perform manual browser testing and note results in the log.
+
+### Testing Configuration
+- Jest configuration is provided in `jest.config.js` at the repository root.
+- A sample test resides in `__tests__/App.test.tsx`.
+- Cypress E2E tests live under `frontend/cypress/e2e`. Use `npm run cypress` to execute them locally.
+
+### Routes Added
+- `/stations/[id]/pumps`
+- `/stations/[id]/pumps/new`
+- `/stations/[id]/pumps/[pumpId]/edit`
+- `/stations/[id]/pumps/[pumpId]/nozzles`
+- `/stations/[id]/pumps/[pumpId]/nozzles/new`
+- `/stations/[id]/pumps/[pumpId]/nozzles/[nozzleId]/edit`
+Run Cypress tests from `cypress/e2e`. Use the fix-test loop until all tests pass.
+
+### 2025-06-21 07:51 UTC – Frontend Fix
+- Error: Dev server and backend both started on port 3001 causing EADDRINUSE.
+- Cause: PORT env var set to 3001 globally.
+- Fix: Restarted backend on 3001 and frontend on PORT=3000.
+- Outcome: Frontend accessible at http://localhost:3000. Backend failed due to missing database.
+
+### 2025-06-21 07:52 UTC – Frontend Fix
+- Error: `npm test` failed with TypeScript errors in backend tests.
+- Cause: Jest configuration expects backend database and ts settings.
+- Fix: Not fixed in this run; requires tsconfig tweaks.

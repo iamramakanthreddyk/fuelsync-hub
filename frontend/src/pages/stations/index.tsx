@@ -10,7 +10,7 @@ import {
   Alert
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
-import StationCard from '../../components/stations/StationCard';
+import StationList from '../../components/stations/StationList';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import ProtectedRoute from '../../components/auth/ProtectedRoute';
 import { useRouter } from 'next/router';
@@ -102,13 +102,7 @@ const StationsPage = () => {
           ) : stations.length === 0 ? (
             <Alert severity="info">No stations found. Add your first station to get started.</Alert>
           ) : (
-            <Grid container spacing={3}>
-              {stations.map((station) => (
-                <Grid item xs={12} sm={6} md={4} key={station.id}>
-                  <StationCard station={station} />
-                </Grid>
-              ))}
-            </Grid>
+            <StationList stations={stations} />
           )}
         </Container>
       </DashboardLayout>

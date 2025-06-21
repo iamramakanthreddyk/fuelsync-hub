@@ -8,6 +8,7 @@
     "dev:frontend": "cd frontend && npm run dev",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "build": "cd backend && npm run build && cd ../frontend && npm run build",
+    "test": "jest",
     "db": "ts-node scripts/db.ts",
     "clean": "rm -rf node_modules backend/node_modules frontend/node_modules frontend/.next backend/dist"
   },
@@ -19,12 +20,11 @@
     "@types/uuid": "^10.0.0",
     "concurrently": "^8.2.2",
     "ts-node": "^10.9.1",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.0",
+    "@types/jest": "^29.5.14"
   },
-  "workspaces": [
-    "backend",
-    "frontend"
-  ],
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"

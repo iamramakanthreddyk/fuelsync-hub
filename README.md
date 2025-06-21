@@ -88,6 +88,14 @@ npm install              # Install all dependencies
 npm run clean            # Clean all node_modules and build files
 ```
 
+## Offline Setup
+
+In restricted environments without internet access, you can still work with this repository by cloning it on a machine with access to `registry.npmjs.org` and copying the node_modules folders.
+
+1. Clone the repo and run `npm install` in the root, `backend`, and `frontend` folders.
+2. Copy the resulting `node_modules` directories into your offline environment.
+3. Run `npm run dev` from the root to start both servers.
+
 ## 🏗️ Architecture
 
 - **Backend**: Node.js + Express + TypeScript + PostgreSQL
@@ -112,7 +120,7 @@ fuelsync-hub/
 │   ├── src/            # Source code
 │   ├── next.config.js  # Next.js configuration
 │   └── package.json    # Frontend dependencies
-└── package.json       # Root workspace configuration
+└── package.json       # Root configuration and scripts
 ```
 
 ## 🔧 Key Features
