@@ -2,6 +2,8 @@
 
 This file explains how any future AI agent or Codex instance should automate the FuelSync Hub project. Follow these guidelines to ensure a consistent environment and workflow.
 
+**Note:** The Codex sandbox may block network access to `registry.npmjs.org`. Installation commands assume a normal internet connection. If packages fail to install, perform all setup steps on a local machine with connectivity and copy the results back into the sandbox.
+
 ## 1. DO NOT USE DOCKER
 - Skip Docker completely. Use your own local PostgreSQL instance.
 - Export these environment variables before running any setup commands:
@@ -22,6 +24,9 @@ npm install --legacy-peer-deps
 cd backend && npm install --legacy-peer-deps
 cd ../frontend && npm install --legacy-peer-deps
 ```
+
+These commands require internet access to `registry.npmjs.org`. In a restricted
+environment, clone the repo locally with normal connectivity and install there.
 
 If installation fails, install pnpm and retry:
 
@@ -159,8 +164,14 @@ npm run dev
 npm test
 npm run cypress
 ```
-If `npm` fails due to dependency issues, install pnpm and retry with `pnpm install && pnpm run dev`.
-When Cypress fails due to missing Xvfb, perform manual browser testing and log results.
+If `npm` fails because the registry is unreachable, you are likely in an offline sandbox. Clone the repository locally and run `npm install` with internet access.
+Alternatively install pnpm and retry with `pnpm install` if peer dependency issues occur.
+When Cypress cannot launch, perform manual browser testing and note results in the log.
+
+### Testing Configuration
+- Jest configuration is provided in `jest.config.js` at the repository root.
+- A sample test resides in `__tests__/App.test.tsx`.
+- Cypress E2E tests live under `frontend/cypress/e2e`. Use `npm run cypress` to execute them locally.
 
 ### Routes Added
 - `/stations/[id]/pumps`
