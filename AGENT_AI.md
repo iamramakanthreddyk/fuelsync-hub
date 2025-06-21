@@ -102,3 +102,38 @@ curl -X DELETE http://localhost:3001/api/nozzles/1 \
 ## 📘 Purpose
 
 This guide ensures that future Codex agents skip Docker, use a local PostgreSQL setup, and follow a clear test → fix → validate loop when working with the FuelSync Hub project.
+
+## Front-End Strategy
+
+1. **Recon Findings**
+   - Next.js pages located under `/frontend/src/pages` with Material UI components.
+   - Auth managed via `AuthProvider` storing the JWT in `localStorage`.
+   - API helper uses `fetch` with `authHeader`.
+   - Missing dedicated CRUD screens for pumps and nozzles and inconsistent routing.
+   - `npm run dev` shows warnings (`Unknown env config "http-proxy"`) and port conflicts when backend is running.
+
+2. **Plan**
+   - Perform a full refactor of the frontend.
+   - Build an app shell with sidebar/topbar using MUI.
+   - Centralise auth logic in a context that refreshes token from `localStorage` on page load.
+   - Use `react-query` for data fetching and caching.
+   - Implement clean routes for stations, pumps, nozzles and sales: `/stations`, `/pumps`, `/nozzles`, `/sales` plus nested `new` and `:id/edit` pages.
+   - Display success and error toasts with `react-hot-toast`.
+   - Keep existing API contract unchanged.
+   - Add Cypress tests covering login and full CRUD for each entity.
+
+## Front-End Automation
+
+```bash
+cd frontend && npm install --legacy-peer-deps
+# Set the API base URL
+export VITE_API_BASE=http://localhost:3001
+# Run the dev server
+npm run dev
+# Unit tests (if present)
+npm test
+# Open Cypress in GUI mode
+npm run cypress:open
+```
+
+Use these commands after cloning. During development run `npm run dev` and iterate on failing Cypress specs until they pass.
