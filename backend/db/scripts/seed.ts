@@ -66,18 +66,18 @@ export async function generateDemoSales(
              FROM sale_data
            )
            INSERT INTO sales (
-             id, station_id, nozzle_id, user_id, recorded_at,
-             sale_volume, fuel_price,
-             previous_reading, cumulative_reading,
-             payment_method, status, notes
-           )
-           SELECT
-             $1, $2, $3, $7, $8,
-             volume, price,
-             prev_reading, cum_reading,
-             $9::payment_method, 'posted'::sale_status, NULL
-           FROM calc_data
-           RETURNING id`,
+            id, station_id, nozzle_id, tenant_id, user_id, recorded_at,
+            sale_volume, fuel_price,
+            previous_reading, cumulative_reading,
+            payment_method, status, notes
+          )
+          SELECT
+            $1, $2, $3, $10, $7, $8,
+            volume, price,
+            prev_reading, cum_reading,
+            $9::payment_method, 'posted'::sale_status, NULL
+          FROM calc_data
+          RETURNING id`,
           [
             uuid(),
             stId,
@@ -87,7 +87,8 @@ export async function generateDemoSales(
             nozzle.current_reading,
             empIds[Math.floor(Math.random() * empIds.length)],
             saleTime,
-            PAYMENT_METHS[Math.floor(Math.random() * PAYMENT_METHS.length)]
+            PAYMENT_METHS[Math.floor(Math.random() * PAYMENT_METHS.length)],
+            tenantId
           ]
         );
       }
@@ -218,9 +219,9 @@ async function seed() {
         const pumpId = uuid();
         await client.query(
           `INSERT INTO pumps
-             (id,station_id,name,serial_number,installation_date,active)
-           VALUES ($1,$2,$3,$4,CURRENT_DATE - INTERVAL '1 year',TRUE)`,
-          [ pumpId, stId, `Pump ${i}`, `SN${Math.floor(Math.random()*90000)+10000}` ]
+             (id,station_id,tenant_id,name,serial_number,installation_date,active)
+           VALUES ($1,$2,$3,$4,$5,CURRENT_DATE - INTERVAL '1 year',TRUE)`,
+          [ pumpId, stId, tenantId, `Pump ${i}`, `SN${Math.floor(Math.random()*90000)+10000}` ]
         );
         console.log(`       - Pump ${i} created with ID: ${pumpId} for station ${stId}`);
         for (let n = 0; n < 2; n++) {
@@ -228,9 +229,9 @@ async function seed() {
           const init  = n * 1000;
           await client.query(
             `INSERT INTO nozzles
-               (id,pump_id,fuel_type,initial_reading,current_reading,active)
-             VALUES ($1,$2,$3,$4,$4,TRUE)`,
-            [ nozId, pumpId, FUEL_TYPES[n], init ]
+               (id,pump_id,tenant_id,fuel_type,initial_reading,current_reading,active)
+             VALUES ($1,$2,$3,$4,$5,$5,TRUE)`,
+            [ nozId, pumpId, tenantId, FUEL_TYPES[n], init ]
           );
           console.log(`         ↳ Nozzle ${nozId} (${FUEL_TYPES[n]}) added to pump ${pumpId}`);
         }
@@ -240,9 +241,9 @@ async function seed() {
       for (const fuel of FUEL_TYPES) {
         await client.query(
           `INSERT INTO fuel_prices
-             (id,station_id,fuel_type,price_per_unit,effective_from,created_by,active)
-           VALUES ($1,$2,$3,$4,CURRENT_DATE,$5,TRUE)`,
-          [ uuid(), stId, fuel, rnd(2.5,4), ownerId ]
+             (id,station_id,tenant_id,fuel_type,price_per_unit,effective_from,created_by,active)
+           VALUES ($1,$2,$3,$4,$5,CURRENT_DATE,$6,TRUE)`,
+          [ uuid(), stId, tenantId, fuel, rnd(2.5,4), ownerId ]
         );
         console.log(`       - Price set for ${fuel} at station ${stId}`);
       }
@@ -257,9 +258,9 @@ async function seed() {
     for (const c of creditorData) {
       const credId = uuid();
       await client.query(
-        `INSERT INTO creditors (id, station_id, party_name, contact_person, contact_phone, credit_limit)
-         VALUES ($1,$2,$3,$4,$5,$6)`,
-        [credId, stations[0].id, c.name, c.contact, c.phone, c.limit]
+        `INSERT INTO creditors (id, station_id, tenant_id, party_name, contact_person, contact_phone, credit_limit)
+         VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [credId, stations[0].id, tenantId, c.name, c.contact, c.phone, c.limit]
       );
       console.log(`   ↳ Creditor ${c.name} inserted with ID: ${credId}`);
     }

@@ -104,6 +104,7 @@ CREATE TABLE IF NOT EXISTS user_stations (
 CREATE TABLE IF NOT EXISTS pumps (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     station_id UUID NOT NULL REFERENCES stations(id) ON DELETE CASCADE,
+    tenant_id UUID NOT NULL REFERENCES tenants(id),
     name VARCHAR(50) NOT NULL,
     serial_number VARCHAR(100),
     installation_date DATE DEFAULT CURRENT_DATE,
@@ -118,6 +119,7 @@ CREATE TABLE IF NOT EXISTS pumps (
 CREATE TABLE IF NOT EXISTS nozzles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     pump_id UUID NOT NULL REFERENCES pumps(id) ON DELETE CASCADE,
+    tenant_id UUID NOT NULL REFERENCES tenants(id),
     fuel_type VARCHAR(50) NOT NULL,
     initial_reading NUMERIC(12,3) NOT NULL,
     current_reading NUMERIC(12,3) NOT NULL,
@@ -133,6 +135,7 @@ CREATE TABLE IF NOT EXISTS nozzles (
 CREATE TABLE IF NOT EXISTS fuel_prices (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     station_id UUID NOT NULL REFERENCES stations(id),
+    tenant_id UUID NOT NULL REFERENCES tenants(id),
     fuel_type VARCHAR(50) NOT NULL,
     price_per_unit NUMERIC(10,3) NOT NULL,
     effective_from TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -147,6 +150,7 @@ CREATE TABLE IF NOT EXISTS fuel_prices (
 CREATE TABLE IF NOT EXISTS fuel_price_history (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     station_id UUID NOT NULL REFERENCES stations(id) ON DELETE CASCADE,
+    tenant_id UUID NOT NULL REFERENCES tenants(id),
     fuel_type VARCHAR(50) NOT NULL,
     price_per_unit DECIMAL(10,2) NOT NULL,
     effective_from TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -158,6 +162,7 @@ CREATE TABLE IF NOT EXISTS fuel_price_history (
 
 CREATE TABLE IF NOT EXISTS creditors (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id),
     party_name VARCHAR(255) NOT NULL,
     contact_phone VARCHAR(20),
     email VARCHAR(255),
@@ -180,6 +185,7 @@ CREATE TABLE IF NOT EXISTS sales (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     station_id UUID NOT NULL REFERENCES stations(id),
     nozzle_id UUID NOT NULL REFERENCES nozzles(id),
+    tenant_id UUID NOT NULL REFERENCES tenants(id),
     user_id UUID NOT NULL REFERENCES users(id),
     recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     sale_volume NUMERIC(12,3) NOT NULL,
@@ -201,6 +207,7 @@ CREATE TABLE IF NOT EXISTS sales (
 
 CREATE TABLE IF NOT EXISTS nozzle_readings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id),
     nozzle_id UUID NOT NULL REFERENCES nozzles(id),
     reading NUMERIC(12,3) NOT NULL,
     recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
