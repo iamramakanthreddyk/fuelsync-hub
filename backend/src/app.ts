@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import compression from 'compression';
 import path from 'path';
 import { apiLimiter } from './middlewares/rateLimit';
+import cookieParser from 'cookie-parser';
+import { csrfProtection } from './middlewares/csrf';
 import routes from './routes';
 
 const app = express();
@@ -14,6 +16,8 @@ app.use(helmet());
 app.use(cors());
 app.use(compression());
 app.use(express.json());
+app.use(cookieParser());
+app.use(csrfProtection);
 
 // Serve static files
 app.use(express.static(path.join(__dirname, '../public')));

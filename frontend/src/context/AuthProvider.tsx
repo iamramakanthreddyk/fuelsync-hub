@@ -1,11 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/router';
-import { storeToken, removeToken, getToken, getUserInfo, isTokenExpired } from '../utils/authHelper';
+import { storeUser, removeUser, getUser, getUserRole } from '../utils/authHelper';
 
 interface AuthContextProps {
-  token: string | null;
-  user: ReturnType<typeof getUserInfo> | null;
-  login: (token: string) => void;
+  user: ReturnType<typeof getUser> | null;
+  login: (user: ReturnType<typeof getUser>) => void;
   logout: () => void;
   hasPermission: (roles: string | string[]) => boolean;
 }
@@ -13,47 +12,38 @@ interface AuthContextProps {
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<ReturnType<typeof getUserInfo> | null>(null);
+  const [user, setUser] = useState<ReturnType<typeof getUser> | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const stored = token || getToken();
-    if (stored && !token) {
-      setToken(stored);
-      setUser(getUserInfo());
+    const stored = getUser();
+    if (stored) {
+      setUser(stored);
     }
+  }, []);
 
-    const interval = setInterval(() => {
-      if (stored && isTokenExpired()) {
-        logout();
-      }
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, [token]);
-
-  const login = (newToken: string) => {
-    storeToken(newToken);
-    setToken(newToken);
-    setUser(getUserInfo());
+  const login = (userInfo: ReturnType<typeof getUser>) => {
+    if (userInfo) {
+      storeUser(userInfo);
+      setUser(userInfo);
+    }
   };
 
   const logout = () => {
-    removeToken();
-    setToken(null);
+    removeUser();
     setUser(null);
     router.push('/login');
   };
 
   const hasPermission = (roles: string | string[]) => {
-    if (!user || !user.role) return false;
+    const role = getUserRole();
+    if (!role) return false;
     const allowed = Array.isArray(roles) ? roles : [roles];
-    return allowed.includes(user.role);
+    return allowed.includes(role);
   };
 
   return (
-    <AuthContext.Provider value={{ token, user, login, logout, hasPermission }}>
+    <AuthContext.Provider value={{ user, login, logout, hasPermission }}>
       {children}
     </AuthContext.Provider>
   );

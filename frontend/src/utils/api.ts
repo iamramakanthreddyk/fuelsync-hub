@@ -1,5 +1,4 @@
 // frontend/src/utils/api.ts
-import { authHeader, removeToken } from './authHelper';
 import Router from 'next/router';
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ||
@@ -15,24 +14,22 @@ export async function fetchApi<T>(endpoint: string, options: ApiOptions = {}): P
   const { method = 'GET', body, headers = {} } = options;
 
   try {
-    // Get auth headers from authHelper
-    const authHeaders = authHeader();
-    
-    // If no auth headers and endpoint requires auth, redirect to login
-    if (!authHeaders.Authorization && !endpoint.includes('/login')) {
-      console.error('No auth token available for API request');
-      Router.push('/login');
-      throw new Error('Authentication required');
-    }
-    
     const requestOptions: RequestInit = {
       method,
       headers: {
         'Content-Type': 'application/json',
-        ...authHeaders,
         ...headers,
       },
+      credentials: 'include'
     };
+
+    if (method !== 'GET') {
+      const match = typeof document !== 'undefined' ? document.cookie.match(/(?:^|; )csrfToken=([^;]+)/) : null;
+      const csrfToken = match ? decodeURIComponent(match[1]) : '';
+      if (csrfToken) {
+        (requestOptions.headers as Record<string, string>)['X-CSRF-Token'] = csrfToken;
+      }
+    }
 
     if (body) {
       requestOptions.body = JSON.stringify(body);
@@ -43,11 +40,8 @@ export async function fetchApi<T>(endpoint: string, options: ApiOptions = {}): P
       : `${API_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
     console.log(`API Request to ${url}:`, {
-      method, 
-      headers: { 
-        ...requestOptions.headers,
-        Authorization: authHeaders.Authorization ? 'Bearer [FILTERED]' : undefined 
-      }
+      method,
+      headers: requestOptions.headers
     });
 
     const response = await fetch(url, requestOptions);
@@ -55,7 +49,6 @@ export async function fetchApi<T>(endpoint: string, options: ApiOptions = {}): P
     // Handle 401 Unauthorized errors
     if (response.status === 401) {
       console.error('Authentication error:', await response.text());
-      removeToken(); // Clear invalid token
       Router.push('/login');
       throw new Error('Authentication failed');
     }
@@ -74,12 +67,11 @@ export async function fetchApi<T>(endpoint: string, options: ApiOptions = {}): P
     
     // If error message indicates JWT issues, clear token and redirect
     if (error.message && (
-      error.message.includes('jwt') || 
-      error.message.includes('token') || 
+      error.message.includes('jwt') ||
+      error.message.includes('token') ||
       error.message.includes('auth')
     )) {
       console.error('Token error detected, redirecting to login');
-      removeToken();
       Router.push('/login');
     }
     

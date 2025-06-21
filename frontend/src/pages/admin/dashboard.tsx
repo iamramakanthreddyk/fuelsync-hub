@@ -35,21 +35,13 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('adminToken');
-        
-        if (!token) {
-          router.push('/admin/login');
-          return;
-        }
-
         // Fetch admin info
         try {
           const adminData = await api.get('/admin-auth/me', {
-            headers: { Authorization: `Bearer ${token}` },
+            credentials: 'include'
           });
           setAdmin(adminData.data);
         } catch {
-          localStorage.removeItem('adminToken');
           localStorage.removeItem('admin');
           router.push('/admin/login');
           return;
@@ -58,7 +50,7 @@ export default function AdminDashboard() {
         // Fetch dashboard stats
         try {
           const statsData = await api.get('/superadmin/stats', {
-            headers: { Authorization: `Bearer ${token}` },
+            credentials: 'include'
           });
           setStats(
             statsData.data || {
@@ -70,7 +62,7 @@ export default function AdminDashboard() {
           );
         } catch {
           const tenantsData = await api.get('/superadmin/tenants', {
-            headers: { Authorization: `Bearer ${token}` },
+            credentials: 'include'
           });
           const tenants = tenantsData.data || [];
           setStats({

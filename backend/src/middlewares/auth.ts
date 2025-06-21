@@ -13,23 +13,19 @@ export const authenticateJWT = async (
 ) => {
   try {
     const authHeader = req.headers.authorization;
-    
-    // Check if authorization header exists and has correct format
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ 
-        status: 'error',
-        code: 'INVALID_AUTH_HEADER',
-        message: 'Invalid authorization header format' 
-      });
+    let token: string | undefined;
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    } else if (req.cookies && req.cookies.jwt) {
+      token = req.cookies.jwt as string;
     }
 
-    const token = authHeader.split(' ')[1];
-    
     if (!token) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         status: 'error',
         code: 'NO_TOKEN',
-        message: 'No token provided' 
+        message: 'No token provided'
       });
     }
 

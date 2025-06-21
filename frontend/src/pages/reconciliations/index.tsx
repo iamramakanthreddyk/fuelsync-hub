@@ -86,20 +86,11 @@ export default function Reconciliations() {
   });
 
   useEffect(() => {
-    // Verify authentication
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
     const fetchData = async () => {
       try {
         // Fetch reconciliations
         const recsResponse = await fetch('/api/reconciliations', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          credentials: 'include'
         });
 
         if (!recsResponse.ok) {
@@ -111,9 +102,7 @@ export default function Reconciliations() {
 
         // Fetch stations
         const stationsResponse = await fetch('/api/stations', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          credentials: 'include'
         });
 
         if (!stationsResponse.ok) {
@@ -133,17 +122,9 @@ export default function Reconciliations() {
   }, [router]);
 
   const fetchDailySales = async (stationId: string, date: string) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
     try {
       const response = await fetch(`/api/sales/daily-totals?stationId=${stationId}&date=${date}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
 
       if (!response.ok) {
@@ -281,19 +262,13 @@ export default function Reconciliations() {
       return;
     }
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
     try {
       const response = await fetch('/api/reconciliations', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({
           stationId: formData.stationId,
           date: formData.date,

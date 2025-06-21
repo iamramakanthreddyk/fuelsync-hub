@@ -33,8 +33,6 @@ export default function AdminLogin() {
       const data = await api.post('/admin-auth/login', { email, password });
       console.log('Admin login successful:', data);
 
-      // Store token and user data
-      localStorage.setItem('adminToken', data.data.token);
       localStorage.setItem('admin', JSON.stringify(data.data.user));
 
       // Redirect to admin dashboard
