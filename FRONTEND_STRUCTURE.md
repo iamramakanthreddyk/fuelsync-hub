@@ -16,3 +16,4 @@
 | /sales | Owner | SalesList | C/R/U/D |
 | /sales/new | Owner | SalesForm | C |
 | /admin/tenants | SuperAdmin | TenantList | C/R/U/D |
+| /logout | All | LogoutPage | - |
