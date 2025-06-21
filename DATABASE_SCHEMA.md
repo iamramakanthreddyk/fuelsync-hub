@@ -784,3 +784,13 @@ When extending the schema, consider the following:
    ```bash
    npm run db:fix
    ```
+
+### Performance Indexes
+The following indexes improve query speed for tenant scoped queries:
+- `pumps(tenant_id)`
+- `nozzles(tenant_id)`
+- `fuel_prices(tenant_id)`
+- `fuel_price_history(tenant_id)`
+- `sales(tenant_id)`
+- `nozzle_readings(tenant_id)`
+- `creditors(tenant_id)`
